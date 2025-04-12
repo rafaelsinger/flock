@@ -1,14 +1,13 @@
 import React from 'react';
 import classNames from 'classnames';
-import styles from './Button.module.css';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary';
   size?: 'small' | 'medium' | 'large';
+  className?: string;
 }
 
 export const Button: React.FC<ButtonProps> = ({
-  variant = 'primary',
   size = 'medium',
   className,
   children,
@@ -17,9 +16,12 @@ export const Button: React.FC<ButtonProps> = ({
   return (
     <button
       className={classNames(
-        styles.button,
-        styles[variant],
-        styles[size],
+        'rounded-lg font-medium transition-all',
+        {
+          'px-8 py-4 text-lg': size === 'large',
+          'px-6 py-3 text-base': size === 'medium',
+          'px-4 py-2 text-sm': size === 'small',
+        },
         className
       )}
       {...props}
