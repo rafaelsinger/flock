@@ -1,0 +1,30 @@
+.cta {
+  background-color: var(--color-background-accent);
+  padding: var(--spacing-xxl) var(--spacing-lg);
+  border-radius: var(--border-radius-lg);
+  margin: var(--spacing-xxl) 0;
+}
+
+.content {
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.title {
+  font-size: var(--font-size-xl);
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-md);
+}
+
+.description {
+  font-size: var(--font-size-lg);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-xl);
+}
+
+.actions {
+  display: flex;
+  gap: var(--spacing-md);
+  justify-content: center;
+} 

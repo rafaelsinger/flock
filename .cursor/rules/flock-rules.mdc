@@ -1,0 +1,119 @@
+---
+description: 
+globs: 
+---
+Project Overview
+Flock is a web app that connects graduating students by showing where their classmates are moving after graduation.
+The product should feel friendly, fresh, youthful, and community-driven, while maintaining a minimalist and professional aesthetic.
+
+🌈 Brand Guidelines
+Brand Imagery
+Evoke flocks of flamingos (stylized, minimal, pastel, not cartoonish).
+
+Themes of travel, connection, movement.
+
+Light, airy, optimistic visual energy.
+
+Color Palette
+Primary Color:
+
+Pastel Flamingo Pink #F9C5D1
+
+Accent Colors:
+
+Soft Coral #F28B82
+
+Sky Blue #A7D7F9
+
+Background:
+
+Warm Off-White #FFF9F8
+
+Primary Text Color:
+
+Charcoal Gray #333333
+
+Usage:
+
+Favor lots of white space with small color pops (pink, blue).
+
+Use colors sparingly and tastefully — avoid overwhelming users with bright backgrounds.
+
+Typography
+Use clean, modern sans-serif fonts.
+
+Primary: Inter (preferred)
+
+Favor large, readable font sizes with plenty of line height.
+
+Minimal font weight variation: prioritize light and regular weights.
+
+Visual Style
+Minimalist: Reduce clutter; emphasize simplicity and focus.
+
+Rounded UI Elements: Buttons, cards, modals should have gently rounded corners.
+
+Soft Shadows: Use light, subtle shadows to indicate layering.
+
+Whitespace: Generous use of whitespace between elements.
+
+Component Behavior: Prioritize smoothness, subtle transitions over sharp animations.
+
+✍️ Tone & Microcopy Guidelines
+Voice
+Friendly, warm, approachable, youthful — like a helpful peer, not a formal institution.
+
+Slightly playful but always respectful and clear.
+
+Phrasing
+Prefer positive, action-driven language:
+
+"Find where your classmates land."
+
+"Stay connected, wherever you go."
+
+Avoid heavy corporate jargon or overly technical language.
+
+Emoji Usage
+Light, friendly emoji use is encouraged — one emoji max per screen or section.
+
+Emoji examples: 🦩 (flamingo), 🎓 (graduation cap), 🌎 (world)
+
+🖥 UI/UX Best Practices
+General UX
+Onboarding: Step-by-step progressive disclosure; no overwhelming forms.
+
+Feedback: Always provide confirmation when a user submits a form or takes an action.
+
+Empty States: Encourage users positively when lists/directories are empty (e.g., "No flock yet — be the first to land here!").
+
+Form Design
+Small Steps: Break large forms into bite-sized steps (no more than 3–4 inputs per step).
+
+Smart Defaults: Default country to "United States," hide unnecessary fields unless needed (e.g., Borough field only if City = NYC).
+
+Clear Error Messages: Friendly, actionable, and non-blaming ("Oops! Looks like you missed your city name.").
+
+Directory Design
+Search bar and filters must be easy to find and persistently accessible.
+
+User cards should:
+
+Prioritize Name, City, Company/School, Role/Program.
+
+Show a small visual difference if the user is "working" vs "in school."
+
+Component Design
+Atomic Design Approach: Build small, reusable components: Buttons, Inputs, Cards, ProfileCards, etc.
+
+Naming Conventions: Use clear, descriptive, PascalCase names for components.
+Examples: PostgradTypeSelector, UserCard, VisibilityOptionsForm
+
+Responsiveness:
+Must work cleanly across mobile, tablet, desktop. Use mobile-first design principles.
+
+Styling:
+Prefer TailwindCSS style utility classes. All colors must be sourced from the brand palette — no ad-hoc random hex colors.
+
+Overall Project Philosophy:
+Delightfully simple. Every interaction should feel lightweight, easy, and satisfying.Minimalist but alive. Friendly, human, colorful — but never noisy. Focus on user momentum. Remove obstacles, encourage quick engagement, and make discovery feel exciting. When in doubt, simplify

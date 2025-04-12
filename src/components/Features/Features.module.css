@@ -1,0 +1,46 @@
+.features {
+  padding: var(--spacing-xxl) 0;
+}
+
+.sectionTitle {
+  text-align: center;
+  font-size: var(--font-size-xl);
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-xl);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--spacing-xl);
+  max-width: var(--max-width);
+  margin: 0 auto;
+}
+
+.card {
+  padding: var(--spacing-lg);
+  background: var(--color-background-light);
+  border-radius: var(--border-radius-lg);
+  text-align: center;
+  transition: transform 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+}
+
+.iconWrapper {
+  font-size: 2.5rem;
+  margin-bottom: var(--spacing-md);
+}
+
+.cardTitle {
+  font-size: var(--font-size-lg);
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-sm);
+}
+
+.cardDescription {
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+} 
