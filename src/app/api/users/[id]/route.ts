@@ -31,7 +31,7 @@ export async function PUT(
 ) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session || session.user?.email?.split("@")[0] !== params.id) {
+    if (!session || session.user.id !== params.id) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
@@ -39,7 +39,7 @@ export async function PUT(
 
     const updatedUser = await prisma.user.update({
       where: {
-        bcEmail: `${params.id}@bc.edu`,
+        id: params.id,
       },
       data: {
         name: userData.name,

@@ -8,6 +8,7 @@ import { BsBriefcase } from "react-icons/bs";
 import { LuGraduationCap } from "react-icons/lu";
 import { FaEdit, FaSignOutAlt } from "react-icons/fa";
 import { NotFoundState } from "@/components/NotFoundState/NotFoundState";
+import { capitalize } from "@/lib/utils";
 
 interface ProfilePageProps {
   params: {
@@ -244,8 +245,7 @@ const ViewMode = ({ userData, isOwnProfile, onEdit }: ViewModeProps) => (
           <LuGraduationCap className="text-[#A7D7F9] text-xl mr-3" />
         )}
         <p className="text-lg text-[#333333]">
-          {userData.type === "working" ? "Working" : "Studying"}
-          {userData.visibility.role && <> as {userData.role}</>}
+          {userData.visibility.role && capitalize(userData.role)}
           {userData.visibility.company && <> at {userData.company}</>}
         </p>
       </div>
