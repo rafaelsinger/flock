@@ -21,7 +21,9 @@ export const metadata: Metadata = {
   description:
     'Connecting graduating students by showing where their classmates are landing postgrad.',
   keywords: ['boston college', 'graduates', 'networking', 'alumni', 'bc eagles'],
-  manifest: '/site.webmanifest',
+  icons: {
+    icon: '🦩',
+  },
   openGraph: {
     type: 'website',
     locale: 'en_US',
@@ -31,7 +33,7 @@ export const metadata: Metadata = {
     siteName: 'Flock',
     images: [
       {
-        url: '/web-app-manifest-512x512.png',
+        url: '/logo.svg',
         width: 512,
         height: 512,
         alt: 'Flock Logo',
@@ -42,11 +44,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Flock',
     description: 'See where BC grads are landing after graduation',
-    images: ['/web-app-manifest-512x512.png'],
-  },
-  appleWebApp: {
-    title: 'Flock',
-    statusBarStyle: 'default',
+    images: ['/logo.svg'],
   },
 };
 
@@ -60,9 +58,10 @@ const RootLayout: FC<RootLayoutProps> = async ({ children }) => {
   return (
     <html lang="en" className={inter.className}>
       <head>
-        <link rel="icon" href="/favicon.ico" sizes="any" />
-        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <link
+          rel="icon"
+          href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🦩</text></svg>"
+        />
       </head>
       <body>
         <AuthProvider session={session}>
