@@ -1,6 +1,7 @@
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 
+// TODO: have proper redirects to 404 and 403 instead of silent redirect to home page
 const handler = NextAuth({
   providers: [
     GoogleProvider({
