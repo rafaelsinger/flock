@@ -16,7 +16,7 @@ export const Button: React.FC<ButtonProps> = ({
   return (
     <button
       className={classNames(
-        'rounded-lg font-medium transition-all',
+        'rounded-lg font-medium transition-all cursor-pointer',
         {
           'px-8 py-4 text-lg': size === 'large',
           'px-6 py-3 text-base': size === 'medium',
@@ -29,4 +29,4 @@ export const Button: React.FC<ButtonProps> = ({
       {children}
     </button>
   );
-}; 
+};
