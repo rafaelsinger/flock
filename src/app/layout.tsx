@@ -4,8 +4,7 @@ import './globals.css';
 import { FC, ReactNode } from 'react';
 import QueryProvider from '@/providers/QueryProvider';
 import { AuthProvider } from '@/components/SessionProvider';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/authOptions';
+import { auth } from '@/auth';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -53,7 +52,7 @@ interface RootLayoutProps {
 }
 
 const RootLayout: FC<RootLayoutProps> = async ({ children }) => {
-  const session = await getServerSession(authOptions);
+  const session = await auth();
 
   return (
     <html lang="en" className={inter.className}>
