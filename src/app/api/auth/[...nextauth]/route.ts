@@ -17,9 +17,11 @@ const handler = NextAuth({
     },
   },
   pages: {
-    signIn: '/',
-    error: '/auth/error',
-  }
+    signIn: "/",
+    error: "/auth/error",
+    signOut: "/",
+    newUser: "/auth/unauthorized",
+  },
 });
 
-export { handler as GET, handler as POST }; 
+export { handler as GET, handler as POST };
