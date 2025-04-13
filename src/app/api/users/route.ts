@@ -1,38 +1,107 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
+    const session = await getServerSession(authOptions);
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Get query parameters
+    const searchParams = request.nextUrl.searchParams;
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "12");
+    const search = searchParams.get("search") || "";
+    const postGradType = searchParams.get("postGradType") as
+      | "work"
+      | "school"
+      | "all"
+      | undefined;
+    const country = searchParams.get("country") || "";
+    const state = searchParams.get("state") || "";
+    const city = searchParams.get("city") || "";
+    const industry = searchParams.get("industry") || "";
+
+    // Calculate skip for pagination
     const skip = (page - 1) * limit;
 
-    const [users, total] = await Promise.all([
-      prisma.user.findMany({
-        skip,
-        take: limit,
-        select: {
-          id: true,
-          name: true,
-          city: true,
-          state: true,
-          country: true,
-          company: true,
-          school: true,
-          postGradType: true,
-          visibilityOptions: true,
-        },
-        orderBy: {
-          name: "asc",
-        },
-      }),
-      prisma.user.count(),
-    ]);
+    // Build the where clause for filtering
+    const where = {
+      AND: [
+        // Search condition
+        search
+          ? {
+              OR: [
+                { name: { contains: search, mode: "insensitive" as const } },
+                { city: { contains: search, mode: "insensitive" as const } },
+                { state: { contains: search, mode: "insensitive" as const } },
+                { company: { contains: search, mode: "insensitive" as const } },
+                { school: { contains: search, mode: "insensitive" as const } },
+              ],
+            }
+          : {},
+        // Post grad type filter
+        postGradType && postGradType !== "all" ? { postGradType } : {},
+        // Country filter
+        country ? { country } : {},
+        // State filter
+        state ? { state } : {},
+        // City filter
+        city ? { city: { contains: city, mode: "insensitive" as const } } : {},
+        // Industry filter
+        industry
+          ? {
+              industry: {
+                name: { equals: industry },
+              },
+            }
+          : {},
+      ],
+    };
 
-    return NextResponse.json({ users, total });
+    // Get total count for pagination
+    const total = await prisma.user.count({ where });
+
+    // Get users with pagination
+    const users = await prisma.user.findMany({
+      where,
+      select: {
+        id: true,
+        name: true,
+        city: true,
+        state: true,
+        country: true,
+        company: true,
+        school: true,
+        postGradType: true,
+        visibilityOptions: true,
+        industry: {
+          select: {
+            name: true,
+          },
+        },
+      },
+      skip,
+      take: limit,
+      orderBy: {
+        name: "asc",
+      },
+    });
+
+    return NextResponse.json({
+      users,
+      total,
+      page,
+      totalPages: Math.ceil(total / limit),
+    });
   } catch (error) {
     console.error("Error fetching users:", error);
-    return new NextResponse("Internal Server Error", { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
 }

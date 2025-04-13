@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { MapPin, Building } from "lucide-react";
 import Link from "next/link";
 
@@ -57,33 +57,21 @@ const UserCard: React.FC<UserCardProps> = ({ user }) => {
   );
 };
 
-export const UserGrid: React.FC = () => {
-  const [users, setUsers] = useState<User[]>([]);
-  const [page, setPage] = useState(1);
-  const [loading, setLoading] = useState(false);
-  const [totalPages, setTotalPages] = useState(1);
-  const ITEMS_PER_PAGE = 12;
+interface UserGridProps {
+  users: User[];
+  loading: boolean;
+  page: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+}
 
-  const fetchUsers = async (pageNum: number) => {
-    try {
-      setLoading(true);
-      const response = await fetch(
-        `/api/users?page=${pageNum}&limit=${ITEMS_PER_PAGE}`
-      );
-      const data = await response.json();
-      setUsers(data.users);
-      setTotalPages(Math.ceil(data.total / ITEMS_PER_PAGE));
-    } catch (error) {
-      console.error("Error fetching users:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchUsers(page);
-  }, [page]);
-
+export const UserGrid: React.FC<UserGridProps> = ({
+  users,
+  loading,
+  page,
+  totalPages,
+  onPageChange,
+}) => {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -101,7 +89,7 @@ export const UserGrid: React.FC = () => {
       {!loading && users.length > 0 && (
         <div className="flex justify-center items-center space-x-2">
           <button
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            onClick={() => onPageChange(Math.max(1, page - 1))}
             disabled={page === 1}
             className="px-3 py-1 rounded border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:border-[#F28B82] transition-colors"
           >
@@ -112,7 +100,7 @@ export const UserGrid: React.FC = () => {
             (pageNum) => (
               <button
                 key={pageNum}
-                onClick={() => setPage(pageNum)}
+                onClick={() => onPageChange(pageNum)}
                 className={`px-3 py-1 rounded ${
                   pageNum === page
                     ? "bg-[#F28B82] text-white"
@@ -125,7 +113,7 @@ export const UserGrid: React.FC = () => {
           )}
 
           <button
-            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            onClick={() => onPageChange(Math.min(totalPages, page + 1))}
             disabled={page === totalPages}
             className="px-3 py-1 rounded border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:border-[#F28B82] transition-colors"
           >

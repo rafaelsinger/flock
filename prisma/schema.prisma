@@ -24,24 +24,25 @@ model Industry {
 }
 
 model User {
-  id              String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name            String
-  bcEmail         String       @unique @map("bc_email")
-  postGradType    PostGradType @map("postgrad_type")
-  company         String?
-  title           String?      @map("title")
-  school          String?
-  program         String?
-  country         String
-  state           String
-  city            String
-  boroughDistrict String?      @map("borough_district")
-  industry        Industry?    @relation(fields: [industryId], references: [id])
-  industryId      String?      @map("industry_id") @db.Uuid
-  visibilityOptions Json       @default("{}") @map("visibility_options")
-  isOnboarded      Boolean      @default(false) @map("is_onboarded")
-  createdAt       DateTime     @default(now()) @map("created_at")
-  updatedAt       DateTime     @default(now()) @map("updated_at")
+  id               String   @id @default(cuid())
+  name             String
+  email            String   @unique
+  city             String?
+  state            String?
+  country          String?
+  company          String?
+  school           String?
+  postGradType     String?  // "work" or "school"
+  visibilityOptions Json?
+  bcEmail          String   @unique @map("bc_email")
+  title            String?  @map("title")
+  program          String?
+  boroughDistrict  String?  @map("borough_district")
+  industry         Industry?  @relation(fields: [industryId], references: [id])
+  industryId       String?  @map("industry_id") @db.Uuid
+  isOnboarded      Boolean  @default(false) @map("is_onboarded")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @default(now()) @map("updated_at")
 
   @@map("users")
 } 

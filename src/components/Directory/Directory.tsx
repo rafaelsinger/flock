@@ -4,10 +4,8 @@ import React from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { FaUserCircle } from "react-icons/fa";
-import { SearchBar } from "@/components/SearchBar";
-import { FilterPanel } from "@/components/FilterPanel";
 import { Map } from "@/components/Map";
-import { UserGrid } from "@/components/UserGrid";
+import { DirectoryContent } from "./DirectoryContent";
 
 export const Directory = () => {
   const { data: session } = useSession();
@@ -38,21 +36,8 @@ export const Directory = () => {
           <Map />
         </div>
 
-        {/* Search and Filters */}
-        <div className="flex gap-6 mb-12 sticky top-4 z-10">
-          <div className="flex-1">
-            <SearchBar
-              placeholder="Search for classmates..."
-              className="w-full shadow-md"
-            />
-          </div>
-          <FilterPanel />
-        </div>
-
-        {/* Results Grid */}
-        <div className="bg-white rounded-xl p-8 shadow-md border border-gray-100">
-          <UserGrid />
-        </div>
+        {/* Directory Content */}
+        <DirectoryContent />
       </main>
     </div>
   );
