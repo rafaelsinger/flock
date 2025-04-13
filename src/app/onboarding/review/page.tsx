@@ -6,12 +6,16 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { BsBriefcase } from 'react-icons/bs';
 import { LuGraduationCap } from 'react-icons/lu';
 import type { OnboardingData } from '@/types/onboarding';
+import { useUserStore } from '@/store/userStore';
+import { useSession } from 'next-auth/react';
 
 const ReviewPage: FC = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
   const data = queryClient.getQueryData(['onboardingData']) as OnboardingData;
   const isFinalizingRef = useRef(false);
+  const { data: session } = useSession();
+  const updateUser = useUserStore((state) => state.updateUser);
 
   const finalizeOnboarding = useMutation({
     mutationFn: async (finalData: OnboardingData) => {
@@ -31,6 +35,13 @@ const ReviewPage: FC = () => {
       return response.json();
     },
     onSuccess: () => {
+      // Update the user store with onboarding completion
+      if (session?.user?.id) {
+        updateUser({
+          isOnboarded: true,
+        });
+      }
+
       queryClient.removeQueries({ queryKey: ['onboardingData'] });
       router.push('/');
     },
