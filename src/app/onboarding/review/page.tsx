@@ -37,12 +37,7 @@ const ReviewPage: FC = () => {
       updateUser({
         id: userData.id,
         name: userData.name,
-        isOnboarded,
-      });
-
-      // Mark onboarding as complete
-      setOnboardingStatus({
-        isComplete: true,
+        isOnboarded: true,
       });
 
       queryClient.removeQueries({ queryKey: ['onboardingData'] });

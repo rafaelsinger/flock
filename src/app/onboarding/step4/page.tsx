@@ -10,7 +10,7 @@ const Step4: FC = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
   const previousData = queryClient.getQueryData(['onboardingData']) as OnboardingData;
-  const { updateOnboardingStatus } = useUserStore();
+  const { updateUser } = useUserStore();
 
   const updateOnboardingData = useMutation({
     mutationFn: (visibilityData: OnboardingData['visibility']) => {
@@ -24,8 +24,8 @@ const Step4: FC = () => {
       queryClient.setQueryData(['onboardingData'], data);
 
       // Update UserStore with current step
-      updateOnboardingStatus({
-        isComplete: false,
+      updateUser({
+        isOnboarded: false,
       });
 
       router.push('/onboarding/review');

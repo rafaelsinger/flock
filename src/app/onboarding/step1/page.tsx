@@ -6,12 +6,10 @@ import { BsBriefcase } from 'react-icons/bs';
 import { LuGraduationCap } from 'react-icons/lu';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { PostGradType, OnboardingData } from '@/types/onboarding';
-import { useUserStore } from '@/store/userStore';
 
 const Step1: FC = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { updateOnboardingStatus } = useUserStore();
 
   const updateOnboardingData = useMutation({
     mutationFn: (type: PostGradType) => {
@@ -20,10 +18,6 @@ const Step1: FC = () => {
     },
     onSuccess: (data) => {
       queryClient.setQueryData(['onboardingData'], data);
-
-      updateOnboardingStatus({
-        isComplete: false,
-      });
 
       router.push(`/onboarding/step2-${data.postGradType}`);
     },

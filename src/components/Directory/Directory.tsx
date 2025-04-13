@@ -11,15 +11,16 @@ import { useRouter } from 'next/navigation';
 
 export const Directory = () => {
   const { data: session } = useSession();
-  const { user, onboardingStatus } = useUserStore();
+  const { user } = useUserStore();
   const router = useRouter();
 
   // Prefer session ID, fall back to store ID
   const userId = session?.user?.id || user?.id;
+  const isOnboarded = user?.isOnboarded;
 
   // Check if onboarding is complete
-  if (onboardingStatus && !onboardingStatus.isComplete) {
-    router.push('/onboarding');
+  if (!isOnboarded) {
+    router.push('/onboarding/step1');
 
     // Show loading while redirecting
     return (

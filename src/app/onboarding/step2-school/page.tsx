@@ -4,13 +4,11 @@ import { FC, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { OnboardingData } from '@/types/onboarding';
-import { useUserStore } from '@/store/userStore';
 
 const Step2School: FC = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
   const previousData = queryClient.getQueryData(['onboardingData']) as OnboardingData;
-  const { updateOnboardingStatus } = useUserStore();
 
   const [formData, setFormData] = useState({
     name: '',
@@ -29,11 +27,6 @@ const Step2School: FC = () => {
     },
     onSuccess: (data) => {
       queryClient.setQueryData(['onboardingData'], data);
-
-      // Update UserStore with current step
-      updateOnboardingStatus({
-        isComplete: false,
-      });
 
       router.push('/onboarding/step3');
     },

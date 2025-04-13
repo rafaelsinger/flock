@@ -7,6 +7,7 @@ export interface User {
   id: string;
   name: string;
   postGradType: PostGradType;
+  isOnboarded: boolean;
   title?: string | null;
   program?: string | null;
   company?: string | null;
