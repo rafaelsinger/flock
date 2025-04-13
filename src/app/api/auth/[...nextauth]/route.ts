@@ -1,7 +1,7 @@
-import NextAuth from "next-auth";
-import GoogleProvider from "next-auth/providers/google";
-import { NextAuthOptions } from "next-auth";
-import { prisma } from "@/lib/prisma";
+import NextAuth from 'next-auth';
+import GoogleProvider from 'next-auth/providers/google';
+import { NextAuthOptions } from 'next-auth';
+import { prisma } from '@/lib/prisma';
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -12,11 +12,7 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     async signIn({ account, profile }) {
-      console.log({ profile });
-      if (
-        account?.provider === "google" &&
-        profile?.email?.endsWith("@bc.edu")
-      ) {
+      if (account?.provider === 'google' && profile?.email?.endsWith('@bc.edu')) {
         // Find user in database
         const user = await prisma.user.findUnique({
           where: { bcEmail: profile.email },
@@ -48,10 +44,10 @@ export const authOptions: NextAuthOptions = {
     },
   },
   pages: {
-    signIn: "/",
-    error: "/auth/error",
-    signOut: "/",
-    newUser: "/auth/unauthorized",
+    signIn: '/',
+    error: '/auth/error',
+    signOut: '/',
+    newUser: '/auth/unauthorized',
   },
 };
 

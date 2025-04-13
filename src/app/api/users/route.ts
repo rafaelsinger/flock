@@ -20,7 +20,6 @@ export async function GET(request: NextRequest) {
     const state = searchParams.get('state') || '';
     const city = searchParams.get('city') || '';
     const industry = searchParams.get('industry') || '';
-    console.log({ country, city, state, industry });
 
     // Calculate skip for pagination
     const skip = (page - 1) * limit;

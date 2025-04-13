@@ -1,79 +1,100 @@
-"use client"
+'use client';
 import React, { useState } from 'react';
-import {
-  ComposableMap,
-  Geographies,
-  Geography,
-  ZoomableGroup,
-} from "react-simple-maps";
-import { scaleQuantize } from "d3-scale";
+import { ComposableMap, Geographies, Geography, ZoomableGroup } from 'react-simple-maps';
+import { scaleQuantize } from 'd3-scale';
 import { Plus, Minus } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 
-// Mock data - replace with API data later
-const mockLocationData = {
-  "California": 45,
-  "New York": 30,
-  "Massachusetts": 25,
-  "Washington": 20,
-  "Texas": 15,
-  "Illinois": 10,
-};
+// Define the type for location data
+interface LocationData {
+  [state: string]: number;
+}
 
-const geoUrl = "https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json";
+interface Position {
+  coordinates: [number, number]; // Explicitly typed as tuple with two numbers
+  zoom: number;
+}
 
 interface GeographyProps {
   properties: {
-    name: keyof typeof mockLocationData;
+    name: string;
     // other properties if needed
   };
   rsmKey: string;
 }
 
+const geoUrl = 'https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json';
+
 export const Map: React.FC = () => {
-  const [tooltipContent, setTooltipContent] = useState("");
+  const [tooltipContent, setTooltipContent] = useState('');
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
-  const [position, setPosition] = useState({ coordinates: [-97, 38], zoom: 1 });
+  const [position, setPosition] = useState<Position>({
+    coordinates: [-97, 38],
+    zoom: 1,
+  });
+
+  // Fetch location data from API
+  const { data: locationData, isLoading } = useQuery<LocationData>({
+    queryKey: ['locationData'],
+    queryFn: async () => {
+      const response = await fetch('/api/users/locations');
+      if (!response.ok) {
+        throw new Error('Failed to fetch location data');
+      }
+      return response.json();
+    },
+    // Fallback to empty object if data isn't available yet
+    initialData: {},
+  });
+
+  // Find the maximum value for the color scale
+  const maxValue =
+    Object.values(locationData || {}).reduce((max, value) => Math.max(max, value), 0) || 45; // Default to 45 if no data
 
   // Update the color scale to have more contrast
-  const colorScale = scaleQuantize<string>()
-    .domain([0, 45])
-    .range([
-      "#FFEAE8", // Much lighter start
-      "#FFD1CC",
-      "#FFA69E",
-      "#FF7B6F",
-      "#FF4D3D",
-      "#F28B82"  // Keep brand color as max
-    ]);
+  const colorScale = scaleQuantize<string>().domain([0, maxValue]).range([
+    '#FFEAE8', // Much lighter start
+    '#FFD1CC',
+    '#FFA69E',
+    '#FF7B6F',
+    '#FF4D3D',
+    '#F28B82', // Keep brand color as max
+  ]);
 
-  const legendData = [
-    { range: "0-7", color: "#FFEAE8" },
-    { range: "8-15", color: "#FFD1CC" },
-    { range: "16-23", color: "#FFA69E" },
-    { range: "24-31", color: "#FF7B6F" },
-    { range: "32-39", color: "#FF4D3D" },
-    { range: "40+", color: "#F28B82" },
-  ];
+  // Calculate legend ranges based on the max value
+  const getLegendData = () => {
+    const step = Math.ceil(maxValue / 6);
+    return [
+      { range: `0-${step - 1}`, color: '#FFEAE8' },
+      { range: `${step}-${2 * step - 1}`, color: '#FFD1CC' },
+      { range: `${2 * step}-${3 * step - 1}`, color: '#FFA69E' },
+      { range: `${3 * step}-${4 * step - 1}`, color: '#FF7B6F' },
+      { range: `${4 * step}-${5 * step - 1}`, color: '#FF4D3D' },
+      { range: `${5 * step}+`, color: '#F28B82' },
+    ];
+  };
+
+  const legendData = getLegendData();
 
   const handleMouseMove = (event: React.MouseEvent) => {
     setTooltipPosition({
       x: event.clientX + 16, // offset from cursor
-      y: event.clientY - 40
+      y: event.clientY - 40,
     });
   };
 
   const handleZoomIn = () => {
     if (position.zoom >= 4) return;
-    setPosition(pos => ({ ...pos, zoom: pos.zoom * 1.2 }));
+    setPosition((pos) => ({ ...pos, zoom: pos.zoom * 1.2 }));
   };
 
   const handleZoomOut = () => {
     if (position.zoom <= 1) return;
-    setPosition(pos => ({ ...pos, zoom: pos.zoom / 1.2 }));
+    setPosition((pos) => ({ ...pos, zoom: pos.zoom / 1.2 }));
   };
 
-  const handleMoveEnd = (position: any) => {
-    setPosition(position);
+  const handleMoveEnd = (newPosition: Position) => {
+    setPosition(newPosition);
   };
 
   return (
@@ -85,7 +106,7 @@ export const Map: React.FC = () => {
           <div className="space-y-2.5">
             {legendData.map(({ range, color }) => (
               <div key={range} className="flex items-center gap-2.5">
-                <div 
+                <div
                   className="w-4 h-4 rounded border border-gray-100"
                   style={{ backgroundColor: color }}
                 />
@@ -114,70 +135,74 @@ export const Map: React.FC = () => {
         </button>
       </div>
 
-      <ComposableMap
-        projection="geoAlbersUsa"
-        projectionConfig={{
-          scale: 800
-        }}
-        style={{
-          width: "100%",
-          height: "auto"
-        }}
-      >
-        <ZoomableGroup
-          zoom={position.zoom}
-          center={position.coordinates}
-          onMoveEnd={handleMoveEnd}
-          maxZoom={4}
+      {isLoading ? (
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#F28B82]"></div>
+        </div>
+      ) : (
+        <ComposableMap
+          projection="geoAlbersUsa"
+          projectionConfig={{
+            scale: 800,
+          }}
+          style={{
+            width: '100%',
+            height: 'auto',
+          }}
         >
-          <Geographies geography={geoUrl}>
-            {({ geographies }) =>
-              geographies.map((geo: GeographyProps) => {
-                const stateValue = mockLocationData[geo.properties.name] || 0;
-                return (
-                  <Geography
-                    key={geo.rsmKey}
-                    geography={geo}
-                    fill={colorScale(stateValue)}
-                    stroke="#E5E5E5"
-                    strokeWidth={0.75}
-                    onMouseEnter={() => {
-                      setTooltipContent(
-                        `${geo.properties.name}: ${stateValue} grads`
-                      );
-                    }}
-                    onMouseLeave={() => {
-                      setTooltipContent("");
-                    }}
-                    style={{
-                      default: {
-                        outline: "none",
-                        opacity: 0.95,
-                      },
-                      hover: {
-                        fill: "#F9C5D1",
-                        outline: "none",
-                        cursor: "pointer",
-                        opacity: 1,
-                      },
-                      pressed: {
-                        outline: "none",
-                      },
-                    }}
-                  />
-                );
-              })
-            }
-          </Geographies>
-        </ZoomableGroup>
-      </ComposableMap>
+          <ZoomableGroup
+            zoom={position.zoom}
+            center={position.coordinates}
+            onMoveEnd={handleMoveEnd}
+            maxZoom={4}
+          >
+            <Geographies geography={geoUrl}>
+              {({ geographies }) =>
+                geographies.map((geo: GeographyProps) => {
+                  const stateValue = locationData?.[geo.properties.name] || 0;
+                  return (
+                    <Geography
+                      key={geo.rsmKey}
+                      geography={geo}
+                      fill={colorScale(stateValue)}
+                      stroke="#E5E5E5"
+                      strokeWidth={0.75}
+                      onMouseEnter={() => {
+                        setTooltipContent(`${geo.properties.name}: ${stateValue} grads`);
+                      }}
+                      onMouseLeave={() => {
+                        setTooltipContent('');
+                      }}
+                      style={{
+                        default: {
+                          outline: 'none',
+                          opacity: 0.95,
+                        },
+                        hover: {
+                          fill: '#F9C5D1',
+                          outline: 'none',
+                          cursor: 'pointer',
+                          opacity: 1,
+                        },
+                        pressed: {
+                          outline: 'none',
+                        },
+                      }}
+                    />
+                  );
+                })
+              }
+            </Geographies>
+          </ZoomableGroup>
+        </ComposableMap>
+      )}
       {tooltipContent && (
-        <div 
+        <div
           className="fixed bg-white px-4 py-2.5 rounded-lg shadow-md border border-gray-100 pointer-events-none z-50"
           style={{
             left: tooltipPosition.x,
             top: tooltipPosition.y,
-            transform: 'translate(-50%, -100%)'
+            transform: 'translate(-50%, -100%)',
           }}
         >
           <div className="font-medium text-[#111111]">{tooltipContent}</div>
@@ -185,4 +210,4 @@ export const Map: React.FC = () => {
       )}
     </div>
   );
-}; 
+};
