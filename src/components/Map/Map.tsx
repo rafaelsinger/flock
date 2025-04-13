@@ -43,8 +43,6 @@ export const Map: React.FC = () => {
       }
       return response.json();
     },
-    // Fallback to empty object if data isn't available yet
-    initialData: {},
   });
 
   // Find the maximum value for the color scale
@@ -97,6 +95,18 @@ export const Map: React.FC = () => {
     setPosition(newPosition);
   };
 
+  // Render skeleton for legend items
+  const renderLegendSkeleton = () => {
+    return Array(6)
+      .fill(0)
+      .map((_, index) => (
+        <div key={index} className="flex items-center gap-2.5">
+          <div className="w-4 h-4 rounded border border-gray-100 bg-gray-200 animate-pulse" />
+          <div className="h-4 w-12 bg-gray-200 rounded animate-pulse" />
+        </div>
+      ));
+  };
+
   return (
     <div className="w-full h-full bg-[#F9F9F9] relative" onMouseMove={handleMouseMove}>
       {/* Legend */}
@@ -104,15 +114,17 @@ export const Map: React.FC = () => {
         <div className="p-3">
           <div className="text-sm font-semibold text-[#111111] mb-3">Graduates</div>
           <div className="space-y-2.5">
-            {legendData.map(({ range, color }) => (
-              <div key={range} className="flex items-center gap-2.5">
-                <div
-                  className="w-4 h-4 rounded border border-gray-100"
-                  style={{ backgroundColor: color }}
-                />
-                <span className="text-sm text-[#333333]">{range}</span>
-              </div>
-            ))}
+            {isLoading
+              ? renderLegendSkeleton()
+              : legendData.map(({ range, color }) => (
+                  <div key={range} className="flex items-center gap-2.5">
+                    <div
+                      className="w-4 h-4 rounded border border-gray-100"
+                      style={{ backgroundColor: color }}
+                    />
+                    <span className="text-sm text-[#333333]">{range}</span>
+                  </div>
+                ))}
           </div>
         </div>
       </div>

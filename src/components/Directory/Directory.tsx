@@ -7,10 +7,12 @@ import { FaUserCircle } from 'react-icons/fa';
 import { Map } from '@/components/Map';
 import { DirectoryContent } from './DirectoryContent';
 import { useQueryClient } from '@tanstack/react-query';
+import { useUserStore } from '@/store/userStore';
 
 export const Directory = () => {
   const { data: session } = useSession();
   const queryClient = useQueryClient();
+  const { onboardingStatus } = useUserStore();
 
   // Prefetch the user data when hovering over the profile link
   const handleMouseEnter = () => {
@@ -28,6 +30,11 @@ export const Directory = () => {
       });
     }
   };
+
+  // Check if onboarding is complete
+  if (onboardingStatus && !onboardingStatus.isComplete) {
+    return <div>Please complete onboarding</div>;
+  }
 
   return (
     <div className="min-h-screen bg-[#F9F9F8]">
