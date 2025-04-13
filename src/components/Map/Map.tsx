@@ -32,7 +32,7 @@ interface GeographyProps {
 export const Map: React.FC = () => {
   const [tooltipContent, setTooltipContent] = useState("");
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
-  const [zoom, setZoom] = useState(1);
+  const [position, setPosition] = useState({ coordinates: [-97, 38], zoom: 1 });
 
   // Update the color scale to have more contrast
   const colorScale = scaleQuantize<string>()
@@ -62,6 +62,20 @@ export const Map: React.FC = () => {
     });
   };
 
+  const handleZoomIn = () => {
+    if (position.zoom >= 4) return;
+    setPosition(pos => ({ ...pos, zoom: pos.zoom * 1.2 }));
+  };
+
+  const handleZoomOut = () => {
+    if (position.zoom <= 1) return;
+    setPosition(pos => ({ ...pos, zoom: pos.zoom / 1.2 }));
+  };
+
+  const handleMoveEnd = (position: any) => {
+    setPosition(position);
+  };
+
   return (
     <div className="w-full h-full bg-[#F9F9F9] relative" onMouseMove={handleMouseMove}>
       {/* Legend */}
@@ -82,34 +96,39 @@ export const Map: React.FC = () => {
         </div>
       </div>
 
-      {/* Zoom Controls */}
+      {/* Update Zoom Controls */}
       <div className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col gap-2">
         <button
-          onClick={() => setZoom(z => Math.min(z + 0.5, 4))}
+          onClick={handleZoomIn}
           className="p-2 bg-white rounded-lg shadow-md border border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer"
+          disabled={position.zoom >= 4}
         >
           <Plus className="w-4 h-4 text-[#333333]" />
         </button>
         <button
-          onClick={() => setZoom(z => Math.max(z - 0.5, 1))}
+          onClick={handleZoomOut}
           className="p-2 bg-white rounded-lg shadow-md border border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer"
+          disabled={position.zoom <= 1}
         >
           <Minus className="w-4 h-4 text-[#333333]" />
         </button>
       </div>
 
-      {/* TODO: fix centering on the map */}
       <ComposableMap
         projection="geoAlbersUsa"
         projectionConfig={{
-          scale: 600,
+          scale: 800
         }}
-        width={800}
-        height={400}
+        style={{
+          width: "100%",
+          height: "auto"
+        }}
       >
         <ZoomableGroup
-          center={[0, 0]}
-          zoom={zoom}
+          zoom={position.zoom}
+          center={position.coordinates}
+          onMoveEnd={handleMoveEnd}
+          maxZoom={4}
         >
           <Geographies geography={geoUrl}>
             {({ geographies }) =>
