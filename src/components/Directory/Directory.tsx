@@ -1,14 +1,33 @@
-"use client";
+'use client';
 
-import React from "react";
-import Link from "next/link";
-import { useSession } from "next-auth/react";
-import { FaUserCircle } from "react-icons/fa";
-import { Map } from "@/components/Map";
-import { DirectoryContent } from "./DirectoryContent";
+import React from 'react';
+import Link from 'next/link';
+import { useSession } from 'next-auth/react';
+import { FaUserCircle } from 'react-icons/fa';
+import { Map } from '@/components/Map';
+import { DirectoryContent } from './DirectoryContent';
+import { useQueryClient } from '@tanstack/react-query';
 
 export const Directory = () => {
   const { data: session } = useSession();
+  const queryClient = useQueryClient();
+
+  // Prefetch the user data when hovering over the profile link
+  const handleMouseEnter = () => {
+    if (session?.user?.id) {
+      queryClient.prefetchQuery({
+        queryKey: ['user', session.user.id],
+        queryFn: async () => {
+          const response = await fetch(`/api/users/${session.user.id}`);
+          if (!response.ok) {
+            throw new Error('Failed to fetch user data');
+          }
+          return response.json();
+        },
+        staleTime: 5 * 60 * 1000, // 5 minutes
+      });
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#F9F9F8]">
@@ -17,15 +36,14 @@ export const Directory = () => {
         <div className="mb-12 bg-white rounded-xl p-8 shadow-sm border border-gray-100 relative">
           <div>
             <h1 className="text-4xl font-bold text-[#111111]">Directory</h1>
-            <p className="text-[#444444] mt-2 text-lg">
-              Explore where BC grads are heading next
-            </p>
+            <p className="text-[#444444] mt-2 text-lg">Explore where BC grads are heading next</p>
           </div>
 
           {/* Profile Link */}
           <Link
             href={`/profile/${session?.user?.id}`}
             className="absolute top-8 right-8 text-[#F28B82] hover:text-[#E67C73] transition-colors"
+            onMouseEnter={handleMouseEnter}
           >
             <FaUserCircle className="w-8 h-8" />
           </Link>
