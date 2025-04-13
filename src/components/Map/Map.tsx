@@ -25,7 +25,7 @@ interface GeographyProps {
 
 const geoUrl = 'https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json';
 
-export const Map: React.FC = () => {
+export const Map: React.FC<{ display?: boolean }> = ({ display = false }) => {
   const [tooltipContent, setTooltipContent] = useState('');
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
   const [position, setPosition] = useState<Position>({
@@ -43,6 +43,7 @@ export const Map: React.FC = () => {
       }
       return response.json();
     },
+    enabled: !display,
   });
 
   // Find the maximum value for the color scale
