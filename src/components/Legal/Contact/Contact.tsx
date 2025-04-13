@@ -12,7 +12,7 @@ type FormData = {
   message: string;
 };
 
-const Contact: React.FC = () => {
+export const Contact: React.FC = () => {
   const [formData, setFormData] = useState<FormData>({
     name: '',
     email: '',
