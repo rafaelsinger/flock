@@ -1,26 +1,30 @@
-import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
-import './globals.css';
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import "./globals.css";
+import { FC, ReactNode } from "react";
+import QueryProvider from "@/providers/QueryProvider";
 
-const inter = Inter({ subsets: ['latin'] });
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: 'Flock',
-  description: 'Connect, collaborate, and create together with your team',
+  title: "Flock",
+  description: "Connect, collaborate, and create together with your team",
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+interface RootLayoutProps {
+  children: ReactNode;
+}
+
+const RootLayout: FC<RootLayoutProps> = ({ children }) => {
   return (
     <html lang="en" className={inter.className}>
       <body>
-        <main>
-          {children}
-        </main>
+        <QueryProvider>
+          <main>{children}</main>
+        </QueryProvider>
       </body>
     </html>
   );
-} 
+};
+
+export default RootLayout;
