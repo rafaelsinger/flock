@@ -169,7 +169,7 @@ const ProfilePage: FC<ProfilePageProps> = ({ params }) => {
       {/* Back Navigation and Sign Out */}
       <div className="flex justify-between items-center mb-8">
         <Link
-          href="/directory"
+          href="/"
           className="inline-flex items-center text-[#333333] hover:text-[#F28B82] transition-all hover:translate-y-[-1px] cursor-pointer"
         >
           <IoArrowBack className="mr-2" />
