@@ -12,11 +12,12 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     async signIn({ account, profile }) {
+      console.log({ profile });
       if (
         account?.provider === "google" &&
         profile?.email?.endsWith("@bc.edu")
       ) {
-        // Find or create user in database
+        // Find user in database
         const user = await prisma.user.findUnique({
           where: { bcEmail: profile.email },
           select: { id: true },
@@ -27,7 +28,7 @@ export const authOptions: NextAuthOptions = {
           account.userId = user.id;
           return true;
         }
-        return false; // User not found in our database
+        return true;
       }
       return false;
     },
