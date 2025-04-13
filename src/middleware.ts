@@ -1,53 +1,34 @@
-import { withAuth } from "next-auth/middleware";
+import { getToken } from "next-auth/jwt";
 import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
-export default withAuth(
-  function middleware(req) {
-    // If user is not authenticated, NextAuth will handle the redirect to sign in
+export async function middleware(request: NextRequest) {
+  const token = await getToken({ req: request });
+  const isAuth = !!token;
+  const isOnboarded = token?.isOnboarded;
+  const isAuthPage = request.nextUrl.pathname.startsWith("/auth");
+  const isOnboardingPage = request.nextUrl.pathname.startsWith("/onboarding");
 
-    // For authenticated users trying to access the home page, redirect to onboarding
-    if (req.nextUrl.pathname === "/") {
-      return NextResponse.redirect(new URL("/onboarding/step1", req.url));
-    }
+  console.log({ isAuth, isOnboarded, isAuthPage });
 
-    // For unauthenticated users trying to access protected routes
-    if (!req.nextauth.token) {
-      return NextResponse.redirect(new URL("/auth/unauthorized", req.url));
-    }
-
-    return NextResponse.next();
-  },
-  {
-    pages: {
-      signIn: "/",
-      error: "/auth/error",
-    },
-    callbacks: {
-      authorized: ({ req, token }) => {
-        // Allow public pages
-        if (
-          req.nextUrl.pathname === "/" ||
-          req.nextUrl.pathname === "/auth/error" ||
-          req.nextUrl.pathname === "/auth/unauthorized" ||
-          req.nextUrl.pathname.startsWith("/api/auth")
-        ) {
-          return true;
-        }
-        // Require auth for all other pages
-        return !!token;
-      },
-    },
+  // If user is not authenticated and tries to access protected routes
+  if (!isAuth && !isAuthPage) {
+    return NextResponse.redirect(new URL("/", request.url));
   }
-);
+
+  // If authenticated user tries to access onboarding but is already onboarded
+  if (isAuth && isOnboarded && isOnboardingPage) {
+    return NextResponse.redirect(new URL("/", request.url));
+  }
+
+  // If authenticated user is not onboarded, force them to complete onboarding
+  if (isAuth && !isOnboarded && !isOnboardingPage) {
+    return NextResponse.redirect(new URL("/onboarding/step1", request.url));
+  }
+
+  return NextResponse.next();
+}
 
 export const config = {
-  matcher: [
-    /*
-     * Match all paths except:
-     * 1. /api/auth/* (auth endpoints)
-     * 2. /_next/* (next.js internals)
-     * 3. /static files (favicon, images, etc)
-     */
-    "/((?!api/auth|_next|favicon\\.ico|logo\\.svg|illustration\\.svg).*)",
-  ],
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
 };

@@ -1,8 +1,8 @@
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
+import { NextAuthOptions } from "next-auth";
 
-// TODO: have proper redirects to 404 and 403 instead of silent redirect to home page
-const handler = NextAuth({
+export const authOptions: NextAuthOptions = {
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -16,6 +16,20 @@ const handler = NextAuth({
       }
       return false; // Deny sign in if not Google or not bc.edu
     },
+    async jwt({ token, user }) {
+      if (user) {
+        // On first sign in, user object is available
+        token.isOnboarded = user.isOnboarded ?? false;
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      if (session.user) {
+        // Get isOnboarded from token instead of user
+        session.user.isOnboarded = token.isOnboarded;
+      }
+      return session;
+    },
   },
   pages: {
     signIn: "/",
@@ -23,6 +37,8 @@ const handler = NextAuth({
     signOut: "/",
     newUser: "/auth/unauthorized",
   },
-});
+};
+
+const handler = NextAuth(authOptions);
 
 export { handler as GET, handler as POST };

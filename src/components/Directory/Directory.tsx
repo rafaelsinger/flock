@@ -9,7 +9,7 @@ import { FilterPanel } from "@/components/FilterPanel";
 import { Map } from "@/components/Map";
 import { UserGrid } from "@/components/UserGrid";
 
-export default function DirectoryPage() {
+export const Directory = () => {
   const { data: session } = useSession();
 
   return (
@@ -56,4 +56,4 @@ export default function DirectoryPage() {
       </main>
     </div>
   );
-}
+};
