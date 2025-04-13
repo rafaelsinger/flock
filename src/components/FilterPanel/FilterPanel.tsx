@@ -1,45 +1,11 @@
-"use client";
-import React, { useState } from "react";
-import { Filter } from "lucide-react";
-
-// Constants from onboarding step3
-const US_STATES = [
-  { value: "AL", label: "Alabama" },
-  { value: "AK", label: "Alaska" },
-  // ... other states
-  { value: "WY", label: "Wyoming" },
-].sort((a, b) => a.label.localeCompare(b.label));
-
-// TODO: should be consistent across application
-const COUNTRIES = [
-  { value: "USA", label: "United States" },
-  { value: "CAN", label: "Canada" },
-  { value: "GBR", label: "United Kingdom" },
-  { value: "AUS", label: "Australia" },
-  { value: "DEU", label: "Germany" },
-  { value: "FRA", label: "France" },
-  { value: "JPN", label: "Japan" },
-  { value: "CHN", label: "China" },
-  { value: "IND", label: "India" },
-  { value: "BRA", label: "Brazil" },
-].sort((a, b) => a.label.localeCompare(b.label));
-
-// TODO: should pull from Industries table
-const INDUSTRIES = [
-  { value: "tech", label: "Technology" },
-  { value: "finance", label: "Finance" },
-  { value: "consulting", label: "Consulting" },
-  { value: "healthcare", label: "Healthcare" },
-  { value: "education", label: "Education" },
-  { value: "retail", label: "Retail" },
-  { value: "manufacturing", label: "Manufacturing" },
-  { value: "media", label: "Media & Entertainment" },
-  { value: "nonprofit", label: "Non-Profit" },
-  { value: "other", label: "Other" },
-];
+'use client';
+import React, { useState } from 'react';
+import { Filter } from 'lucide-react';
+import { US_STATES, COUNTRIES } from '@/constants/location';
+import { INDUSTRIES } from '@/constants/industries';
 
 interface FilterOptions {
-  postGradType?: "work" | "school" | "all";
+  postGradType?: 'work' | 'school' | 'all';
   country?: string;
   state?: string;
   city?: string;
@@ -53,11 +19,11 @@ interface FilterPanelProps {
 export const FilterPanel: React.FC<FilterPanelProps> = ({ onFilter }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [filters, setFilters] = useState<FilterOptions>({
-    postGradType: "all",
-    country: "",
-    state: "",
-    city: "",
-    industry: "",
+    postGradType: 'all',
+    country: '',
+    state: '',
+    city: '',
+    industry: '',
   });
 
   const handleFilterChange = (newFilters: Partial<FilterOptions>) => {
@@ -67,10 +33,10 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({ onFilter }) => {
   };
 
   const selectClasses =
-    "w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:border-[#F9C5D1] focus:ring-2 focus:ring-[#F9C5D1]/20 outline-none transition-colors hover:border-[#F9C5D1]/50 cursor-pointer text-[#333333]";
-  const labelClasses = "block text-sm font-medium text-[#333333] mb-2";
+    'w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:border-[#F9C5D1] focus:ring-2 focus:ring-[#F9C5D1]/20 outline-none transition-colors hover:border-[#F9C5D1]/50 cursor-pointer text-[#333333]';
+  const labelClasses = 'block text-sm font-medium text-[#333333] mb-2';
 
-  const showStateField = filters.country === "USA";
+  const showStateField = filters.country === 'USA';
 
   return (
     <div className="relative">
@@ -92,7 +58,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({ onFilter }) => {
                 value={filters.postGradType}
                 onChange={(e) =>
                   handleFilterChange({
-                    postGradType: e.target.value as "work" | "school" | "all",
+                    postGradType: e.target.value as 'work' | 'school' | 'all',
                   })
                 }
                 className={selectClasses}
@@ -110,7 +76,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({ onFilter }) => {
                 onChange={(e) =>
                   handleFilterChange({
                     country: e.target.value,
-                    state: "", // Reset state when country changes
+                    state: '', // Reset state when country changes
                   })
                 }
                 className={selectClasses}
@@ -132,6 +98,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({ onFilter }) => {
                   onChange={(e) =>
                     handleFilterChange({
                       state: e.target.value,
+                      city: '',
                     })
                   }
                   className={selectClasses}
@@ -172,7 +139,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({ onFilter }) => {
                 }
                 className={selectClasses}
               >
-                <option value="">All Industries</option>
+                <option value="all">All Industries</option>
                 {INDUSTRIES.map(({ value, label }) => (
                   <option key={value} value={value}>
                     {label}

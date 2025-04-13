@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import { FC, useState, useEffect } from "react";
-import Link from "next/link";
-import { useSession, signOut } from "next-auth/react";
-import { IoArrowBack } from "react-icons/io5";
-import { BsBriefcase } from "react-icons/bs";
-import { LuGraduationCap } from "react-icons/lu";
-import { FaEdit, FaSignOutAlt } from "react-icons/fa";
-import { NotFoundState } from "@/components/NotFoundState/NotFoundState";
-import { capitalize } from "@/lib/utils";
+import { FC, useState, useEffect } from 'react';
+import Link from 'next/link';
+import { useSession, signOut } from 'next-auth/react';
+import { IoArrowBack } from 'react-icons/io5';
+import { BsBriefcase } from 'react-icons/bs';
+import { LuGraduationCap } from 'react-icons/lu';
+import { FaEdit, FaSignOutAlt } from 'react-icons/fa';
+import { NotFoundState } from '@/components/NotFoundState/NotFoundState';
+import { capitalize } from '@/lib/utils';
 
 interface ProfilePageProps {
   params: {
@@ -18,7 +18,7 @@ interface ProfilePageProps {
 
 interface DBUser {
   name: string;
-  postGradType: "work" | "school";
+  postGradType: 'work' | 'school';
   title?: string | null;
   program?: string | null;
   company?: string | null;
@@ -34,7 +34,7 @@ interface DBUser {
 
 interface UserData {
   name: string;
-  type: "working" | "studying";
+  type: 'working' | 'studying';
   role: string;
   company: string;
   location: {
@@ -50,16 +50,14 @@ interface UserData {
 
 // Common input classes for consistency with onboarding flow
 const inputClasses =
-  "w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:border-[#F9C5D1] focus:ring-2 focus:ring-[#F9C5D1]/20 outline-none transition-colors hover:border-[#F9C5D1]/50 cursor-text text-[#333333]";
-const labelClasses = "block text-sm font-medium text-[#333333] mb-2";
+  'w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:border-[#F9C5D1] focus:ring-2 focus:ring-[#F9C5D1]/20 outline-none transition-colors hover:border-[#F9C5D1]/50 cursor-text text-[#333333]';
+const labelClasses = 'block text-sm font-medium text-[#333333] mb-2';
 
 const transformDBToUserData = (dbUser: DBUser): UserData => ({
   name: dbUser.name,
-  type: dbUser.postGradType === "work" ? "working" : "studying",
-  role:
-    dbUser.postGradType === "work" ? dbUser.title || "" : dbUser.program || "",
-  company:
-    dbUser.postGradType === "work" ? dbUser.company || "" : dbUser.school || "",
+  type: dbUser.postGradType === 'work' ? 'working' : 'studying',
+  role: dbUser.postGradType === 'work' ? dbUser.title || '' : dbUser.program || '',
+  company: dbUser.postGradType === 'work' ? dbUser.company || '' : dbUser.school || '',
   location: {
     city: dbUser.city,
     state: dbUser.state,
@@ -73,11 +71,11 @@ const transformDBToUserData = (dbUser: DBUser): UserData => ({
 
 const transformUserDataToDB = (userData: UserData) => ({
   name: userData.name,
-  postGradType: userData.type === "working" ? "work" : "school",
-  title: userData.type === "working" ? userData.role : null,
-  program: userData.type === "studying" ? userData.role : null,
-  company: userData.type === "working" ? userData.company : null,
-  school: userData.type === "studying" ? userData.company : null,
+  postGradType: userData.type === 'working' ? 'work' : 'school',
+  title: userData.type === 'working' ? userData.role : null,
+  program: userData.type === 'studying' ? userData.role : null,
+  company: userData.type === 'working' ? userData.company : null,
+  school: userData.type === 'studying' ? userData.company : null,
   city: userData.location.city,
   state: userData.location.state,
   country: userData.location.country,
@@ -97,12 +95,12 @@ const ProfilePage: FC<ProfilePageProps> = ({ params }) => {
       try {
         const response = await fetch(`/api/users/${params.id}`);
         if (!response.ok) {
-          throw new Error("Failed to fetch user data");
+          throw new Error('Failed to fetch user data');
         }
         const dbUser: DBUser = await response.json();
         setUserData(transformDBToUserData(dbUser));
       } catch (error) {
-        console.error("Error fetching user data:", error);
+        console.error('Error fetching user data:', error);
       } finally {
         setIsLoading(false);
       }
@@ -116,27 +114,27 @@ const ProfilePage: FC<ProfilePageProps> = ({ params }) => {
 
     try {
       const response = await fetch(`/api/users/${params.id}`, {
-        method: "PUT",
+        method: 'PUT',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify(transformUserDataToDB(userData)),
       });
 
       if (!response.ok) {
-        throw new Error("Failed to update user data");
+        throw new Error('Failed to update user data');
       }
 
       const updatedDBUser: DBUser = await response.json();
       setUserData(transformDBToUserData(updatedDBUser));
       setIsEditing(false);
     } catch (error) {
-      console.error("Error updating user data:", error);
+      console.error('Error updating user data:', error);
     }
   };
 
   const handleSignOut = () => {
-    signOut({ callbackUrl: "/" });
+    signOut({ callbackUrl: '/' });
   };
 
   if (isLoading) {
@@ -231,15 +229,11 @@ const ViewMode = ({ userData, isOwnProfile, onEdit }: ViewModeProps) => (
       </button>
     )}
 
-    <h1 className="text-4xl font-semibold text-[#333333] mb-6">
-      {userData.name}
-    </h1>
+    <h1 className="text-4xl font-semibold text-[#333333] mb-6">{userData.name}</h1>
 
-    {(isOwnProfile ||
-      userData.visibility.role ||
-      userData.visibility.company) && (
+    {(isOwnProfile || userData.visibility.role || userData.visibility.company) && (
       <div className="flex items-center mb-4">
-        {userData.type === "working" ? (
+        {userData.type === 'working' ? (
           <BsBriefcase className="text-[#F28B82] text-xl mr-3" />
         ) : (
           <LuGraduationCap className="text-[#A7D7F9] text-xl mr-3" />
@@ -253,8 +247,7 @@ const ViewMode = ({ userData, isOwnProfile, onEdit }: ViewModeProps) => (
 
     <div className="mb-6">
       <p className="text-lg text-[#333333]">
-        {userData.location.city}, {userData.location.state},{" "}
-        {userData.location.country}
+        {userData.location.city}, {userData.location.state}, {userData.location.country}
       </p>
     </div>
   </div>
@@ -267,12 +260,7 @@ interface EditFormProps {
   setUserData: (userData: UserData) => void;
 }
 
-const EditForm = ({
-  userData,
-  onSave,
-  onCancel,
-  setUserData,
-}: EditFormProps) => (
+const EditForm = ({ userData, onSave, onCancel, setUserData }: EditFormProps) => (
   <form
     onSubmit={(e) => {
       e.preventDefault();
@@ -297,10 +285,10 @@ const EditForm = ({
         onChange={(e) =>
           setUserData({
             ...userData,
-            type: e.target.value as "working" | "studying",
+            type: e.target.value as 'working' | 'studying',
           })
         }
-        className={inputClasses.replace("cursor-text", "cursor-pointer")}
+        className={inputClasses.replace('cursor-text', 'cursor-pointer')}
       >
         <option value="working">Working</option>
         <option value="studying">Studying</option>
@@ -308,9 +296,7 @@ const EditForm = ({
     </div>
 
     <div>
-      <label className={labelClasses}>
-        {userData.type === "working" ? "Role" : "Program"}
-      </label>
+      <label className={labelClasses}>{userData.type === 'working' ? 'Role' : 'Program'}</label>
       <input
         type="text"
         value={userData.role}
@@ -320,9 +306,7 @@ const EditForm = ({
     </div>
 
     <div>
-      <label className={labelClasses}>
-        {userData.type === "working" ? "Company" : "School"}
-      </label>
+      <label className={labelClasses}>{userData.type === 'working' ? 'Company' : 'School'}</label>
       <input
         type="text"
         value={userData.company}
@@ -332,9 +316,7 @@ const EditForm = ({
     </div>
 
     <div className="space-y-4">
-      <h3 className="text-lg font-medium text-[#333333]">
-        Visibility Settings
-      </h3>
+      <h3 className="text-lg font-medium text-[#333333]">Visibility Settings</h3>
       <div className="space-y-2">
         <label className="flex items-center space-x-2">
           <input

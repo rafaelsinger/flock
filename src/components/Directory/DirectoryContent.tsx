@@ -1,11 +1,14 @@
-import React, { useEffect, useState } from "react";
-import { SearchBar } from "@/components/SearchBar";
-import { FilterPanel } from "@/components/FilterPanel";
-import { UserGrid } from "@/components/UserGrid";
+import React, { useEffect, useState, useCallback } from 'react';
+import { SearchBar } from '@/components/SearchBar';
+import { FilterPanel } from '@/components/FilterPanel';
+import { UserGrid } from '@/components/UserGrid';
 
 interface FilterOptions {
-  postGradType?: "work" | "school" | "all";
-  location?: string;
+  postGradType?: 'work' | 'school' | 'all';
+  country?: string;
+  state?: string;
+  city?: string;
+  industry?: string;
 }
 
 const ITEMS_PER_PAGE = 12;
@@ -15,36 +18,69 @@ export const DirectoryContent: React.FC = () => {
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [totalPages, setTotalPages] = useState(1);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState<FilterOptions>({});
 
-  const fetchUsers = async (pageNum: number) => {
-    try {
-      setLoading(true);
-      const queryParams = new URLSearchParams({
+  // Helper function to build query parameters
+  const buildQueryParams = useCallback(
+    (pageNum: number) => {
+      const params: Record<string, string> = {
         page: pageNum.toString(),
         limit: ITEMS_PER_PAGE.toString(),
-        search: searchQuery,
-        ...(filters.postGradType && filters.postGradType !== "all"
-          ? { postGradType: filters.postGradType }
-          : {}),
-        ...(filters.location ? { location: filters.location } : {}),
-      });
+      };
 
-      const response = await fetch(`/api/users?${queryParams}`);
-      const data = await response.json();
-      setUsers(data.users);
-      setTotalPages(Math.ceil(data.total / ITEMS_PER_PAGE));
-    } catch (error) {
-      console.error("Error fetching users:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+      // Add search query if present
+      if (searchQuery) {
+        params.search = searchQuery;
+      }
+
+      // Add filters if present
+      if (filters.postGradType && filters.postGradType !== 'all') {
+        params.postGradType = filters.postGradType;
+      }
+
+      if (filters.country) {
+        params.country = filters.country;
+      }
+
+      if (filters.state) {
+        params.state = filters.state;
+      }
+
+      if (filters.city) {
+        params.city = filters.city;
+      }
+
+      if (filters.industry && filters.country !== 'all') {
+        params.industry = filters.industry;
+      }
+
+      return new URLSearchParams(params);
+    },
+    [searchQuery, filters]
+  );
+
+  const fetchUsers = useCallback(
+    async (pageNum: number) => {
+      try {
+        setLoading(true);
+        const queryParams = buildQueryParams(pageNum);
+        const response = await fetch(`/api/users?${queryParams}`);
+        const data = await response.json();
+        setUsers(data.users);
+        setTotalPages(Math.ceil(data.total / ITEMS_PER_PAGE));
+      } catch (error) {
+        console.error('Error fetching users:', error);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [buildQueryParams]
+  );
 
   useEffect(() => {
     fetchUsers(page);
-  }, [page, searchQuery, filters]);
+  }, [page, fetchUsers]);
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
