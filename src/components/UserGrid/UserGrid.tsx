@@ -1,6 +1,6 @@
-import React from "react";
-import { MapPin, Building } from "lucide-react";
-import Link from "next/link";
+import React from 'react';
+import { MapPin, Building } from 'lucide-react';
+import Link from 'next/link';
 
 interface User {
   id: string;
@@ -10,7 +10,7 @@ interface User {
   country: string;
   company?: string | null;
   school?: string | null;
-  postGradType: "work" | "school";
+  postGradType: 'work' | 'school';
   visibilityOptions: {
     role?: boolean;
     company?: boolean;
@@ -24,7 +24,7 @@ interface UserCardProps {
 const UserCard: React.FC<UserCardProps> = ({ user }) => {
   const location = `${user.city}, ${user.state}`;
   const company = user.visibilityOptions.company
-    ? user.postGradType === "work"
+    ? user.postGradType === 'work'
       ? user.company
       : user.school
     : undefined;
@@ -96,21 +96,19 @@ export const UserGrid: React.FC<UserGridProps> = ({
             ←
           </button>
 
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-            (pageNum) => (
-              <button
-                key={pageNum}
-                onClick={() => onPageChange(pageNum)}
-                className={`px-3 py-1 rounded ${
-                  pageNum === page
-                    ? "bg-[#F28B82] text-white"
-                    : "border border-gray-200 hover:border-[#F28B82]"
-                } transition-colors`}
-              >
-                {pageNum}
-              </button>
-            )
-          )}
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
+            <button
+              key={pageNum}
+              onClick={() => onPageChange(pageNum)}
+              className={`px-3 py-1 rounded cursor-pointer ${
+                pageNum === page
+                  ? 'bg-[#F28B82] text-white'
+                  : 'border border-gray-200 hover:border-[#F28B82]'
+              } transition-colors`}
+            >
+              {pageNum}
+            </button>
+          ))}
 
           <button
             onClick={() => onPageChange(Math.min(totalPages, page + 1))}
