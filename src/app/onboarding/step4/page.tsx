@@ -8,26 +8,9 @@ import type { OnboardingData } from "@/types/onboarding";
 const Step4: FC = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const previousData = queryClient.getQueryData(["onboardingData"]) as OnboardingData;
-
-  useEffect(() => {
-    if (!previousData || !previousData.postGradType) {
-      router.push("/onboarding/step1");
-    }
-  }, [previousData, router]);
-
-  if (!previousData || !previousData.postGradType) {
-    return null;
-  }
-
-  const [formData, setFormData] = useState({
-    showEmail: true,
-    showPhone: false,
-    showLocation: true,
-    showCompanyRole: true,
-  });
-
-  const [isFormValid, setIsFormValid] = useState(true);
+  const previousData = queryClient.getQueryData([
+    "onboardingData",
+  ]) as OnboardingData;
 
   const updateOnboardingData = useMutation({
     mutationFn: (visibilityData: OnboardingData["visibility"]) => {
@@ -42,6 +25,27 @@ const Step4: FC = () => {
       router.push("/onboarding/review");
     },
   });
+  const [formData, setFormData] = useState(
+    previousData?.postGradType === "work"
+      ? {
+          showCompany: true,
+          showRole: true,
+        }
+      : {
+          showSchool: true,
+          showProgram: true,
+        }
+  );
+
+  useEffect(() => {
+    if (!previousData || !previousData.postGradType) {
+      router.push("/onboarding/step1");
+    }
+  }, [previousData, router]);
+
+  if (!previousData || !previousData.postGradType) {
+    return null;
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,39 +68,33 @@ const Step4: FC = () => {
           <div className="bg-white rounded-lg p-6 space-y-4">
             <label className="flex items-center justify-between cursor-pointer p-2 hover:bg-gray-50 rounded-lg transition-colors">
               <div>
-                <span className="font-medium text-[#333333]">Show Email</span>
-                <p className="text-sm text-[#666666]">Display your email address to classmates</p>
+                <span className="font-medium text-[#333333]">
+                  Show{" "}
+                  {previousData.postGradType === "work" ? "Company" : "School"}
+                </span>
+                <p className="text-sm text-[#666666]">
+                  Display your{" "}
+                  {previousData.postGradType === "work"
+                    ? "company name"
+                    : "school"}{" "}
+                  to classmates
+                </p>
               </div>
               <input
                 type="checkbox"
-                checked={formData.showEmail}
-                onChange={(e) => setFormData(prev => ({ ...prev, showEmail: e.target.checked }))}
-                className="h-6 w-6 rounded border-gray-300 text-[#F9C5D1] focus:ring-[#F9C5D1] transition-colors cursor-pointer"
-              />
-            </label>
-
-            <label className="flex items-center justify-between cursor-pointer p-2 hover:bg-gray-50 rounded-lg transition-colors">
-              <div>
-                <span className="font-medium text-[#333333]">Show Phone Number</span>
-                <p className="text-sm text-[#666666]">Display your phone number to classmates</p>
-              </div>
-              <input
-                type="checkbox"
-                checked={formData.showPhone}
-                onChange={(e) => setFormData(prev => ({ ...prev, showPhone: e.target.checked }))}
-                className="h-6 w-6 rounded border-gray-300 text-[#F9C5D1] focus:ring-[#F9C5D1] transition-colors cursor-pointer"
-              />
-            </label>
-
-            <label className="flex items-center justify-between cursor-pointer p-2 hover:bg-gray-50 rounded-lg transition-colors">
-              <div>
-                <span className="font-medium text-[#333333]">Show Location</span>
-                <p className="text-sm text-[#666666]">Display your location on the map</p>
-              </div>
-              <input
-                type="checkbox"
-                checked={formData.showLocation}
-                onChange={(e) => setFormData(prev => ({ ...prev, showLocation: e.target.checked }))}
+                checked={
+                  previousData.postGradType === "work"
+                    ? formData.showCompany
+                    : formData.showSchool
+                }
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    [previousData.postGradType === "work"
+                      ? "showCompany"
+                      : "showSchool"]: e.target.checked,
+                  }))
+                }
                 className="h-6 w-6 rounded border-gray-300 text-[#F9C5D1] focus:ring-[#F9C5D1] transition-colors cursor-pointer"
               />
             </label>
@@ -104,16 +102,30 @@ const Step4: FC = () => {
             <label className="flex items-center justify-between cursor-pointer p-2 hover:bg-gray-50 rounded-lg transition-colors">
               <div>
                 <span className="font-medium text-[#333333]">
-                  Show {previousData.postGradType === 'work' ? 'Company & Role' : 'School & Program'}
+                  Show{" "}
+                  {previousData.postGradType === "work" ? "Role" : "Program"}
                 </span>
                 <p className="text-sm text-[#666666]">
-                  Display your {previousData.postGradType === 'work' ? 'workplace details' : 'program details'} to classmates
+                  Display your{" "}
+                  {previousData.postGradType === "work" ? "role" : "program"} to
+                  classmates
                 </p>
               </div>
               <input
                 type="checkbox"
-                checked={formData.showCompanyRole}
-                onChange={(e) => setFormData(prev => ({ ...prev, showCompanyRole: e.target.checked }))}
+                checked={
+                  previousData.postGradType === "work"
+                    ? formData.showRole
+                    : formData.showProgram
+                }
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    [previousData.postGradType === "work"
+                      ? "showRole"
+                      : "showProgram"]: e.target.checked,
+                  }))
+                }
                 className="h-6 w-6 rounded border-gray-300 text-[#F9C5D1] focus:ring-[#F9C5D1] transition-colors cursor-pointer"
               />
             </label>
@@ -140,4 +152,4 @@ const Step4: FC = () => {
   );
 };
 
-export default Step4; 
+export default Step4;

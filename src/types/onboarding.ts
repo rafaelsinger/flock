@@ -1,4 +1,4 @@
-export type PostGradType = 'work' | 'school';
+export type PostGradType = "work" | "school";
 
 export interface OnboardingData {
   postGradType?: PostGradType;
@@ -19,9 +19,9 @@ export interface OnboardingData {
   };
   roommateInfo?: string;
   visibility?: {
-    showEmail: boolean;
-    showPhone: boolean;
-    showLocation: boolean;
-    showRoommateInfo: boolean;
+    showCompany?: boolean;
+    showRole?: boolean;
+    showSchool?: boolean;
+    showProgram?: boolean;
   };
-} 
+}

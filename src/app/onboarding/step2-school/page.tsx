@@ -41,8 +41,7 @@ const Step2School: FC = () => {
 
   useEffect(() => {
     setIsFormValid(
-      formData.name.trim() !== "" && 
-      formData.program.trim() !== ""
+      formData.name.trim() !== "" && formData.program.trim() !== ""
     );
   }, [formData]);
 
@@ -69,8 +68,8 @@ const Step2School: FC = () => {
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-4">
           <div>
-            <label 
-              htmlFor="school" 
+            <label
+              htmlFor="school"
               className="block text-sm font-medium text-[#333333] mb-2"
             >
               School
@@ -79,7 +78,9 @@ const Step2School: FC = () => {
               type="text"
               id="school"
               value={formData.name}
-              onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, name: e.target.value }))
+              }
               className="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:border-[#A7D7F9] focus:ring-2 focus:ring-[#A7D7F9]/20 outline-none transition-colors text-[#333333]"
               placeholder="e.g. Stanford University"
               required
@@ -87,8 +88,8 @@ const Step2School: FC = () => {
           </div>
 
           <div>
-            <label 
-              htmlFor="program" 
+            <label
+              htmlFor="program"
               className="block text-sm font-medium text-[#333333] mb-2"
             >
               Program
@@ -97,7 +98,9 @@ const Step2School: FC = () => {
               type="text"
               id="program"
               value={formData.program}
-              onChange={(e) => setFormData(prev => ({ ...prev, program: e.target.value }))}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, program: e.target.value }))
+              }
               className="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:border-[#A7D7F9] focus:ring-2 focus:ring-[#A7D7F9]/20 outline-none transition-colors text-[#333333]"
               placeholder="e.g. Master's in Computer Science"
               required
@@ -117,8 +120,8 @@ const Step2School: FC = () => {
             type="submit"
             disabled={!isFormValid}
             className={`px-6 py-2.5 rounded-lg transition-colors cursor-pointer ${
-              isFormValid 
-                ? "bg-[#7BC0F5] hover:bg-[#5BAAE7] text-white" 
+              isFormValid
+                ? "bg-[#7BC0F5] hover:bg-[#5BAAE7] text-white"
                 : "bg-[#A7D7F9]/50 cursor-not-allowed text-white/70"
             }`}
           >
@@ -130,4 +133,4 @@ const Step2School: FC = () => {
   );
 };
 
-export default Step2School; 
+export default Step2School;

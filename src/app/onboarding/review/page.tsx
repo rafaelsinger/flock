@@ -1,6 +1,6 @@
 "use client";
 
-import { FC, useEffect } from "react";
+import { FC, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { BsBriefcase } from "react-icons/bs";
@@ -11,9 +11,22 @@ const ReviewPage: FC = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
   const data = queryClient.getQueryData(["onboardingData"]) as OnboardingData;
+  const isFinalizingRef = useRef(false);
 
+  const finalizeOnboarding = useMutation({
+    mutationFn: (finalData: OnboardingData) => {
+      isFinalizingRef.current = true;
+      return Promise.resolve(finalData);
+    },
+    onSuccess: () => {
+      queryClient.removeQueries({ queryKey: ["onboardingData"] });
+      router.push("/directory");
+    },
+  });
+
+  // Only check for missing data if we're not in the process of finalizing
   useEffect(() => {
-    if (!data || !data.postGradType) {
+    if (!isFinalizingRef.current && (!data || !data.postGradType)) {
       router.push("/onboarding/step1");
     }
   }, [data, router]);
@@ -22,18 +35,6 @@ const ReviewPage: FC = () => {
   if (!data || !data.postGradType) {
     return null;
   }
-
-  const finalizeOnboarding = useMutation({
-    mutationFn: (finalData: OnboardingData) => {
-      // This would be replaced with an actual API call
-      return Promise.resolve(finalData);
-    },
-    onSuccess: () => {
-      // Clear onboarding data from cache
-      queryClient.removeQueries(["onboardingData"]);
-      router.push("/directory");
-    },
-  });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -109,23 +110,24 @@ const ReviewPage: FC = () => {
           <div className="pt-4 border-t space-y-2">
             <h3 className="font-medium text-[#333333]">Visibility Settings</h3>
             <ul className="space-y-1 text-[#666666]">
-              {data.visibility?.showEmail && (
-                <li>• Email visible to classmates</li>
-              )}
-              {data.visibility?.showPhone && (
-                <li>• Phone number visible to classmates</li>
-              )}
-              {data.visibility?.showLocation && (
-                <li>• Location visible on map</li>
-              )}
-              {data.visibility?.showCompanyRole && (
-                <li>
-                  •{" "}
-                  {data.postGradType === "work"
-                    ? "Company & role"
-                    : "School & program"}{" "}
-                  visible to classmates
-                </li>
+              {data.postGradType === "work" ? (
+                <>
+                  {data.visibility?.showCompany && (
+                    <li>• Company name visible to classmates</li>
+                  )}
+                  {data.visibility?.showRole && (
+                    <li>• Role visible to classmates</li>
+                  )}
+                </>
+              ) : (
+                <>
+                  {data.visibility?.showSchool && (
+                    <li>• School name visible to classmates</li>
+                  )}
+                  {data.visibility?.showProgram && (
+                    <li>• Program visible to classmates</li>
+                  )}
+                </>
               )}
             </ul>
           </div>
