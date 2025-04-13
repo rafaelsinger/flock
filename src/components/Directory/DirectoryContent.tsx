@@ -65,6 +65,7 @@ export const DirectoryContent: React.FC = () => {
       try {
         setLoading(true);
         const queryParams = buildQueryParams(pageNum);
+        console.log({ queryParams });
         const response = await fetch(`/api/users?${queryParams}`);
         const data = await response.json();
         setUsers(data.users);
