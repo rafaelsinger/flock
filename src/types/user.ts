@@ -1,10 +1,12 @@
 // User types for the application
 
+import { PostGradType } from '@prisma/client';
+
 // Single User model for the entire application
 export interface User {
   id: string;
   name: string;
-  postGradType: 'work' | 'school';
+  postGradType: PostGradType;
   title?: string | null;
   program?: string | null;
   company?: string | null;
@@ -23,11 +25,11 @@ export interface User {
 
 // Helper functions for common transformations
 export const getDisplayRole = (user: User): string => {
-  return user.postGradType === 'work' ? user.title || '' : user.program || '';
+  return user.postGradType === PostGradType.work ? user.title || '' : user.program || '';
 };
 
 export const getDisplayCompany = (user: User): string => {
-  return user.postGradType === 'work' ? user.company || '' : user.school || '';
+  return user.postGradType === PostGradType.work ? user.company || '' : user.school || '';
 };
 
 export const getLocation = (user: User): string => {
@@ -37,7 +39,7 @@ export const getLocation = (user: User): string => {
 export const isRoleVisible = (user: User, isOwnProfile: boolean): boolean => {
   return (
     isOwnProfile ||
-    (user.postGradType === 'work'
+    (user.postGradType === PostGradType.work
       ? (user.visibilityOptions.role ?? true)
       : (user.visibilityOptions.program ?? true))
   );
@@ -46,7 +48,7 @@ export const isRoleVisible = (user: User, isOwnProfile: boolean): boolean => {
 export const isCompanyVisible = (user: User, isOwnProfile: boolean): boolean => {
   return (
     isOwnProfile ||
-    (user.postGradType === 'work'
+    (user.postGradType === PostGradType.work
       ? (user.visibilityOptions.company ?? true)
       : (user.visibilityOptions.school ?? true))
   );

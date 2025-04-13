@@ -6,35 +6,16 @@ import { useSession } from 'next-auth/react';
 import { FaUserCircle } from 'react-icons/fa';
 import { Map } from '@/components/Map';
 import { DirectoryContent } from './DirectoryContent';
-import { useQueryClient } from '@tanstack/react-query';
 import { useUserStore } from '@/store/userStore';
 import { useRouter } from 'next/navigation';
 
 export const Directory = () => {
   const { data: session } = useSession();
-  const queryClient = useQueryClient();
   const { user, onboardingStatus } = useUserStore();
   const router = useRouter();
 
   // Prefer session ID, fall back to store ID
   const userId = session?.user?.id || user?.id;
-
-  // Prefetch the user data when hovering over the profile link
-  const handleMouseEnter = () => {
-    if (userId) {
-      queryClient.prefetchQuery({
-        queryKey: ['user', userId],
-        queryFn: async () => {
-          const response = await fetch(`/api/users/${userId}`);
-          if (!response.ok) {
-            throw new Error('Failed to fetch user data');
-          }
-          return response.json();
-        },
-        staleTime: 5 * 60 * 1000, // 5 minutes
-      });
-    }
-  };
 
   // Check if onboarding is complete
   if (onboardingStatus && !onboardingStatus.isComplete) {
@@ -66,7 +47,6 @@ export const Directory = () => {
             <Link
               href={`/profile/${userId}`}
               className="absolute top-8 right-8 text-[#F28B82] hover:text-[#E67C73] transition-colors"
-              onMouseEnter={handleMouseEnter}
             >
               <FaUserCircle className="w-8 h-8" />
             </Link>

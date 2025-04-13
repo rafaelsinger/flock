@@ -37,31 +37,44 @@ export const useHydrateSession = () => {
   // Then, sync with server data when session changes
   useEffect(() => {
     const syncWithServer = async () => {
-      if (status === 'authenticated' && sessionData) {
-        // If we have session data from NextAuth, update our store and sessionStorage
+      if (status === 'authenticated' && sessionData?.user?.id) {
+        // First set basic user info immediately so UI can start rendering
         if (!user || user.id !== sessionData.user.id) {
-          setUser(sessionData.user);
-          sessionStorage.setItem('userSession', JSON.stringify(sessionData.user));
+          const basicUserInfo = {
+            id: sessionData.user.id,
+            name: sessionData.user.name || '',
+            email: sessionData.user.email,
+            image: sessionData.user.image,
+            isOnboarded: false, // Default value, will be updated from API
+          };
+
+          setUser(basicUserInfo);
         }
 
-        // Always fetch the latest onboarding status when authenticated
-        if (sessionData.user?.id) {
-          try {
-            const response = await fetch('/api/auth/onboarding-status');
-            if (response.ok) {
-              const data = await response.json();
+        try {
+          // Fetch complete user profile data
+          const userData = await fetch(`/api/users/${sessionData.user.id}`);
 
-              const onboardingData = {
-                isComplete: data.isOnboarded,
-                postGradType: data.postGradType,
-              };
-
-              setOnboardingStatus(onboardingData);
-              sessionStorage.setItem('onboardingStatus', JSON.stringify(onboardingData));
-            }
-          } catch (error) {
-            console.error('Error fetching onboarding status:', error);
+          if (userData.ok) {
+            const fullUserData = await userData.json();
+            setUser(fullUserData);
+            sessionStorage.setItem('userSession', JSON.stringify(fullUserData));
           }
+
+          // Get onboarding status
+          const response = await fetch('/api/auth/onboarding-status');
+          if (response.ok) {
+            const data = await response.json();
+
+            const onboardingData = {
+              isComplete: data.isOnboarded,
+            };
+
+            setOnboardingStatus(onboardingData);
+            sessionStorage.setItem('onboardingStatus', JSON.stringify(onboardingData));
+          }
+        } catch (error) {
+          console.error('Error fetching user data:', error);
         }
       } else if (status === 'unauthenticated') {
         // Clear data if user is not authenticated
