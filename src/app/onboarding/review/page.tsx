@@ -42,7 +42,6 @@ const ReviewPage: FC = () => {
       // Mark onboarding as complete
       setOnboardingStatus({
         isComplete: true,
-        currentStep: -1,
       });
 
       queryClient.removeQueries({ queryKey: ['onboardingData'] });

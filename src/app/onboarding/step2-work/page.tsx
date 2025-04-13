@@ -41,8 +41,6 @@ const Step2Work: FC = () => {
       // Update UserStore with current step
       updateOnboardingStatus({
         isComplete: false,
-        currentStep: 2,
-        postGradType: 'work',
       });
 
       router.push('/onboarding/step3');

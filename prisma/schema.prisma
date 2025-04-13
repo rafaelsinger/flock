@@ -41,7 +41,6 @@ model User {
   industry         Industry?  @relation(fields: [industryId], references: [id])
   industryId       String?  @map("industry_id") @db.Uuid
   isOnboarded      Boolean  @default(false) @map("is_onboarded")
-  onboardingStep   Int?     @default(1) @map("onboarding_step")
   createdAt        DateTime  @default(now()) @map("created_at")
   updatedAt        DateTime  @default(now()) @map("updated_at")
 

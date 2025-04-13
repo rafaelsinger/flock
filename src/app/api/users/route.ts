@@ -149,7 +149,6 @@ export async function POST(request: NextRequest) {
         },
         // Mark as onboarded
         isOnboarded: true,
-        onboardingStep: -1, // -1 indicates completion
       },
     });
 

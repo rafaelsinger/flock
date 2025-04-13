@@ -7,21 +7,19 @@ export async function GET(request: NextRequest) {
   const token = await getToken({ req: request });
 
   if (!token?.email) {
-    return NextResponse.json({ isOnboarded: false, currentStep: null, postGradType: null });
+    return NextResponse.json({ isOnboarded: false, postGradType: null });
   }
 
   const user = await prisma.user.findUnique({
     where: { bcEmail: token.email },
     select: {
       isOnboarded: true,
-      onboardingStep: true,
       postGradType: true,
     },
   });
 
   return NextResponse.json({
     isOnboarded: !!user?.isOnboarded,
-    currentStep: user?.onboardingStep || null,
     postGradType: user?.postGradType || null,
   });
 }

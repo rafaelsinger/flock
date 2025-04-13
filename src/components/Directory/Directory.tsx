@@ -8,11 +8,13 @@ import { Map } from '@/components/Map';
 import { DirectoryContent } from './DirectoryContent';
 import { useQueryClient } from '@tanstack/react-query';
 import { useUserStore } from '@/store/userStore';
+import { useRouter } from 'next/navigation';
 
 export const Directory = () => {
   const { data: session } = useSession();
   const queryClient = useQueryClient();
   const { user, onboardingStatus } = useUserStore();
+  const router = useRouter();
 
   // Prefer session ID, fall back to store ID
   const userId = session?.user?.id || user?.id;
@@ -36,7 +38,17 @@ export const Directory = () => {
 
   // Check if onboarding is complete
   if (onboardingStatus && !onboardingStatus.isComplete) {
-    return <div>Please complete onboarding</div>;
+    router.push('/onboarding');
+
+    // Show loading while redirecting
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#F28B82] mx-auto mb-4"></div>
+          <p className="text-[#666666]">Redirecting to onboarding...</p>
+        </div>
+      </div>
+    );
   }
 
   return (

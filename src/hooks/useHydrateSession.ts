@@ -4,8 +4,9 @@ import { useUserStore } from '@/store/userStore';
 
 export const useHydrateSession = () => {
   const { data: sessionData, status } = useSession();
-  const { setUser, setOnboardingStatus, user, onboardingStatus } = useUserStore();
+  const { setUser, setOnboardingStatus, user } = useUserStore();
 
+  // First, hydrate from sessionStorage (client-side cache)
   useEffect(() => {
     const hydrateFromStorage = () => {
       try {
@@ -33,30 +34,33 @@ export const useHydrateSession = () => {
     }
   }, [setUser, setOnboardingStatus]);
 
-  // Update sessionStorage when session data changes
+  // Then, sync with server data when session changes
   useEffect(() => {
-    const updateStorage = async () => {
+    const syncWithServer = async () => {
       if (status === 'authenticated' && sessionData) {
         // If we have session data from NextAuth, update our store and sessionStorage
         if (!user || user.id !== sessionData.user.id) {
           setUser(sessionData.user);
           sessionStorage.setItem('userSession', JSON.stringify(sessionData.user));
+        }
 
-          // Fetch onboarding status if needed
-          if (!onboardingStatus && user?.id) {
-            try {
-              const response = await fetch(`/api/users/${user?.id}`);
-              if (response.ok) {
-                const userData = await response.json();
-                setOnboardingStatus(userData.onboardingStatus);
-                sessionStorage.setItem(
-                  'onboardingStatus',
-                  JSON.stringify(userData.onboardingStatus)
-                );
-              }
-            } catch (error) {
-              console.error('Error fetching onboarding status:', error);
+        // Always fetch the latest onboarding status when authenticated
+        if (sessionData.user?.id) {
+          try {
+            const response = await fetch('/api/auth/onboarding-status');
+            if (response.ok) {
+              const data = await response.json();
+
+              const onboardingData = {
+                isComplete: data.isOnboarded,
+                postGradType: data.postGradType,
+              };
+
+              setOnboardingStatus(onboardingData);
+              sessionStorage.setItem('onboardingStatus', JSON.stringify(onboardingData));
             }
+          } catch (error) {
+            console.error('Error fetching onboarding status:', error);
           }
         }
       } else if (status === 'unauthenticated') {
@@ -68,6 +72,6 @@ export const useHydrateSession = () => {
       }
     };
 
-    updateStorage();
-  }, [sessionData, status, setUser, setOnboardingStatus, user, onboardingStatus]);
+    syncWithServer();
+  }, [sessionData, status, setUser, setOnboardingStatus, user]);
 };

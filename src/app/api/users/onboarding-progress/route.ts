@@ -5,8 +5,8 @@ import { prisma } from '@/lib/prisma';
 import { PostGradType } from '@prisma/client';
 
 interface UpdateData {
-  onboardingStep: number;
-  postGradType: PostGradType;
+  isOnboarded: boolean;
+  postGradType?: PostGradType;
 }
 
 export async function POST(request: NextRequest) {
@@ -17,15 +17,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { currentStep, postGradType } = await request.json();
-
-    // Ensure currentStep is a number
-    const stepNumber = typeof currentStep === 'string' ? parseInt(currentStep, 10) : currentStep;
+    const { isComplete, postGradType } = await request.json();
 
     const updateData: UpdateData = {
-      onboardingStep: stepNumber,
-      postGradType: postGradType,
+      isOnboarded: isComplete,
     };
+
+    // Only include postGradType if it's defined
+    if (postGradType) {
+      updateData.postGradType = postGradType;
+    }
 
     const updatedUser = await prisma.user.update({
       where: {
@@ -34,7 +35,7 @@ export async function POST(request: NextRequest) {
       data: updateData,
       select: {
         id: true,
-        onboardingStep: true,
+        isOnboarded: true,
         postGradType: true,
       },
     });

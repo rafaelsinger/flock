@@ -26,7 +26,6 @@ const Step4: FC = () => {
       // Update UserStore with current step
       updateOnboardingStatus({
         isComplete: false,
-        currentStep: 4,
       });
 
       router.push('/onboarding/review');
