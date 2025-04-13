@@ -25,7 +25,7 @@ model Industry {
 }
 
 model User {
-  id               String   @id @default(cuid())
+  id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name             String
   city             String?
   state            String?

@@ -142,10 +142,10 @@ export async function POST(request: NextRequest) {
         program: userData.postGradType === 'school' ? userData.school?.program : null,
         // Visibility settings
         visibilityOptions: {
-          role: userData.visibility?.showRole ?? true,
-          program: userData.visibility?.showProgram ?? true,
-          company: userData.visibility?.showCompany ?? true,
-          school: userData.visibility?.showSchool ?? true,
+          showRole: userData.visibility?.showRole ?? true,
+          showProgram: userData.visibility?.showProgram ?? true,
+          showCompany: userData.visibility?.showCompany ?? true,
+          showSchool: userData.visibility?.showSchool ?? true,
         },
         // Mark as onboarded
         isOnboarded: true,
