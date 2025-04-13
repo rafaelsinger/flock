@@ -4,7 +4,7 @@ import { useUserStore } from '@/store/userStore';
 
 export const useHydrateSession = () => {
   const { data: sessionData, status } = useSession();
-  const { setUser, setOnboardingStatus, user } = useUserStore();
+  const { setUser, setOnboardingStatus } = useUserStore();
 
   // First, hydrate from sessionStorage (client-side cache)
   useEffect(() => {
@@ -40,13 +40,13 @@ export const useHydrateSession = () => {
       if (status === 'authenticated' && sessionData?.user?.id) {
         try {
           // Fetch complete user profile data
-          const userData = await fetch(`/api/users/${sessionData.user.id}`);
+          const res = await fetch(`/api/users/${sessionData.user.id}`);
 
-          if (userData.ok) {
-            const fullUserData = await userData.json();
-            setUser(fullUserData);
-            sessionStorage.setItem('userSession', JSON.stringify(fullUserData));
-            setOnboardingStatus({ isComplete: fullUserData.isOnboarded });
+          if (res.ok) {
+            const userData = await res.json();
+            setUser(userData);
+            sessionStorage.setItem('userSession', JSON.stringify(userData));
+            setOnboardingStatus({ isComplete: userData.isOnboarded });
           }
         } catch (error) {
           console.error('Error fetching user data:', error);
@@ -61,5 +61,5 @@ export const useHydrateSession = () => {
     };
 
     syncWithServer();
-  }, [sessionData, status, setUser, setOnboardingStatus, user]);
+  }, [sessionData, status, setUser, setOnboardingStatus]);
 };
