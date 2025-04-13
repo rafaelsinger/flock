@@ -12,6 +12,8 @@ type FormData = {
   message: string;
 };
 
+const RECIPIENT_EMAILS = ['scheppat@bc.edu', 'singerrc@bc.edu'];
+
 export const Contact: React.FC = () => {
   const [formData, setFormData] = useState<FormData>({
     name: '',
@@ -35,24 +37,40 @@ export const Contact: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormStatus('submitting');
+    setErrorMessage('');
 
     // Form validation
     if (!formData.name || !formData.email || !formData.message) {
       setErrorMessage('Please fill out all required fields');
+      setFormStatus('error');
       return;
     }
 
     if (!formData.email.includes('@') || !formData.email.includes('.')) {
       setErrorMessage('Please enter a valid email address');
+      setFormStatus('error');
       return;
     }
 
-    // Reset error message if validation passes
-    setErrorMessage('');
-
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      // Send the form data to our API endpoint
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...formData,
+          recipients: RECIPIENT_EMAILS,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Something went wrong');
+      }
+
       setFormStatus('success');
       setFormData({
         name: '',
@@ -60,10 +78,12 @@ export const Contact: React.FC = () => {
         subject: '',
         message: '',
       });
-    } catch {
-      // Remove unused variable
+    } catch (error) {
+      console.error('Contact form submission error:', error);
       setFormStatus('error');
-      setErrorMessage('Something went wrong. Please try again later.');
+      setErrorMessage(
+        error instanceof Error ? error.message : 'Something went wrong. Please try again later.'
+      );
     }
   };
 

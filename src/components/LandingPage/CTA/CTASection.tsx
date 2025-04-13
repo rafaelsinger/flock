@@ -35,9 +35,7 @@ export const CTASection = ({ handleSignIn }: CTASectionProps) => {
           >
             Sign in with BC Email
           </Button>
-          <p className="mt-6 text-sm text-[#333333]/60">
-            For Boston College students and alumni only
-          </p>
+          <p className="mt-6 text-sm text-[#333333]/60">For Boston College students only</p>
         </div>
       </div>
     </section>

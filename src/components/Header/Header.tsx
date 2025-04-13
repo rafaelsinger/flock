@@ -3,7 +3,7 @@ import Image from 'next/image';
 import { signIn } from 'next-auth/react';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/Button';
-import { ArrowRight, MapPin, User, Info } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 
 interface HeaderProps {
@@ -13,7 +13,6 @@ interface HeaderProps {
 export const Header = ({ transparent = false }: HeaderProps) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [activeLinkHover, setActiveLinkHover] = useState<string | null>(null);
 
   // Handle sign in
   const handleSignIn = () => {
@@ -50,13 +49,6 @@ export const Header = ({ transparent = false }: HeaderProps) => {
   // Logo animation classes
   const logoAnimationClass = isScrolled ? 'scale-90 rotate-0' : 'scale-100 rotate-0 hover:rotate-3';
 
-  // Navigation links configuration
-  const navLinks = [
-    { name: 'Map', href: '/map', icon: MapPin },
-    { name: 'About', href: '/about', icon: Info },
-    { name: 'Directory', href: '/directory', icon: User },
-  ];
-
   // Toggle mobile menu
   const toggleMenu = () => {
     setIsMenuOpen((prevState) => !prevState);
@@ -79,35 +71,6 @@ export const Header = ({ transparent = false }: HeaderProps) => {
               Flock
             </span>
           </Link>
-        </div>
-
-        {/* Desktop Navigation Links */}
-        <div className="hidden md:flex items-center gap-6">
-          {navLinks.map((link) => {
-            const Icon = link.icon;
-            return (
-              <Link
-                key={link.name}
-                href={link.href}
-                className="relative px-2 py-1.5 group"
-                onMouseEnter={() => setActiveLinkHover(link.name)}
-                onMouseLeave={() => setActiveLinkHover(null)}
-              >
-                <span className="flex items-center gap-1.5 text-[#333333]/80 group-hover:text-[#F28B82] font-medium transition-colors relative z-10">
-                  <Icon
-                    className={`w-4 h-4 transition-all duration-300 ${activeLinkHover === link.name ? 'scale-110' : 'scale-100'}`}
-                  />
-                  {link.name}
-                </span>
-                {/* Hover background effect */}
-                <span
-                  className={`absolute inset-0 bg-[#F9C5D1]/10 rounded-full scale-0 group-hover:scale-100 transition-transform duration-300 z-0`}
-                ></span>
-                {/* Animated bottom border */}
-                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#F28B82] group-hover:w-full transition-all duration-300"></span>
-              </Link>
-            );
-          })}
         </div>
 
         {/* Desktop Sign In Enhanced */}
@@ -156,28 +119,6 @@ export const Header = ({ transparent = false }: HeaderProps) => {
             }}
           >
             <div className="container max-w-6xl mx-auto px-4 py-8 flex flex-col min-h-[calc(100vh-60px)]">
-              {/* Mobile Navigation Links */}
-              <div className="flex flex-col space-y-4 mb-8">
-                {navLinks.map((link, index) => {
-                  const Icon = link.icon;
-                  return (
-                    <Link
-                      key={link.name}
-                      href={link.href}
-                      className="flex items-center gap-3 text-xl font-medium text-[#333333] hover:text-[#F28B82] transition-colors py-3 border-b border-gray-100 bg-white transform transition-all duration-300"
-                      style={{
-                        transitionDelay: `${100 + index * 50}ms`,
-                        animation: 'fadeInLeft 0.5s forwards',
-                      }}
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      <Icon className="w-5 h-5" />
-                      {link.name}
-                    </Link>
-                  );
-                })}
-              </div>
-
               {/* Enhanced mobile sign in button */}
               <div
                 className="mt-auto py-6 transform transition-all duration-500"
@@ -199,7 +140,7 @@ export const Header = ({ transparent = false }: HeaderProps) => {
 
                 {/* Additional help text */}
                 <p className="text-center text-[#333333]/60 text-sm mt-4">
-                  Boston College students and alumni only
+                  Boston College students only
                 </p>
               </div>
             </div>

@@ -3,7 +3,7 @@ import Image from 'next/image';
 import { signIn } from 'next-auth/react';
 import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/Button';
-import { ArrowRight, ChevronDown, GraduationCap, Users } from 'lucide-react';
+import { ArrowRight, ChevronDown, Users } from 'lucide-react';
 import { DemoSection } from './Demo/DemoSection';
 import { CTASection } from './CTA/CTASection';
 import { Header } from '@/components/Header';
@@ -195,14 +195,6 @@ export const LandingPage = () => {
                 <div
                   className={`opacity-0 transform translate-y-8 transition-all duration-700 ease-out ${isVisible ? 'opacity-100 translate-y-0' : ''}`}
                 >
-                  <div className="flex items-center gap-2 mb-6">
-                    <div className="px-3 py-1.5 bg-[#F28B82]/10 rounded-full border border-[#F28B82]/20 backdrop-blur-sm">
-                      <span className="text-sm font-medium text-[#F28B82] flex items-center gap-1.5">
-                        <GraduationCap className="w-3.5 h-3.5" />
-                        BC Exclusive
-                      </span>
-                    </div>
-                  </div>
                   <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-[#333333] leading-[1.1]">
                     Find where{' '}
                     <span className="bg-gradient-to-r from-[#F28B82] to-[#F9C5D1] bg-clip-text text-transparent animate-text-shimmer">
@@ -232,12 +224,14 @@ export const LandingPage = () => {
                     <span>Start with BC Email</span>
                     <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                   </Button>
+                  {/* COMMENTED OUT FOR NOW UNTIL WE HAVE A REAL NUMBER
                   <div className="flex items-center justify-center mt-2 sm:mt-0 bg-white/80 backdrop-blur-sm py-2 px-4 rounded-lg border border-gray-100">
                     <Users className="w-4 h-4 mr-1.5 text-[#F28B82]" />
                     <span className="text-sm sm:text-base text-[#333333]/70">
                       <span className="font-medium">200+</span> BC grads joined
                     </span>
                   </div>
+                  */}
                 </div>
               </div>
 
