@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useSession } from 'next-auth/react';
-import { useUserStore } from '@/store/userStore'; // Assuming you have a Zustand store for user data
+import { useUserStore } from '@/store/userStore';
 
 export const useHydrateSession = () => {
   const { data: sessionData, status } = useSession();
@@ -45,7 +45,7 @@ export const useHydrateSession = () => {
           // Fetch onboarding status if needed
           if (!onboardingStatus && user?.id) {
             try {
-              const response = await fetch(`/api/users/${sessionData.user.id}`);
+              const response = await fetch(`/api/users/${user?.id}`);
               if (response.ok) {
                 const userData = await response.json();
                 setOnboardingStatus(userData.onboardingStatus);

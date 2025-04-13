@@ -12,15 +12,18 @@ import { useUserStore } from '@/store/userStore';
 export const Directory = () => {
   const { data: session } = useSession();
   const queryClient = useQueryClient();
-  const { onboardingStatus } = useUserStore();
+  const { user, onboardingStatus } = useUserStore();
+
+  // Prefer session ID, fall back to store ID
+  const userId = session?.user?.id || user?.id;
 
   // Prefetch the user data when hovering over the profile link
   const handleMouseEnter = () => {
-    if (session?.user?.id) {
+    if (userId) {
       queryClient.prefetchQuery({
-        queryKey: ['user', session.user.id],
+        queryKey: ['user', userId],
         queryFn: async () => {
-          const response = await fetch(`/api/users/${session.user.id}`);
+          const response = await fetch(`/api/users/${userId}`);
           if (!response.ok) {
             throw new Error('Failed to fetch user data');
           }
@@ -47,13 +50,19 @@ export const Directory = () => {
           </div>
 
           {/* Profile Link */}
-          <Link
-            href={`/profile/${session?.user?.id}`}
-            className="absolute top-8 right-8 text-[#F28B82] hover:text-[#E67C73] transition-colors"
-            onMouseEnter={handleMouseEnter}
-          >
-            <FaUserCircle className="w-8 h-8" />
-          </Link>
+          {userId ? (
+            <Link
+              href={`/profile/${userId}`}
+              className="absolute top-8 right-8 text-[#F28B82] hover:text-[#E67C73] transition-colors"
+              onMouseEnter={handleMouseEnter}
+            >
+              <FaUserCircle className="w-8 h-8" />
+            </Link>
+          ) : (
+            <div className="absolute top-8 right-8 text-[#F28B82]">
+              <FaUserCircle className="w-8 h-8" />
+            </div>
+          )}
         </div>
 
         {/* Map Section */}

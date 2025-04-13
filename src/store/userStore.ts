@@ -5,14 +5,11 @@ interface User {
   name?: string | null;
   email?: string | null;
   image?: string | null;
-  isOnboarded?: boolean;
-  // Add other user properties as needed
 }
 
 interface OnboardingStatus {
   isComplete: boolean;
   currentStep?: string;
-  // Add other onboarding properties as needed
 }
 
 interface UserState {

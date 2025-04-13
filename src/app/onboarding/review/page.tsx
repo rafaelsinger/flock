@@ -7,15 +7,13 @@ import { BsBriefcase } from 'react-icons/bs';
 import { LuGraduationCap } from 'react-icons/lu';
 import type { OnboardingData } from '@/types/onboarding';
 import { useUserStore } from '@/store/userStore';
-import { useSession } from 'next-auth/react';
 
 const ReviewPage: FC = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
   const data = queryClient.getQueryData(['onboardingData']) as OnboardingData;
   const isFinalizingRef = useRef(false);
-  const { data: session } = useSession();
-  const updateUser = useUserStore((state) => state.updateUser);
+  const { updateUser, setOnboardingStatus } = useUserStore();
 
   const finalizeOnboarding = useMutation({
     mutationFn: async (finalData: OnboardingData) => {
@@ -34,13 +32,16 @@ const ReviewPage: FC = () => {
 
       return response.json();
     },
-    onSuccess: () => {
-      // Update the user store with onboarding completion
-      if (session?.user?.id) {
-        updateUser({
-          isOnboarded: true,
-        });
-      }
+    onSuccess: (userData) => {
+      // Update the user store with the response data
+      updateUser({
+        id: userData.id,
+        name: userData.name,
+      });
+
+      setOnboardingStatus({
+        isComplete: true,
+      });
 
       queryClient.removeQueries({ queryKey: ['onboardingData'] });
       router.push('/');

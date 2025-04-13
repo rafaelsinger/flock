@@ -99,47 +99,62 @@ export async function GET(request: NextRequest) {
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
+    // Get the current session to identify the user
     const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
+
+    if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const data = await request.json();
+    // Parse the request body
+    const userData = await request.json();
 
     let industryId = null;
-    if (data.postGradType === 'work') {
+    if (userData.postGradType === 'work') {
       const industry = await prisma.industry.findUnique({
         where: {
-          name: data.work?.industry,
+          name: userData.work.industry,
         },
       });
       industryId = industry?.id;
     }
 
-    const user = await prisma.user.create({
+    // Update the existing user record instead of creating a new one
+    const updatedUser = await prisma.user.update({
+      where: {
+        id: session.user.id,
+      },
       data: {
-        name: session.user.name!,
-        bcEmail: session.user.email,
-        postGradType: data.postGradType,
-        company: data.postGradType === 'work' ? data.work?.company : null,
-        title: data.postGradType === 'work' ? data.work?.role : null,
-        school: data.postGradType === 'school' ? data.school?.name : null,
-        program: data.postGradType === 'school' ? data.school?.program : null,
-        country: data.location.country || 'US',
-        state: data.location.state,
-        city: data.location.city,
-        boroughDistrict: data.location.borough || null,
+        // Map onboarding data to user fields
+        name: userData.name || session.user.name,
+        city: userData.location?.city,
+        state: userData.location?.state,
+        country: userData.location?.country || 'United States',
+        postGradType: userData.postGradType,
+        // Work-specific fields
+        company: userData.postGradType === 'work' ? userData.work?.company : null,
+        title: userData.postGradType === 'work' ? userData.work?.role : null,
         industryId: industryId,
-        visibilityOptions: data.visibility || {},
+        // School-specific fields
+        school: userData.postGradType === 'school' ? userData.school?.name : null,
+        program: userData.postGradType === 'school' ? userData.school?.program : null,
+        // Visibility settings
+        visibilityOptions: {
+          role: userData.visibility?.showRole ?? true,
+          program: userData.visibility?.showProgram ?? true,
+          company: userData.visibility?.showCompany ?? true,
+          school: userData.visibility?.showSchool ?? true,
+        },
+        // Mark as onboarded
         isOnboarded: true,
       },
     });
 
-    return NextResponse.json(user);
+    return NextResponse.json(updatedUser);
   } catch (error) {
-    console.error('User creation error:', error);
-    return NextResponse.json({ error: 'Failed to create user profile' }, { status: 500 });
+    console.error('Error updating user:', error);
+    return NextResponse.json({ error: 'Failed to update user' }, { status: 500 });
   }
 }

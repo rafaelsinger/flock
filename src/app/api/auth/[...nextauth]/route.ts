@@ -12,21 +12,40 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     async signIn({ account, profile }) {
-      if (account?.provider === 'google' && profile?.email?.endsWith('@bc.edu')) {
-        // Find user in database
-        const user = await prisma.user.findUnique({
-          where: { bcEmail: profile.email },
-          select: { id: true },
-        });
+      try {
+        if (account?.provider === 'google' && profile?.email?.endsWith('@bc.edu')) {
+          // Find user in database
+          let user = await prisma.user.findUnique({
+            where: { bcEmail: profile.email },
+            select: { id: true },
+          });
 
-        if (user) {
+          if (!user) {
+            // Create a minimal user record for new users
+            user = await prisma.user.create({
+              data: {
+                bcEmail: profile.email,
+                name: profile.name || '',
+                country: '',
+                state: '',
+                city: '',
+                postGradType: 'work',
+              },
+            });
+            console.log('Created new user:', user.id);
+          }
+
           // Store the database ID in the account object
           account.userId = user.id;
           return true;
         }
+        return false;
+      } catch (error) {
+        console.error('Error in signIn callback:', error);
+        // Still return true to allow sign-in, even if user creation failed
+        // The middleware will handle redirecting to an error page if needed
         return true;
       }
-      return false;
     },
     async jwt({ token, account }) {
       // On initial sign in, account is available
