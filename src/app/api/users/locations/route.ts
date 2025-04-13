@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { getStateFullName } from '@/lib/utils';
 
 export async function GET() {
   try {
@@ -14,7 +15,7 @@ export async function GET() {
     const users = await prisma.user.findMany({
       where: {
         // Only include users in the US
-        country: 'US',
+        country: 'USA',
       },
       select: {
         state: true,
@@ -26,12 +27,15 @@ export async function GET() {
 
     users.forEach((user) => {
       if (user.state) {
+        // Convert abbreviation to full state name
+        const fullStateName = getStateFullName(user.state);
+
         // Initialize the state count if it doesn't exist
-        if (!stateCount[user.state]) {
-          stateCount[user.state] = 0;
+        if (!stateCount[fullStateName]) {
+          stateCount[fullStateName] = 0;
         }
         // Increment the count for this state
-        stateCount[user.state]++;
+        stateCount[fullStateName]++;
       }
     });
 
