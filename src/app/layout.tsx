@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { FC, ReactNode } from "react";
 import QueryProvider from "@/providers/QueryProvider";
+import { AuthProvider } from "@/components/AuthProvider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -19,9 +20,11 @@ const RootLayout: FC<RootLayoutProps> = ({ children }) => {
   return (
     <html lang="en" className={inter.className}>
       <body>
-        <QueryProvider>
-          <main>{children}</main>
-        </QueryProvider>
+        <AuthProvider>
+          <QueryProvider>
+            <main>{children}</main>
+          </QueryProvider>
+        </AuthProvider>
       </body>
     </html>
   );
