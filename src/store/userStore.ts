@@ -1,3 +1,4 @@
+import { PostGradType } from '@prisma/client';
 import { create } from 'zustand';
 
 interface User {
@@ -10,6 +11,7 @@ interface User {
 interface OnboardingStatus {
   isComplete: boolean;
   currentStep?: number;
+  postGradType?: PostGradType;
 }
 
 interface UserState {
@@ -39,19 +41,22 @@ export const useUserStore = create<UserState>((set) => ({
 
     // Sync with database if we have a currentStep
     if (statusData.currentStep) {
-      syncOnboardingProgress(statusData.currentStep);
+      syncOnboardingProgress(statusData.currentStep, statusData.postGradType);
     }
   },
 }));
 
-const syncOnboardingProgress = async (currentStep: number) => {
+const syncOnboardingProgress = async (currentStep: number, postGradType?: PostGradType) => {
   try {
     await fetch('/api/users/onboarding-progress', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ currentStep }),
+      body: JSON.stringify({
+        currentStep,
+        postGradType,
+      }),
     });
   } catch (error) {
     console.error('Failed to sync onboarding progress:', error);

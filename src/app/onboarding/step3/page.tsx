@@ -11,7 +11,7 @@ const Step3: FC = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
   const previousData = queryClient.getQueryData(['onboardingData']) as OnboardingData;
-  const { updateOnboardingStatus } = useUserStore();
+  const { updateOnboardingStatus, onboardingStatus } = useUserStore();
 
   const [formData, setFormData] = useState({
     country: 'USA',
@@ -45,6 +45,7 @@ const Step3: FC = () => {
       updateOnboardingStatus({
         isComplete: false,
         currentStep: 3,
+        postGradType: onboardingStatus?.postGradType,
       });
 
       router.push('/onboarding/step4');

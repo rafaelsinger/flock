@@ -43,20 +43,21 @@ export default function OnboardingIndex() {
       // If user has a saved step, redirect to the appropriate page based on the step number
       if (onboardingStatus?.currentStep) {
         const step = onboardingStatus.currentStep;
+        const path = onboardingStatus.postGradType || 'work'; // Default to 'work' if not set
 
         if (step === 1) {
           router.push('/onboarding/step1');
         } else if (step === 2) {
-          // We need to check the postGradType to determine which step2 page to show
-          // This might require an additional API call or storing postGradType in the store
-          const postGradType = 'work'; // This should come from your store or API
-          router.push(`/onboarding/step2-${postGradType}`);
+          router.push(`/onboarding/step2-${path}`);
         } else if (step === 3) {
           router.push('/onboarding/step3');
         } else if (step === 4) {
           router.push('/onboarding/step4');
         } else if (step === 5) {
           router.push('/onboarding/review');
+        } else if (step === -1) {
+          // User has completed onboarding, redirect to home
+          router.push('/');
         } else {
           // Default to step1 if we don't recognize the step
           router.push('/onboarding/step1');
