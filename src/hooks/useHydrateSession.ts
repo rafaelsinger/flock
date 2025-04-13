@@ -4,7 +4,7 @@ import { useUserStore } from '@/store/userStore';
 
 export const useHydrateSession = () => {
   const { data: sessionData, status } = useSession();
-  const { setUser, setOnboardingStatus } = useUserStore();
+  const { setUser } = useUserStore();
 
   // First, hydrate from sessionStorage (client-side cache)
   useEffect(() => {
@@ -12,16 +12,10 @@ export const useHydrateSession = () => {
       try {
         // Try to get data from sessionStorage
         const cachedSession = sessionStorage.getItem('userSession');
-        const cachedOnboarding = sessionStorage.getItem('onboardingStatus');
 
         if (cachedSession) {
           const parsedSession = JSON.parse(cachedSession);
           setUser(parsedSession);
-        }
-
-        if (cachedOnboarding) {
-          const parsedOnboarding = JSON.parse(cachedOnboarding);
-          setOnboardingStatus(parsedOnboarding);
         }
       } catch (error) {
         console.error('Error hydrating from sessionStorage:', error);
@@ -32,7 +26,7 @@ export const useHydrateSession = () => {
     if (typeof window !== 'undefined') {
       hydrateFromStorage();
     }
-  }, [setUser, setOnboardingStatus]);
+  }, [setUser]);
 
   // Then, sync with server data when session changes
   useEffect(() => {
@@ -46,7 +40,6 @@ export const useHydrateSession = () => {
             const userData = await res.json();
             setUser(userData);
             sessionStorage.setItem('userSession', JSON.stringify(userData));
-            setOnboardingStatus({ isComplete: userData.isOnboarded });
           }
         } catch (error) {
           console.error('Error fetching user data:', error);
@@ -56,10 +49,9 @@ export const useHydrateSession = () => {
         sessionStorage.removeItem('userSession');
         sessionStorage.removeItem('onboardingStatus');
         setUser(null);
-        setOnboardingStatus(null);
       }
     };
 
     syncWithServer();
-  }, [sessionData, status, setUser, setOnboardingStatus]);
+  }, [sessionData, status, setUser]);
 };

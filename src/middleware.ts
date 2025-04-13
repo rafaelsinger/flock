@@ -37,7 +37,7 @@ export async function middleware(request: NextRequest) {
 
   // If user hasn't completed onboarding and isn't on an onboarding path
   if (!isOnboarded && !isOnboardingPath) {
-    return NextResponse.redirect(new URL('/onboarding', request.url));
+    return NextResponse.redirect(new URL('/onboarding/step1', request.url));
   }
 
   // If user has completed onboarding but tries to access onboarding paths

@@ -13,7 +13,7 @@ const ReviewPage: FC = () => {
   const queryClient = useQueryClient();
   const data = queryClient.getQueryData(['onboardingData']) as OnboardingData;
   const isFinalizingRef = useRef(false);
-  const { updateUser, setOnboardingStatus } = useUserStore();
+  const { updateUser } = useUserStore();
 
   const finalizeOnboarding = useMutation({
     mutationFn: async (finalData: OnboardingData) => {
@@ -37,6 +37,7 @@ const ReviewPage: FC = () => {
       updateUser({
         id: userData.id,
         name: userData.name,
+        isOnboarded,
       });
 
       // Mark onboarding as complete
