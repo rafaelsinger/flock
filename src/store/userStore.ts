@@ -1,25 +1,5 @@
-import { PostGradType } from '@prisma/client';
 import { create } from 'zustand';
-
-interface User {
-  id: string;
-  name: string;
-  email?: string | null;
-  image?: string | null;
-  city?: string | null;
-  state?: string | null;
-  country?: string | null;
-  company?: string | null;
-  school?: string | null;
-  postGradType?: PostGradType;
-  visibilityOptions?: Record<string, boolean>;
-  bcEmail?: string;
-  title?: string | null;
-  program?: string | null;
-  boroughDistrict?: string | null;
-  industryId?: string | null;
-  isOnboarded: boolean;
-}
+import { User } from '@/types/user';
 
 interface OnboardingStatus {
   isComplete: boolean;

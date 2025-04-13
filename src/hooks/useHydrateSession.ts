@@ -38,19 +38,6 @@ export const useHydrateSession = () => {
   useEffect(() => {
     const syncWithServer = async () => {
       if (status === 'authenticated' && sessionData?.user?.id) {
-        // First set basic user info immediately so UI can start rendering
-        if (!user || user.id !== sessionData.user.id) {
-          const basicUserInfo = {
-            id: sessionData.user.id,
-            name: sessionData.user.name || '',
-            email: sessionData.user.email,
-            image: sessionData.user.image,
-            isOnboarded: false, // Default value, will be updated from API
-          };
-
-          setUser(basicUserInfo);
-        }
-
         try {
           // Fetch complete user profile data
           const userData = await fetch(`/api/users/${sessionData.user.id}`);
@@ -59,19 +46,7 @@ export const useHydrateSession = () => {
             const fullUserData = await userData.json();
             setUser(fullUserData);
             sessionStorage.setItem('userSession', JSON.stringify(fullUserData));
-          }
-
-          // Get onboarding status
-          const response = await fetch('/api/auth/onboarding-status');
-          if (response.ok) {
-            const data = await response.json();
-
-            const onboardingData = {
-              isComplete: data.isOnboarded,
-            };
-
-            setOnboardingStatus(onboardingData);
-            sessionStorage.setItem('onboardingStatus', JSON.stringify(onboardingData));
+            setOnboardingStatus({ isComplete: fullUserData.isOnboarded });
           }
         } catch (error) {
           console.error('Error fetching user data:', error);

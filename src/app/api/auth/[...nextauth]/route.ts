@@ -17,7 +17,7 @@ export const authOptions: NextAuthOptions = {
           // Find user in database
           let user = await prisma.user.findUnique({
             where: { bcEmail: profile.email },
-            select: { id: true },
+            select: { id: true, isOnboarded: true },
           });
 
           if (!user) {
@@ -34,10 +34,10 @@ export const authOptions: NextAuthOptions = {
             });
           }
 
-          console.log({ user });
-
           // Store the database ID in the account object
           account.userId = user.id;
+          // also store onboarding info
+          account.isOnboarded = user.isOnboarded;
           return true;
         }
         return false;
@@ -48,17 +48,29 @@ export const authOptions: NextAuthOptions = {
         return true;
       }
     },
-    async jwt({ token, account }) {
-      // On initial sign in, account is available
-      if (account) {
-        token.userId = account.userId!;
+    async jwt({ token, account, profile }) {
+      // On first sign in
+      if (account && profile?.email) {
+        const dbUser = await prisma.user.findUnique({
+          where: { bcEmail: profile.email },
+          select: {
+            id: true,
+            isOnboarded: true,
+          },
+        });
+
+        if (dbUser) {
+          token.userId = dbUser.id;
+          token.isOnboarded = dbUser.isOnboarded;
+        }
       }
+
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
-        // Add the userId to the session
         session.user.id = token.userId;
+        session.user.isOnboarded = token.isOnboarded;
       }
       return session;
     },

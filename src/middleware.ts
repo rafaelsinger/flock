@@ -2,15 +2,6 @@ import { NextResponse } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 import type { NextRequest } from 'next/server';
 
-// Simple in-memory cache for onboarding status
-// Note: This cache is per-instance and will be cleared on server restart
-interface CacheEntry {
-  status: boolean;
-  timestamp: number;
-}
-const onboardingCache = new Map<string, CacheEntry>();
-const CACHE_TTL = 60 * 1000; // 1 minute in milliseconds
-
 export async function middleware(request: NextRequest) {
   // Get the pathname of the request
   const path = request.nextUrl.pathname;
@@ -42,54 +33,16 @@ export async function middleware(request: NextRequest) {
 
   // Onboarding paths
   const isOnboardingPath = path.startsWith('/onboarding');
+  const isOnboarded = token.isOnboarded;
 
-  try {
-    // Check if we have a cached onboarding status for this user
-    const userId = token.sub || (token.userId as string);
-    const now = Date.now();
-    let isOnboarded: boolean;
+  // If user hasn't completed onboarding and isn't on an onboarding path
+  if (!isOnboarded && !isOnboardingPath) {
+    return NextResponse.redirect(new URL('/onboarding', request.url));
+  }
 
-    if (onboardingCache.has(userId) && now - onboardingCache.get(userId)!.timestamp < CACHE_TTL) {
-      // Use cached value if it's still fresh
-      isOnboarded = onboardingCache.get(userId)!.status;
-    } else {
-      const baseUrl = request.nextUrl.origin;
-      const response = await fetch(`${baseUrl}/api/auth/onboarding-status`, {
-        headers: {
-          Cookie: request.headers.get('cookie') || '',
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch onboarding status: ${response.status}`);
-      }
-
-      const onboardingStatus = await response.json();
-      isOnboarded = onboardingStatus.isOnboarded;
-
-      // Cache the result
-      onboardingCache.set(userId, {
-        status: isOnboarded,
-        timestamp: now,
-      });
-    }
-
-    // If user hasn't completed onboarding and isn't on an onboarding path
-    if (!isOnboarded && !isOnboardingPath) {
-      return NextResponse.redirect(new URL('/onboarding', request.url));
-    }
-
-    // If user has completed onboarding but tries to access onboarding paths
-    if (isOnboarded && isOnboardingPath) {
-      return NextResponse.redirect(new URL('/', request.url));
-    }
-  } catch (error) {
-    console.error('Error in middleware:', error);
-
-    // Redirect to error page in case of error
-    return NextResponse.redirect(
-      new URL('/error?message=Failed+to+check+onboarding+status', request.url)
-    );
+  // If user has completed onboarding but tries to access onboarding paths
+  if (isOnboarded && isOnboardingPath) {
+    return NextResponse.redirect(new URL('/', request.url));
   }
 
   return NextResponse.next();
