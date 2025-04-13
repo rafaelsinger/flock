@@ -20,7 +20,7 @@ const ReviewPage: FC = () => {
     },
     onSuccess: () => {
       queryClient.removeQueries({ queryKey: ["onboardingData"] });
-      router.push("/directory");
+      router.push("/");
     },
   });
 

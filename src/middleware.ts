@@ -8,11 +8,13 @@ export async function middleware(request: NextRequest) {
   const isOnboarded = token?.isOnboarded;
   const isAuthPage = request.nextUrl.pathname.startsWith("/auth");
   const isOnboardingPage = request.nextUrl.pathname.startsWith("/onboarding");
+  const isHomePage = request.nextUrl.pathname === "/";
 
-  console.log({ isAuth, isOnboarded, isAuthPage });
+  console.log({ token, isAuth, isOnboarded, isAuthPage, isHomePage });
 
   // If user is not authenticated and tries to access protected routes
-  if (!isAuth && !isAuthPage) {
+  // Exclude home page from authentication check
+  if (!isAuth && !isAuthPage && !isHomePage) {
     return NextResponse.redirect(new URL("/", request.url));
   }
 

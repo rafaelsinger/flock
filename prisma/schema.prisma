@@ -1,0 +1,47 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum PostGradType {
+  work
+  school
+}
+
+model Industry {
+  id    String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name  String @unique
+  users User[]
+
+  @@map("industries")
+}
+
+model User {
+  id              String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name            String
+  bcEmail         String       @unique @map("bc_email")
+  personalEmail   String       @unique @map("personal_email")
+  postGradType    PostGradType @map("postgrad_type")
+  company         String?
+  title           String?      @map("title")
+  school          String?
+  program         String?
+  country         String
+  state           String
+  city            String
+  boroughDistrict String?      @map("borough_district")
+  industry        Industry?    @relation(fields: [industryId], references: [id])
+  industryId      String?      @map("industry_id") @db.Uuid
+  visibilityOptions Json       @default("{}") @map("visibility_options")
+  createdAt       DateTime     @default(now()) @map("created_at")
+  updatedAt       DateTime     @default(now()) @map("updated_at")
+
+  @@map("users")
+} 
