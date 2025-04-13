@@ -7,6 +7,7 @@ import {
   ZoomableGroup,
 } from "react-simple-maps";
 import { scaleQuantize } from "d3-scale";
+import { Plus, Minus } from 'lucide-react';
 
 // Mock data - replace with API data later
 const mockLocationData = {
@@ -31,6 +32,7 @@ interface GeographyProps {
 export const Map: React.FC = () => {
   const [tooltipContent, setTooltipContent] = useState("");
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
 
   // Using quantize scale for better color distribution
   const colorScale = scaleQuantize<string>()
@@ -44,6 +46,15 @@ export const Map: React.FC = () => {
       "#F28B82"
     ]);
 
+  const legendData = [
+    { range: "0-7", color: "#FFF9F8" },
+    { range: "8-15", color: "#FDE2E0" },
+    { range: "16-23", color: "#FACAC7" },
+    { range: "24-31", color: "#F7B3AE" },
+    { range: "32-39", color: "#F49B95" },
+    { range: "40+", color: "#F28B82" },
+  ];
+
   const handleMouseMove = (event: React.MouseEvent) => {
     setTooltipPosition({
       x: event.clientX + 16, // offset from cursor
@@ -53,15 +64,53 @@ export const Map: React.FC = () => {
 
   return (
     <div className="w-full h-full bg-[#F9F9F9] relative" onMouseMove={handleMouseMove}>
+      {/* Legend */}
+      <div className="absolute top-4 left-4 bg-white rounded-lg shadow-sm border border-gray-100 z-10">
+        <div className="p-3">
+          <div className="text-sm font-medium mb-2">Graduates</div>
+          <div className="space-y-2">
+            {legendData.map(({ range, color }) => (
+              <div key={range} className="flex items-center gap-2">
+                <div 
+                  className="w-4 h-4 rounded"
+                  style={{ backgroundColor: color }}
+                />
+                <span className="text-xs text-gray-600">{range}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Zoom Controls */}
+      <div className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col gap-2">
+        <button
+          onClick={() => setZoom(z => Math.min(z + 0.5, 4))}
+          className="p-2 bg-white rounded-lg shadow-sm border border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer"
+        >
+          <Plus className="w-4 h-4 text-gray-600" />
+        </button>
+        <button
+          onClick={() => setZoom(z => Math.max(z - 0.5, 1))}
+          className="p-2 bg-white rounded-lg shadow-sm border border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer"
+        >
+          <Minus className="w-4 h-4 text-gray-600" />
+        </button>
+      </div>
+
+      {/* TODO: fix centering on the map */}
       <ComposableMap
         projection="geoAlbersUsa"
         projectionConfig={{
-          scale: 500,
-          center: [0,0]
-        //   center: [-96.9, 37] // Adjusted center point
+          scale: 600,
         }}
+        width={800}
+        height={400}
       >
-        <ZoomableGroup>
+        <ZoomableGroup
+          center={[0, 0]}
+          zoom={zoom}
+        >
           <Geographies geography={geoUrl}>
             {({ geographies }) =>
               geographies.map((geo: GeographyProps) => {
