@@ -7,6 +7,7 @@ import { IoArrowBack } from "react-icons/io5";
 import { BsBriefcase } from "react-icons/bs";
 import { LuGraduationCap } from "react-icons/lu";
 import { FaEdit, FaSignOutAlt } from "react-icons/fa";
+import { NotFoundState } from "@/components/NotFoundState/NotFoundState";
 
 interface ProfilePageProps {
   params: {
@@ -84,7 +85,7 @@ const transformUserDataToDB = (userData: UserData) => ({
 
 const ProfilePage: FC<ProfilePageProps> = ({ params }) => {
   const { data: session } = useSession();
-  const isOwnProfile = session?.user?.email?.split("@")[0] === params.id;
+  const isOwnProfile = session?.user.id === params.id;
 
   const [isEditing, setIsEditing] = useState(false);
   const [userData, setUserData] = useState<UserData | null>(null);
@@ -156,11 +157,12 @@ const ProfilePage: FC<ProfilePageProps> = ({ params }) => {
 
   if (!userData) {
     return (
-      <main className="min-h-screen bg-[#FFF9F8] px-4 py-6 md:px-8">
-        <div className="max-w-2xl mx-auto text-center">
-          <h1 className="text-2xl text-[#333333]">User not found</h1>
-        </div>
-      </main>
+      <NotFoundState
+        title="User Not Found"
+        message="This user profile doesn't exist or has been removed."
+        linkText="Back to Directory"
+        linkHref="/"
+      />
     );
   }
 

@@ -26,7 +26,7 @@ export const Directory = () => {
 
           {/* Profile Link */}
           <Link
-            href={`/profile/${session?.user?.email?.split("@")[0]}`}
+            href={`/profile/${session?.user?.id}`}
             className="absolute top-8 right-8 text-[#F28B82] hover:text-[#E67C73] transition-colors"
           >
             <FaUserCircle className="w-8 h-8" />

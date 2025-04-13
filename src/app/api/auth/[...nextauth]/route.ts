@@ -1,6 +1,7 @@
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import { NextAuthOptions } from "next-auth";
+import { prisma } from "@/lib/prisma";
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -11,22 +12,36 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     async signIn({ account, profile }) {
-      if (account?.provider === "google") {
-        return profile?.email?.endsWith("@bc.edu") ?? false;
+      if (
+        account?.provider === "google" &&
+        profile?.email?.endsWith("@bc.edu")
+      ) {
+        // Find or create user in database
+        const user = await prisma.user.findUnique({
+          where: { bcEmail: profile.email },
+          select: { id: true },
+        });
+
+        if (user) {
+          // Store the database ID in the account object
+          account.userId = user.id;
+          return true;
+        }
+        return false; // User not found in our database
       }
-      return false; // Deny sign in if not Google or not bc.edu
+      return false;
     },
-    async jwt({ token, user }) {
-      if (user) {
-        // On first sign in, user object is available
-        token.isOnboarded = user.isOnboarded ?? false;
+    async jwt({ token, account }) {
+      // On initial sign in, account is available
+      if (account) {
+        token.userId = account.userId!;
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
-        // Get isOnboarded from token instead of user
-        session.user.isOnboarded = token.isOnboarded;
+        // Add the userId to the session
+        session.user.id = token.userId;
       }
       return session;
     },

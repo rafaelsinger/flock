@@ -10,9 +10,7 @@ export async function GET(
   try {
     const user = await prisma.user.findFirst({
       where: {
-        bcEmail: {
-          startsWith: `${params.id}@`,
-        },
+        id: params.id,
       },
     });
 
