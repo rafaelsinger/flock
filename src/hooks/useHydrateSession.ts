@@ -31,27 +31,31 @@ export const useHydrateSession = () => {
   // Then, sync with server data when session changes
   useEffect(() => {
     const syncWithServer = async () => {
+      // Only fetch if we have a valid session and user ID
       if (status === 'authenticated' && sessionData?.user?.id) {
         try {
-          // Fetch complete user profile data
-          const res = await fetch(`/api/users/${sessionData.user.id}`);
+          // prevent unnecessary fetches
+          const cachedSession = sessionStorage.getItem('userSession');
+          const parsedCache = cachedSession ? JSON.parse(cachedSession) : null;
 
-          if (res.ok) {
-            const userData = await res.json();
-            setUser(userData);
-            sessionStorage.setItem('userSession', JSON.stringify(userData));
+          // Only fetch if we don't have cached data or if the user ID changed
+          if (!parsedCache || parsedCache.id !== sessionData.user.id) {
+            const res = await fetch(`/api/users/${sessionData.user.id}`);
+            if (res.ok) {
+              const userData = await res.json();
+              setUser(userData);
+              sessionStorage.setItem('userSession', JSON.stringify(userData));
+            }
           }
         } catch (error) {
           console.error('Error fetching user data:', error);
         }
       } else if (status === 'unauthenticated') {
-        // Clear data if user is not authenticated
         sessionStorage.removeItem('userSession');
-        sessionStorage.removeItem('onboardingStatus');
         setUser(null);
       }
     };
 
     syncWithServer();
-  }, [sessionData, status, setUser]);
+  }, [sessionData?.user?.id, status, setUser]);
 };
