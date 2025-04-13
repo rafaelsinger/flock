@@ -1,24 +1,15 @@
 import React from 'react';
-import Image from 'next/image';
 import { MapPin, Building } from 'lucide-react';
 
 interface UserCardProps {
   name: string;
   location: string;
   company?: string;
-  imageUrl: string;
 }
 
-const UserCard: React.FC<UserCardProps> = ({ name, location, company, imageUrl }) => (
+const UserCard: React.FC<UserCardProps> = ({ name, location, company }) => (
   <div className="bg-white rounded-lg border border-gray-100 p-4 hover:shadow-md transition-all duration-200 cursor-pointer group">
     <div className="flex items-start gap-4">
-      <Image
-        src={imageUrl}
-        alt={name}
-        width={48}
-        height={48}
-        className="rounded-full"
-      />
       <div className="flex-1">
         <h3 className="font-medium text-[#333333] group-hover:text-[#F28B82] transition-colors">{name}</h3>
         <div className="mt-2 space-y-1">
@@ -46,7 +37,6 @@ export const UserGrid: React.FC = () => {
       name: "Alex Thompson",
       location: "San Francisco, CA",
       company: "Google",
-      imageUrl: "/placeholder.jpg"
     },
     // Add more mock users...
   ];

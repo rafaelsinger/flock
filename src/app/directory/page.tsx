@@ -6,16 +6,16 @@ import { UserGrid } from '@/components/UserGrid';
 
 export default function DirectoryPage() {
   return (
-    <div className="min-h-screen bg-[#FFF9F8]">
+    <div className="min-h-screen bg-[#F9F9F8]">
       <main className="container max-w-7xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-12 bg-white rounded-xl p-8 shadow-sm border border-gray-100">
-          <h1 className="text-4xl font-semibold text-[#333333]">Directory</h1>
-          <p className="text-[#333333]/70 mt-2 text-lg">Explore where BC grads are heading next</p>
+          <h1 className="text-4xl font-bold text-[#111111]">Directory</h1>
+          <p className="text-[#444444] mt-2 text-lg">Explore where BC grads are heading next</p>
         </div>
 
         {/* Map Section */}
-        <div className="h-[500px] mb-12 rounded-xl overflow-hidden bg-white shadow-sm border border-gray-100">
+        <div className="h-[500px] mb-12 rounded-xl overflow-hidden bg-white shadow-md border border-gray-100">
           <Map />
         </div>
 
@@ -24,14 +24,14 @@ export default function DirectoryPage() {
           <div className="flex-1">
             <SearchBar 
               placeholder="Search for classmates..."
-              className="w-full shadow-sm"
+              className="w-full shadow-md"
             />
           </div>
           <FilterPanel />
         </div>
 
         {/* Results Grid */}
-        <div className="bg-white rounded-xl p-8 shadow-sm border border-gray-100">
+        <div className="bg-white rounded-xl p-8 shadow-md border border-gray-100">
           <UserGrid />
         </div>
       </main>

@@ -34,24 +34,24 @@ export const Map: React.FC = () => {
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
 
-  // Using quantize scale for better color distribution
+  // Update the color scale to have more contrast
   const colorScale = scaleQuantize<string>()
     .domain([0, 45])
     .range([
-      "#FFF9F8",
-      "#FDE2E0",
-      "#FACAC7",
-      "#F7B3AE",
-      "#F49B95",
-      "#F28B82"
+      "#FFEAE8", // Much lighter start
+      "#FFD1CC",
+      "#FFA69E",
+      "#FF7B6F",
+      "#FF4D3D",
+      "#F28B82"  // Keep brand color as max
     ]);
 
   const legendData = [
-    { range: "0-7", color: "#FFF9F8" },
-    { range: "8-15", color: "#FDE2E0" },
-    { range: "16-23", color: "#FACAC7" },
-    { range: "24-31", color: "#F7B3AE" },
-    { range: "32-39", color: "#F49B95" },
+    { range: "0-7", color: "#FFEAE8" },
+    { range: "8-15", color: "#FFD1CC" },
+    { range: "16-23", color: "#FFA69E" },
+    { range: "24-31", color: "#FF7B6F" },
+    { range: "32-39", color: "#FF4D3D" },
     { range: "40+", color: "#F28B82" },
   ];
 
@@ -65,17 +65,17 @@ export const Map: React.FC = () => {
   return (
     <div className="w-full h-full bg-[#F9F9F9] relative" onMouseMove={handleMouseMove}>
       {/* Legend */}
-      <div className="absolute top-4 left-4 bg-white rounded-lg shadow-sm border border-gray-100 z-10">
+      <div className="absolute top-4 left-4 bg-white rounded-lg shadow-md border border-gray-100 z-10">
         <div className="p-3">
-          <div className="text-sm font-medium mb-2">Graduates</div>
-          <div className="space-y-2">
+          <div className="text-sm font-semibold text-[#111111] mb-3">Graduates</div>
+          <div className="space-y-2.5">
             {legendData.map(({ range, color }) => (
-              <div key={range} className="flex items-center gap-2">
+              <div key={range} className="flex items-center gap-2.5">
                 <div 
-                  className="w-4 h-4 rounded"
+                  className="w-4 h-4 rounded border border-gray-100"
                   style={{ backgroundColor: color }}
                 />
-                <span className="text-xs text-gray-600">{range}</span>
+                <span className="text-sm text-[#333333]">{range}</span>
               </div>
             ))}
           </div>
@@ -86,15 +86,15 @@ export const Map: React.FC = () => {
       <div className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col gap-2">
         <button
           onClick={() => setZoom(z => Math.min(z + 0.5, 4))}
-          className="p-2 bg-white rounded-lg shadow-sm border border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer"
+          className="p-2 bg-white rounded-lg shadow-md border border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer"
         >
-          <Plus className="w-4 h-4 text-gray-600" />
+          <Plus className="w-4 h-4 text-[#333333]" />
         </button>
         <button
           onClick={() => setZoom(z => Math.max(z - 0.5, 1))}
-          className="p-2 bg-white rounded-lg shadow-sm border border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer"
+          className="p-2 bg-white rounded-lg shadow-md border border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer"
         >
-          <Minus className="w-4 h-4 text-gray-600" />
+          <Minus className="w-4 h-4 text-[#333333]" />
         </button>
       </div>
 
@@ -154,14 +154,14 @@ export const Map: React.FC = () => {
       </ComposableMap>
       {tooltipContent && (
         <div 
-          className="fixed bg-white px-3 py-2 rounded-lg shadow-md border border-gray-100 text-sm pointer-events-none z-50"
+          className="fixed bg-white px-4 py-2.5 rounded-lg shadow-md border border-gray-100 pointer-events-none z-50"
           style={{
             left: tooltipPosition.x,
             top: tooltipPosition.y,
             transform: 'translate(-50%, -100%)'
           }}
         >
-          {tooltipContent}
+          <div className="font-medium text-[#111111]">{tooltipContent}</div>
         </div>
       )}
     </div>
