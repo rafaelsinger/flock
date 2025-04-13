@@ -25,7 +25,6 @@ interface DBUser {
   state: string;
   country: string;
   visibilityOptions: {
-    location?: boolean;
     role?: boolean;
     company?: boolean;
   };
@@ -42,7 +41,6 @@ interface UserData {
     country: string;
   };
   visibility: {
-    location: boolean;
     role: boolean;
     company: boolean;
   };
@@ -66,7 +64,6 @@ const transformDBToUserData = (dbUser: DBUser): UserData => ({
     country: dbUser.country,
   },
   visibility: {
-    location: dbUser.visibilityOptions.location ?? true,
     role: dbUser.visibilityOptions.role ?? true,
     company: dbUser.visibilityOptions.company ?? true,
   },
@@ -235,7 +232,9 @@ const ViewMode = ({ userData, isOwnProfile, onEdit }: ViewModeProps) => (
       {userData.name}
     </h1>
 
-    {(isOwnProfile || userData.visibility.role) && (
+    {(isOwnProfile ||
+      userData.visibility.role ||
+      userData.visibility.company) && (
       <div className="flex items-center mb-4">
         {userData.type === "working" ? (
           <BsBriefcase className="text-[#F28B82] text-xl mr-3" />
@@ -250,14 +249,12 @@ const ViewMode = ({ userData, isOwnProfile, onEdit }: ViewModeProps) => (
       </div>
     )}
 
-    {(isOwnProfile || userData.visibility.location) && (
-      <div className="mb-6">
-        <p className="text-lg text-[#333333]">
-          {userData.location.city}, {userData.location.state},{" "}
-          {userData.location.country}
-        </p>
-      </div>
-    )}
+    <div className="mb-6">
+      <p className="text-lg text-[#333333]">
+        {userData.location.city}, {userData.location.state},{" "}
+        {userData.location.country}
+      </p>
+    </div>
   </div>
 );
 
@@ -368,24 +365,6 @@ const EditForm = ({
             className="rounded text-[#F28B82] focus:ring-[#F28B82]"
           />
           <span className="text-sm text-[#666666]">Show company/school</span>
-        </label>
-
-        <label className="flex items-center space-x-2">
-          <input
-            type="checkbox"
-            checked={userData.visibility.location}
-            onChange={(e) =>
-              setUserData({
-                ...userData,
-                visibility: {
-                  ...userData.visibility,
-                  location: e.target.checked,
-                },
-              })
-            }
-            className="rounded text-[#F28B82] focus:ring-[#F28B82]"
-          />
-          <span className="text-sm text-[#666666]">Show location</span>
         </label>
       </div>
     </div>
