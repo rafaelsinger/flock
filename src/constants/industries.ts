@@ -1,4 +1,4 @@
-// Industry-related constants
+// Industry-related constants, currently source of truth for both FE/BE
 
 export const INDUSTRIES = [
   { value: 'technology', label: 'Technology' },
