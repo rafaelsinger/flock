@@ -27,7 +27,6 @@ model User {
   id              String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name            String
   bcEmail         String       @unique @map("bc_email")
-  personalEmail   String       @unique @map("personal_email")
   postGradType    PostGradType @map("postgrad_type")
   company         String?
   title           String?      @map("title")
@@ -40,6 +39,7 @@ model User {
   industry        Industry?    @relation(fields: [industryId], references: [id])
   industryId      String?      @map("industry_id") @db.Uuid
   visibilityOptions Json       @default("{}") @map("visibility_options")
+  isOnboarded      Boolean      @default(false) @map("is_onboarded")
   createdAt       DateTime     @default(now()) @map("created_at")
   updatedAt       DateTime     @default(now()) @map("updated_at")
 

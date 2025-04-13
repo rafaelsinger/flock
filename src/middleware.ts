@@ -1,36 +1,64 @@
-import { getToken } from "next-auth/jwt";
 import { NextResponse } from "next/server";
+import { getToken } from "next-auth/jwt";
 import type { NextRequest } from "next/server";
 
 export async function middleware(request: NextRequest) {
-  const token = await getToken({ req: request });
-  const isAuth = !!token;
-  const isOnboarded = token?.isOnboarded;
-  const isAuthPage = request.nextUrl.pathname.startsWith("/auth");
-  const isOnboardingPage = request.nextUrl.pathname.startsWith("/onboarding");
-  const isHomePage = request.nextUrl.pathname === "/";
+  // Get the pathname of the request
+  const path = request.nextUrl.pathname;
 
-  console.log({ token, isAuth, isOnboarded, isAuthPage, isHomePage });
+  // Get the token using next-auth
+  const token = await getToken({
+    req: request,
+    secret: process.env.NEXTAUTH_SECRET,
+  });
 
-  // If user is not authenticated and tries to access protected routes
-  // Exclude home page from authentication check
-  if (!isAuth && !isAuthPage && !isHomePage) {
-    return NextResponse.redirect(new URL("/", request.url));
+  // Public paths that don't require authentication
+  if (path === "/" || path.startsWith("/auth")) {
+    return NextResponse.next();
   }
 
-  // If authenticated user tries to access onboarding but is already onboarded
-  if (isAuth && isOnboarded && isOnboardingPage) {
-    return NextResponse.redirect(new URL("/", request.url));
+  // Check if user is authenticated
+  if (!token?.email) {
+    return NextResponse.redirect(new URL("/auth/signin", request.url));
   }
 
-  // If authenticated user is not onboarded, force them to complete onboarding
-  if (isAuth && !isOnboarded && !isOnboardingPage) {
+  // Get user's onboarding status from API
+  const baseUrl = request.nextUrl.origin;
+  const onboardingStatus = await fetch(
+    `${baseUrl}/api/auth/onboarding-status`,
+    {
+      headers: {
+        Cookie: request.headers.get("cookie") || "",
+      },
+    }
+  ).then((res) => res.json());
+
+  // Onboarding paths
+  const isOnboardingPath = path.startsWith("/onboarding");
+
+  // If user hasn't completed onboarding and isn't on an onboarding path
+  if (!onboardingStatus.isOnboarded && !isOnboardingPath) {
     return NextResponse.redirect(new URL("/onboarding/step1", request.url));
+  }
+
+  // If user has completed onboarding but tries to access onboarding paths
+  if (onboardingStatus.isOnboarded && isOnboardingPath) {
+    return NextResponse.redirect(new URL("/", request.url));
   }
 
   return NextResponse.next();
 }
 
+// Configure which paths the middleware should run on
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
+  matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - api (API routes)
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     */
+    "/((?!api|_next/static|_next/image|favicon.ico).*)",
+  ],
 };

@@ -14,13 +14,30 @@ const ReviewPage: FC = () => {
   const isFinalizingRef = useRef(false);
 
   const finalizeOnboarding = useMutation({
-    mutationFn: (finalData: OnboardingData) => {
+    mutationFn: async (finalData: OnboardingData) => {
       isFinalizingRef.current = true;
-      return Promise.resolve(finalData);
+      const response = await fetch("/api/onboarding", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(finalData),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to save onboarding data");
+      }
+
+      return response.json();
     },
     onSuccess: () => {
       queryClient.removeQueries({ queryKey: ["onboardingData"] });
       router.push("/");
+    },
+    onError: (error) => {
+      console.error("Error saving onboarding data:", error);
+      isFinalizingRef.current = false;
+      // You might want to show an error message to the user here
     },
   });
 
