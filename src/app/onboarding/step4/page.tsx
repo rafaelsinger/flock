@@ -1,6 +1,6 @@
 "use client";
 
-import { FC, useState } from "react";
+import { FC, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { OnboardingData } from "@/types/onboarding";
@@ -10,9 +10,13 @@ const Step4: FC = () => {
   const queryClient = useQueryClient();
   const previousData = queryClient.getQueryData(["onboardingData"]) as OnboardingData;
 
-  // Redirect if no previous data
+  useEffect(() => {
+    if (!previousData || !previousData.postGradType) {
+      router.push("/onboarding/step1");
+    }
+  }, [previousData, router]);
+
   if (!previousData || !previousData.postGradType) {
-    router.push("/onboarding/step1");
     return null;
   }
 
@@ -22,6 +26,8 @@ const Step4: FC = () => {
     showLocation: true,
     showCompanyRole: true,
   });
+
+  const [isFormValid, setIsFormValid] = useState(true);
 
   const updateOnboardingData = useMutation({
     mutationFn: (visibilityData: OnboardingData["visibility"]) => {
@@ -124,7 +130,7 @@ const Step4: FC = () => {
           </button>
           <button
             type="submit"
-            className="px-6 py-2.5 rounded-lg bg-[#F9C5D1] hover:bg-[#F28B82] text-white transition-colors cursor-pointer active:bg-[#E67C73]"
+            className="px-6 py-2.5 rounded-lg bg-[#F28B82] hover:bg-[#E67C73] text-white transition-colors cursor-pointer"
           >
             Continue
           </button>

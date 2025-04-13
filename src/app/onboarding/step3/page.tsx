@@ -1,6 +1,6 @@
 "use client";
 
-import { FC, useState } from "react";
+import { FC, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { OnboardingData } from "@/types/onboarding";
@@ -8,20 +8,26 @@ import type { OnboardingData } from "@/types/onboarding";
 const Step3: FC = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const previousData = queryClient.getQueryData(["onboardingData"]) as OnboardingData;
-
-  // Redirect if no previous data
-  if (!previousData || !previousData.postGradType) {
-    router.push("/onboarding/step1");
-    return null;
-  }
+  const previousData = queryClient.getQueryData([
+    "onboardingData",
+  ]) as OnboardingData;
 
   const [formData, setFormData] = useState({
-    country: "USA", // Default to USA for now
+    country: "USA",
     state: "",
     city: "",
-    borough: "", // Optional
+    borough: "",
   });
+
+  const [isFormValid, setIsFormValid] = useState(false);
+
+  useEffect(() => {
+    setIsFormValid(
+      formData.country.trim() !== "" &&
+        formData.state.trim() !== "" &&
+        formData.city.trim() !== ""
+    );
+  }, [formData]);
 
   const updateOnboardingData = useMutation({
     mutationFn: (locationData: OnboardingData["location"]) => {
@@ -37,14 +43,25 @@ const Step3: FC = () => {
     },
   });
 
+  useEffect(() => {
+    if (!previousData || !previousData.postGradType) {
+      router.push("/onboarding/step1");
+    }
+  }, [previousData, router]);
+
+  if (!previousData || !previousData.postGradType) {
+    return null;
+  }
+
+  // Common classes for better maintainability
+  const inputClasses =
+    "w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:border-[#F9C5D1] focus:ring-2 focus:ring-[#F9C5D1]/20 outline-none transition-colors hover:border-[#F9C5D1]/50 cursor-pointer text-[#333333]";
+  const labelClasses = "block text-sm font-medium text-[#333333] mb-2";
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     updateOnboardingData.mutate(formData);
   };
-
-  // Common classes for better maintainability
-  const inputClasses = "w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:border-[#F9C5D1] focus:ring-2 focus:ring-[#F9C5D1]/20 outline-none transition-colors hover:border-[#F9C5D1]/50 cursor-pointer";
-  const labelClasses = "block text-sm font-medium text-[#333333] mb-2";
 
   return (
     <div className="space-y-8">
@@ -66,7 +83,9 @@ const Step3: FC = () => {
             <select
               id="country"
               value={formData.country}
-              onChange={(e) => setFormData(prev => ({ ...prev, country: e.target.value }))}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, country: e.target.value }))
+              }
               className={inputClasses}
               required
             >
@@ -82,7 +101,9 @@ const Step3: FC = () => {
             <select
               id="state"
               value={formData.state}
-              onChange={(e) => setFormData(prev => ({ ...prev, state: e.target.value }))}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, state: e.target.value }))
+              }
               className={inputClasses}
               required
             >
@@ -102,7 +123,9 @@ const Step3: FC = () => {
               type="text"
               id="city"
               value={formData.city}
-              onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, city: e.target.value }))
+              }
               className={inputClasses}
               placeholder="e.g. San Francisco"
               required
@@ -111,13 +134,16 @@ const Step3: FC = () => {
 
           <div>
             <label htmlFor="borough" className={labelClasses}>
-              Borough/Neighborhood <span className="text-[#666666] text-sm">(optional)</span>
+              Borough/Neighborhood{" "}
+              <span className="text-[#666666] text-sm">(optional)</span>
             </label>
             <input
               type="text"
               id="borough"
               value={formData.borough}
-              onChange={(e) => setFormData(prev => ({ ...prev, borough: e.target.value }))}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, borough: e.target.value }))
+              }
               className={inputClasses}
               placeholder="e.g. Brooklyn or Mission District"
             />
@@ -134,7 +160,12 @@ const Step3: FC = () => {
           </button>
           <button
             type="submit"
-            className="px-6 py-2.5 rounded-lg bg-[#F9C5D1] hover:bg-[#F28B82] text-white transition-colors cursor-pointer active:bg-[#E67C73]"
+            disabled={!isFormValid}
+            className={`px-6 py-2.5 rounded-lg transition-colors cursor-pointer ${
+              isFormValid
+                ? "bg-[#F28B82] hover:bg-[#E67C73] text-white"
+                : "bg-[#F9C5D1]/50 cursor-not-allowed text-white/70"
+            }`}
           >
             Continue
           </button>
@@ -144,4 +175,4 @@ const Step3: FC = () => {
   );
 };
 
-export default Step3; 
+export default Step3;

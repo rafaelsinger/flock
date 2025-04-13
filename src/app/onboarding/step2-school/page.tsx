@@ -1,6 +1,6 @@
 "use client";
 
-import { FC, useState } from "react";
+import { FC, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { OnboardingData } from "@/types/onboarding";
@@ -8,18 +8,16 @@ import type { OnboardingData } from "@/types/onboarding";
 const Step2School: FC = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const previousData = queryClient.getQueryData(["onboardingData"]) as OnboardingData;
-
-  // Redirect if no previous data or wrong type
-  if (!previousData || previousData.postGradType !== "school") {
-    router.push("/onboarding/step1");
-    return null;
-  }
+  const previousData = queryClient.getQueryData([
+    "onboardingData",
+  ]) as OnboardingData;
 
   const [formData, setFormData] = useState({
     name: "",
     program: "",
   });
+
+  const [isFormValid, setIsFormValid] = useState(false);
 
   const updateOnboardingData = useMutation({
     mutationFn: (schoolData: OnboardingData["school"]) => {
@@ -34,6 +32,23 @@ const Step2School: FC = () => {
       router.push("/onboarding/step3");
     },
   });
+
+  useEffect(() => {
+    if (!previousData || previousData.postGradType !== "school") {
+      router.push("/onboarding/step1");
+    }
+  }, [previousData, router]);
+
+  useEffect(() => {
+    setIsFormValid(
+      formData.name.trim() !== "" && 
+      formData.program.trim() !== ""
+    );
+  }, [formData]);
+
+  if (!previousData || previousData.postGradType !== "school") {
+    return null;
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,7 +80,7 @@ const Step2School: FC = () => {
               id="school"
               value={formData.name}
               onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-              className="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:border-[#A7D7F9] focus:ring-2 focus:ring-[#A7D7F9]/20 outline-none transition-colors"
+              className="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:border-[#A7D7F9] focus:ring-2 focus:ring-[#A7D7F9]/20 outline-none transition-colors text-[#333333]"
               placeholder="e.g. Stanford University"
               required
             />
@@ -83,7 +98,7 @@ const Step2School: FC = () => {
               id="program"
               value={formData.program}
               onChange={(e) => setFormData(prev => ({ ...prev, program: e.target.value }))}
-              className="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:border-[#A7D7F9] focus:ring-2 focus:ring-[#A7D7F9]/20 outline-none transition-colors"
+              className="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:border-[#A7D7F9] focus:ring-2 focus:ring-[#A7D7F9]/20 outline-none transition-colors text-[#333333]"
               placeholder="e.g. Master's in Computer Science"
               required
             />
@@ -100,7 +115,12 @@ const Step2School: FC = () => {
           </button>
           <button
             type="submit"
-            className="px-6 py-2.5 rounded-lg bg-[#A7D7F9] hover:bg-[#7BC0F5] text-white transition-colors cursor-pointer active:bg-[#5BAAE7]"
+            disabled={!isFormValid}
+            className={`px-6 py-2.5 rounded-lg transition-colors cursor-pointer ${
+              isFormValid 
+                ? "bg-[#7BC0F5] hover:bg-[#5BAAE7] text-white" 
+                : "bg-[#A7D7F9]/50 cursor-not-allowed text-white/70"
+            }`}
           >
             Continue
           </button>

@@ -1,6 +1,6 @@
 "use client";
 
-import { FC, useState } from "react";
+import { FC, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { OnboardingData } from "@/types/onboarding";
@@ -12,17 +12,21 @@ const Step2Work: FC = () => {
     "onboardingData",
   ]) as OnboardingData;
 
-  // Redirect if no previous data or wrong type
-  if (!previousData || previousData.postGradType !== "work") {
-    router.push("/onboarding/step1");
-    return null;
-  }
-
   const [formData, setFormData] = useState({
     company: "",
     role: "",
     industry: "",
   });
+
+  const [isFormValid, setIsFormValid] = useState(false);
+
+  useEffect(() => {
+    setIsFormValid(
+      formData.company.trim() !== "" &&
+        formData.role.trim() !== "" &&
+        formData.industry !== ""
+    );
+  }, [formData]);
 
   const updateOnboardingData = useMutation({
     mutationFn: (workData: OnboardingData["work"]) => {
@@ -37,6 +41,16 @@ const Step2Work: FC = () => {
       router.push("/onboarding/step3");
     },
   });
+
+  useEffect(() => {
+    if (!previousData || previousData.postGradType !== "work") {
+      router.push("/onboarding/step1");
+    }
+  }, [previousData, router]);
+
+  if (!previousData || previousData.postGradType !== "work") {
+    return null;
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,7 +82,7 @@ const Step2Work: FC = () => {
               onChange={(e) =>
                 setFormData((prev) => ({ ...prev, company: e.target.value }))
               }
-              className="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:border-[#F9C5D1] focus:ring-2 focus:ring-[#F9C5D1]/20 outline-none transition-colors"
+              className="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:border-[#F9C5D1] focus:ring-2 focus:ring-[#F9C5D1]/20 outline-none transition-colors text-[#333333]"
               placeholder="e.g. Stripe"
               required
             />
@@ -88,7 +102,7 @@ const Step2Work: FC = () => {
               onChange={(e) =>
                 setFormData((prev) => ({ ...prev, role: e.target.value }))
               }
-              className="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:border-[#F9C5D1] focus:ring-2 focus:ring-[#F9C5D1]/20 outline-none transition-colors"
+              className="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:border-[#F9C5D1] focus:ring-2 focus:ring-[#F9C5D1]/20 outline-none transition-colors text-[#333333]"
               placeholder="e.g. Software Engineer"
               required
             />
@@ -107,7 +121,7 @@ const Step2Work: FC = () => {
               onChange={(e) =>
                 setFormData((prev) => ({ ...prev, industry: e.target.value }))
               }
-              className="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:border-[#F9C5D1] focus:ring-2 focus:ring-[#F9C5D1]/20 outline-none transition-colors cursor-pointer hover:border-[#F9C5D1]/50"
+              className="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:border-[#F9C5D1] focus:ring-2 focus:ring-[#F9C5D1]/20 outline-none transition-colors cursor-pointer hover:border-[#F9C5D1]/50 text-[#333333]"
               required
             >
               <option value="">Select an industry</option>
@@ -132,7 +146,12 @@ const Step2Work: FC = () => {
           </button>
           <button
             type="submit"
-            className="px-6 py-2.5 rounded-lg bg-[#F9C5D1] hover:bg-[#F28B82] text-white transition-colors cursor-pointer active:bg-[#E67C73]"
+            disabled={!isFormValid}
+            className={`px-6 py-2.5 rounded-lg transition-colors cursor-pointer ${
+              isFormValid
+                ? "bg-[#F28B82] hover:bg-[#E67C73] text-white"
+                : "bg-[#F9C5D1]/50 cursor-not-allowed text-white/70"
+            }`}
           >
             Continue
           </button>

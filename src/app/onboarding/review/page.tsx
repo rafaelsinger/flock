@@ -1,6 +1,6 @@
 "use client";
 
-import { FC } from "react";
+import { FC, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { BsBriefcase } from "react-icons/bs";
@@ -12,9 +12,14 @@ const ReviewPage: FC = () => {
   const queryClient = useQueryClient();
   const data = queryClient.getQueryData(["onboardingData"]) as OnboardingData;
 
-  // Redirect if no data
+  useEffect(() => {
+    if (!data || !data.postGradType) {
+      router.push("/onboarding/step1");
+    }
+  }, [data, router]);
+
+  // If no data, render nothing while redirect happens
   if (!data || !data.postGradType) {
-    router.push("/onboarding/step1");
     return null;
   }
 
@@ -64,13 +69,15 @@ const ReviewPage: FC = () => {
           {data.postGradType === "work" && data.work && (
             <div className="space-y-2">
               <p className="text-[#333333]">
-                <span className="font-medium">Company:</span> {data.work.company}
+                <span className="font-medium">Company:</span>{" "}
+                {data.work.company}
               </p>
               <p className="text-[#333333]">
                 <span className="font-medium">Role:</span> {data.work.role}
               </p>
               <p className="text-[#333333]">
-                <span className="font-medium">Industry:</span> {data.work.industry}
+                <span className="font-medium">Industry:</span>{" "}
+                {data.work.industry}
               </p>
             </div>
           )}
@@ -81,7 +88,8 @@ const ReviewPage: FC = () => {
                 <span className="font-medium">School:</span> {data.school.name}
               </p>
               <p className="text-[#333333]">
-                <span className="font-medium">Program:</span> {data.school.program}
+                <span className="font-medium">Program:</span>{" "}
+                {data.school.program}
               </p>
             </div>
           )}
@@ -101,12 +109,22 @@ const ReviewPage: FC = () => {
           <div className="pt-4 border-t space-y-2">
             <h3 className="font-medium text-[#333333]">Visibility Settings</h3>
             <ul className="space-y-1 text-[#666666]">
-              {data.visibility?.showEmail && <li>• Email visible to classmates</li>}
-              {data.visibility?.showPhone && <li>• Phone number visible to classmates</li>}
-              {data.visibility?.showLocation && <li>• Location visible on map</li>}
+              {data.visibility?.showEmail && (
+                <li>• Email visible to classmates</li>
+              )}
+              {data.visibility?.showPhone && (
+                <li>• Phone number visible to classmates</li>
+              )}
+              {data.visibility?.showLocation && (
+                <li>• Location visible on map</li>
+              )}
               {data.visibility?.showCompanyRole && (
                 <li>
-                  • {data.postGradType === "work" ? "Company & role" : "School & program"} visible to classmates
+                  •{" "}
+                  {data.postGradType === "work"
+                    ? "Company & role"
+                    : "School & program"}{" "}
+                  visible to classmates
                 </li>
               )}
             </ul>
@@ -123,7 +141,7 @@ const ReviewPage: FC = () => {
           </button>
           <button
             onClick={handleSubmit}
-            className="px-6 py-2.5 rounded-lg bg-[#F9C5D1] hover:bg-[#F28B82] text-white transition-colors cursor-pointer active:bg-[#E67C73]"
+            className="px-6 py-2.5 rounded-lg bg-[#F28B82] hover:bg-[#E67C73] text-white transition-colors cursor-pointer"
           >
             Finish & Enter Directory
           </button>
@@ -133,4 +151,4 @@ const ReviewPage: FC = () => {
   );
 };
 
-export default ReviewPage; 
+export default ReviewPage;
