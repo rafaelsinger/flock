@@ -1,4 +1,5 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { SearchBar } from '@/components/SearchBar';
 import { FilterPanel } from '@/components/FilterPanel';
 import { UserGrid } from '@/components/UserGrid';
@@ -14,10 +15,7 @@ interface FilterOptions {
 const ITEMS_PER_PAGE = 12;
 
 export const DirectoryContent: React.FC = () => {
-  const [users, setUsers] = useState([]);
   const [page, setPage] = useState(1);
-  const [loading, setLoading] = useState(false);
-  const [totalPages, setTotalPages] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState<FilterOptions>({});
 
@@ -60,28 +58,21 @@ export const DirectoryContent: React.FC = () => {
     [searchQuery, filters]
   );
 
-  const fetchUsers = useCallback(
-    async (pageNum: number) => {
-      try {
-        setLoading(true);
-        const queryParams = buildQueryParams(pageNum);
-        console.log({ queryParams });
-        const response = await fetch(`/api/users?${queryParams}`);
-        const data = await response.json();
-        setUsers(data.users);
-        setTotalPages(Math.ceil(data.total / ITEMS_PER_PAGE));
-      } catch (error) {
-        console.error('Error fetching users:', error);
-      } finally {
-        setLoading(false);
+  // Use React Query to fetch users
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['users', page, searchQuery, filters],
+    queryFn: async () => {
+      const queryParams = buildQueryParams(page);
+      const response = await fetch(`/api/users?${queryParams}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch users');
       }
+      return response.json();
     },
-    [buildQueryParams]
-  );
+  });
 
-  useEffect(() => {
-    fetchUsers(page);
-  }, [page, fetchUsers]);
+  const users = data?.users || [];
+  const totalPages = data ? Math.ceil(data.total / ITEMS_PER_PAGE) : 1;
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
@@ -108,13 +99,19 @@ export const DirectoryContent: React.FC = () => {
       </div>
 
       <div className="bg-white rounded-xl p-8 shadow-md border border-gray-100">
-        <UserGrid
-          users={users}
-          loading={loading}
-          page={page}
-          totalPages={totalPages}
-          onPageChange={setPage}
-        />
+        {error ? (
+          <div className="text-red-500 text-center py-8">
+            Error loading users. Please try again later.
+          </div>
+        ) : (
+          <UserGrid
+            users={users}
+            loading={isLoading}
+            page={page}
+            totalPages={totalPages}
+            onPageChange={setPage}
+          />
+        )}
       </div>
     </>
   );
