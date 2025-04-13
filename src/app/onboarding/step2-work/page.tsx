@@ -5,11 +5,13 @@ import { useRouter } from 'next/navigation';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { OnboardingData } from '@/types/onboarding';
 import { INDUSTRIES } from '@/constants/industries';
+import { useUserStore } from '@/store/userStore';
 
 const Step2Work: FC = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
   const previousData = queryClient.getQueryData(['onboardingData']) as OnboardingData;
+  const { updateOnboardingStatus } = useUserStore();
 
   const [formData, setFormData] = useState({
     company: '',
@@ -35,6 +37,13 @@ const Step2Work: FC = () => {
     },
     onSuccess: (data) => {
       queryClient.setQueryData(['onboardingData'], data);
+
+      // Update UserStore with current step
+      updateOnboardingStatus({
+        isComplete: false,
+        currentStep: 2,
+      });
+
       router.push('/onboarding/step3');
     },
   });

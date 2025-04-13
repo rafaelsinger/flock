@@ -27,14 +27,13 @@ model Industry {
 model User {
   id               String   @id @default(cuid())
   name             String
-  email            String   @unique
   city             String?
   state            String?
   country          String?
   company          String?
   school           String?
-  postGradType     String?  // "work" or "school"
-  visibilityOptions Json?
+  postGradType     PostGradType @map("postgrad_type")
+  visibilityOptions Json?   @default("{}") @map("visibility_options")
   bcEmail          String   @unique @map("bc_email")
   title            String?  @map("title")
   program          String?
@@ -42,6 +41,7 @@ model User {
   industry         Industry?  @relation(fields: [industryId], references: [id])
   industryId       String?  @map("industry_id") @db.Uuid
   isOnboarded      Boolean  @default(false) @map("is_onboarded")
+  onboardingStep   Int?     @default(1) @map("onboarding_step")
   createdAt        DateTime  @default(now()) @map("created_at")
   updatedAt        DateTime  @default(now()) @map("updated_at")
 

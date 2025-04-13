@@ -5,11 +5,13 @@ import { useRouter } from 'next/navigation';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { OnboardingData } from '@/types/onboarding';
 import { US_STATES, COUNTRIES, STATES_WITH_BOROUGHS } from '@/constants/location';
+import { useUserStore } from '@/store/userStore';
 
 const Step3: FC = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
   const previousData = queryClient.getQueryData(['onboardingData']) as OnboardingData;
+  const { updateOnboardingStatus } = useUserStore();
 
   const [formData, setFormData] = useState({
     country: 'USA',
@@ -38,6 +40,13 @@ const Step3: FC = () => {
     },
     onSuccess: (data) => {
       queryClient.setQueryData(['onboardingData'], data);
+
+      // Update UserStore with current step
+      updateOnboardingStatus({
+        isComplete: false,
+        currentStep: 3,
+      });
+
       router.push('/onboarding/step4');
     },
   });

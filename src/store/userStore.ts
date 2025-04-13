@@ -9,7 +9,7 @@ interface User {
 
 interface OnboardingStatus {
   isComplete: boolean;
-  currentStep?: string;
+  currentStep?: number;
 }
 
 interface UserState {
@@ -30,10 +30,30 @@ export const useUserStore = create<UserState>((set) => ({
       user: state.user ? { ...state.user, ...userData } : null,
     })),
   setOnboardingStatus: (onboardingStatus) => set({ onboardingStatus }),
-  updateOnboardingStatus: (statusData) =>
+  updateOnboardingStatus: (statusData) => {
     set((state) => ({
       onboardingStatus: state.onboardingStatus
         ? { ...state.onboardingStatus, ...statusData }
-        : null,
-    })),
+        : (statusData as OnboardingStatus),
+    }));
+
+    // Sync with database if we have a currentStep
+    if (statusData.currentStep) {
+      syncOnboardingProgress(statusData.currentStep);
+    }
+  },
 }));
+
+const syncOnboardingProgress = async (currentStep: number) => {
+  try {
+    await fetch('/api/users/onboarding-progress', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ currentStep }),
+    });
+  } catch (error) {
+    console.error('Failed to sync onboarding progress:', error);
+  }
+};

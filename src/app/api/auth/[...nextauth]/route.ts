@@ -32,8 +32,9 @@ export const authOptions: NextAuthOptions = {
                 postGradType: 'work',
               },
             });
-            console.log('Created new user:', user.id);
           }
+
+          console.log({ user });
 
           // Store the database ID in the account object
           account.userId = user.id;

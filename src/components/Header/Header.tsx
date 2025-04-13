@@ -34,11 +34,6 @@ export const Header = ({ transparent = false }: HeaderProps) => {
     };
   }, []);
 
-  // Add console logging to debug menu state
-  useEffect(() => {
-    console.log('Menu open state:', isMenuOpen);
-  }, [isMenuOpen]);
-
   const navBackground =
     isScrolled || !transparent || isMenuOpen
       ? 'bg-white/95 backdrop-blur-sm shadow-sm'

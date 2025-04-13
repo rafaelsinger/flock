@@ -1,19 +1,19 @@
-"use client";
+'use client';
 
-import { FC, useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import type { OnboardingData } from "@/types/onboarding";
+import { FC, useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import type { OnboardingData } from '@/types/onboarding';
+import { useUserStore } from '@/store/userStore';
 
 const Step4: FC = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const previousData = queryClient.getQueryData([
-    "onboardingData",
-  ]) as OnboardingData;
+  const previousData = queryClient.getQueryData(['onboardingData']) as OnboardingData;
+  const { updateOnboardingStatus } = useUserStore();
 
   const updateOnboardingData = useMutation({
-    mutationFn: (visibilityData: OnboardingData["visibility"]) => {
+    mutationFn: (visibilityData: OnboardingData['visibility']) => {
       const data: OnboardingData = {
         ...previousData,
         visibility: visibilityData,
@@ -21,12 +21,19 @@ const Step4: FC = () => {
       return Promise.resolve(data);
     },
     onSuccess: (data) => {
-      queryClient.setQueryData(["onboardingData"], data);
-      router.push("/onboarding/review");
+      queryClient.setQueryData(['onboardingData'], data);
+
+      // Update UserStore with current step
+      updateOnboardingStatus({
+        isComplete: false,
+        currentStep: 4,
+      });
+
+      router.push('/onboarding/review');
     },
   });
   const [formData, setFormData] = useState(
-    previousData?.postGradType === "work"
+    previousData?.postGradType === 'work'
       ? {
           showCompany: true,
           showRole: true,
@@ -39,7 +46,7 @@ const Step4: FC = () => {
 
   useEffect(() => {
     if (!previousData || !previousData.postGradType) {
-      router.push("/onboarding/step1");
+      router.push('/onboarding/step1');
     }
   }, [previousData, router]);
 
@@ -55,12 +62,8 @@ const Step4: FC = () => {
   return (
     <div className="space-y-8">
       <div className="text-center">
-        <h1 className="text-3xl font-semibold text-[#333333] mb-3">
-          Privacy Preferences
-        </h1>
-        <p className="text-[#666666]">
-          Choose what information you want to share
-        </p>
+        <h1 className="text-3xl font-semibold text-[#333333] mb-3">Privacy Preferences</h1>
+        <p className="text-[#666666]">Choose what information you want to share</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -69,30 +72,23 @@ const Step4: FC = () => {
             <label className="flex items-center justify-between cursor-pointer p-2 hover:bg-gray-50 rounded-lg transition-colors">
               <div>
                 <span className="font-medium text-[#333333]">
-                  Show{" "}
-                  {previousData.postGradType === "work" ? "Company" : "School"}
+                  Show {previousData.postGradType === 'work' ? 'Company' : 'School'}
                 </span>
                 <p className="text-sm text-[#666666]">
-                  Display your{" "}
-                  {previousData.postGradType === "work"
-                    ? "company name"
-                    : "school"}{" "}
-                  to classmates
+                  Display your {previousData.postGradType === 'work' ? 'company name' : 'school'} to
+                  classmates
                 </p>
               </div>
               <input
                 type="checkbox"
                 checked={
-                  previousData.postGradType === "work"
-                    ? formData.showCompany
-                    : formData.showSchool
+                  previousData.postGradType === 'work' ? formData.showCompany : formData.showSchool
                 }
                 onChange={(e) =>
                   setFormData((prev) => ({
                     ...prev,
-                    [previousData.postGradType === "work"
-                      ? "showCompany"
-                      : "showSchool"]: e.target.checked,
+                    [previousData.postGradType === 'work' ? 'showCompany' : 'showSchool']:
+                      e.target.checked,
                   }))
                 }
                 className="h-6 w-6 rounded border-gray-300 text-[#F9C5D1] focus:ring-[#F9C5D1] transition-colors cursor-pointer"
@@ -102,28 +98,23 @@ const Step4: FC = () => {
             <label className="flex items-center justify-between cursor-pointer p-2 hover:bg-gray-50 rounded-lg transition-colors">
               <div>
                 <span className="font-medium text-[#333333]">
-                  Show{" "}
-                  {previousData.postGradType === "work" ? "Role" : "Program"}
+                  Show {previousData.postGradType === 'work' ? 'Role' : 'Program'}
                 </span>
                 <p className="text-sm text-[#666666]">
-                  Display your{" "}
-                  {previousData.postGradType === "work" ? "role" : "program"} to
+                  Display your {previousData.postGradType === 'work' ? 'role' : 'program'} to
                   classmates
                 </p>
               </div>
               <input
                 type="checkbox"
                 checked={
-                  previousData.postGradType === "work"
-                    ? formData.showRole
-                    : formData.showProgram
+                  previousData.postGradType === 'work' ? formData.showRole : formData.showProgram
                 }
                 onChange={(e) =>
                   setFormData((prev) => ({
                     ...prev,
-                    [previousData.postGradType === "work"
-                      ? "showRole"
-                      : "showProgram"]: e.target.checked,
+                    [previousData.postGradType === 'work' ? 'showRole' : 'showProgram']:
+                      e.target.checked,
                   }))
                 }
                 className="h-6 w-6 rounded border-gray-300 text-[#F9C5D1] focus:ring-[#F9C5D1] transition-colors cursor-pointer"

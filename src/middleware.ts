@@ -37,7 +37,7 @@ export async function middleware(request: NextRequest) {
 
   // Check if user is authenticated
   if (!token?.email) {
-    return NextResponse.redirect(new URL('/auth/signin', request.url));
+    return NextResponse.redirect(new URL('/', request.url));
   }
 
   // Onboarding paths
@@ -52,10 +52,7 @@ export async function middleware(request: NextRequest) {
     if (onboardingCache.has(userId) && now - onboardingCache.get(userId)!.timestamp < CACHE_TTL) {
       // Use cached value if it's still fresh
       isOnboarded = onboardingCache.get(userId)!.status;
-      console.log('Using cached onboarding status for user:', userId);
     } else {
-      // Otherwise fetch from API
-      console.log('Fetching onboarding status for user:', userId);
       const baseUrl = request.nextUrl.origin;
       const response = await fetch(`${baseUrl}/api/auth/onboarding-status`, {
         headers: {
@@ -79,7 +76,7 @@ export async function middleware(request: NextRequest) {
 
     // If user hasn't completed onboarding and isn't on an onboarding path
     if (!isOnboarded && !isOnboardingPath) {
-      return NextResponse.redirect(new URL('/onboarding/step1', request.url));
+      return NextResponse.redirect(new URL('/onboarding', request.url));
     }
 
     // If user has completed onboarding but tries to access onboarding paths
