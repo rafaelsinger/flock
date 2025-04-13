@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Filter } from 'lucide-react';
 import { US_STATES, COUNTRIES } from '@/constants/location';
 import { INDUSTRIES } from '@/constants/industries';
@@ -14,21 +14,54 @@ interface FilterOptions {
 
 interface FilterPanelProps {
   onFilter: (filters: FilterOptions) => void;
+  currentFilters?: FilterOptions;
 }
 
-export const FilterPanel: React.FC<FilterPanelProps> = ({ onFilter }) => {
+export const FilterPanel: React.FC<FilterPanelProps> = ({ onFilter, currentFilters = {} }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [filters, setFilters] = useState<FilterOptions>({
-    postGradType: 'all',
-    country: '',
-    state: '',
-    city: '',
-    industry: '',
-  });
+  const [postGradType, setPostGradType] = useState(currentFilters.postGradType || 'all');
+  const [country, setCountry] = useState(currentFilters.country || '');
+  const [state, setState] = useState(currentFilters.state || '');
+  const [city, setCity] = useState(currentFilters.city || '');
+  const [industry, setIndustry] = useState(currentFilters.industry || '');
+
+  // Create a ref for the filter panel container
+  const filterPanelRef = useRef<HTMLDivElement>(null);
+
+  // Handle click outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (filterPanelRef.current && !filterPanelRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+
+    // Add event listener when panel is open
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    // Clean up the event listener
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen]);
+
+  useEffect(() => {
+    setPostGradType(currentFilters.postGradType || 'all');
+    setCountry(currentFilters.country || '');
+    setState(currentFilters.state || '');
+    setCity(currentFilters.city || '');
+    setIndustry(currentFilters.industry || '');
+  }, [currentFilters]);
 
   const handleFilterChange = (newFilters: Partial<FilterOptions>) => {
-    const updatedFilters = { ...filters, ...newFilters };
-    setFilters(updatedFilters);
+    const updatedFilters = { ...currentFilters, ...newFilters };
+    setPostGradType(updatedFilters.postGradType || 'all');
+    setCountry(updatedFilters.country || '');
+    setState(updatedFilters.state || '');
+    setCity(updatedFilters.city || '');
+    setIndustry(updatedFilters.industry || '');
     onFilter(updatedFilters);
   };
 
@@ -36,10 +69,10 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({ onFilter }) => {
     'w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:border-[#F9C5D1] focus:ring-2 focus:ring-[#F9C5D1]/20 outline-none transition-colors hover:border-[#F9C5D1]/50 cursor-pointer text-[#333333]';
   const labelClasses = 'block text-sm font-medium text-[#333333] mb-2';
 
-  const showStateField = filters.country === 'USA';
+  const showStateField = country === 'USA';
 
   return (
-    <div className="relative">
+    <div className="relative" ref={filterPanelRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="flex cursor-pointer items-center gap-2 px-4 py-2.5 rounded-lg border border-gray-200 
@@ -55,7 +88,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({ onFilter }) => {
             <div>
               <label className={labelClasses}>Post-Grad Path</label>
               <select
-                value={filters.postGradType}
+                value={postGradType}
                 onChange={(e) =>
                   handleFilterChange({
                     postGradType: e.target.value as 'work' | 'school' | 'all',
@@ -72,7 +105,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({ onFilter }) => {
             <div>
               <label className={labelClasses}>Country</label>
               <select
-                value={filters.country}
+                value={country}
                 onChange={(e) =>
                   handleFilterChange({
                     country: e.target.value,
@@ -94,7 +127,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({ onFilter }) => {
               <div>
                 <label className={labelClasses}>State</label>
                 <select
-                  value={filters.state}
+                  value={state}
                   onChange={(e) =>
                     handleFilterChange({
                       state: e.target.value,
@@ -117,7 +150,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({ onFilter }) => {
               <label className={labelClasses}>City</label>
               <input
                 type="text"
-                value={filters.city}
+                value={city}
                 onChange={(e) =>
                   handleFilterChange({
                     city: e.target.value,
@@ -131,7 +164,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({ onFilter }) => {
             <div>
               <label className={labelClasses}>Industry</label>
               <select
-                value={filters.industry}
+                value={industry}
                 onChange={(e) =>
                   handleFilterChange({
                     industry: e.target.value,

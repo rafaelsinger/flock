@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { Search } from "lucide-react";
+import React, { useEffect, useState } from 'react';
+import { Search } from 'lucide-react';
 
 export interface SearchBarProps {
   placeholder?: string;
@@ -9,22 +9,29 @@ export interface SearchBarProps {
 }
 
 export const SearchBar: React.FC<SearchBarProps> = ({
-  placeholder = "Search...",
-  className = "",
+  placeholder = 'Search...',
+  className = '',
   onChange,
   value,
 }) => {
   const [localValue, setLocalValue] = useState(value);
 
+  // Update localValue when value prop changes from parent
+  useEffect(() => {
+    setLocalValue(value);
+  }, [value]);
+
   // Debounce the search input
   useEffect(() => {
-    const timer = setTimeout(() => {
-      if (localValue !== value) {
+    // Only trigger onChange if the local value is different from the prop value
+    // and the change originated from the user (not from the parent)
+    if (localValue !== value) {
+      const timer = setTimeout(() => {
         onChange(localValue);
-      }
-    }, 300);
+      }, 300);
 
-    return () => clearTimeout(timer);
+      return () => clearTimeout(timer);
+    }
   }, [localValue, onChange, value]);
 
   return (
@@ -42,4 +49,4 @@ export const SearchBar: React.FC<SearchBarProps> = ({
       />
     </div>
   );
-}; 
+};
