@@ -133,19 +133,21 @@ export const DirectoryContent: React.FC = () => {
         )}
       </div>
 
-      <div className="bg-white rounded-xl p-8 shadow-md border border-gray-100">
+      <div className="bg-white rounded-xl p-8 shadow-md border border-gray-100 min-h-[50vh] flex flex-col">
         {error ? (
           <div className="text-red-500 text-center py-8">
             Error loading users. Please try again later.
           </div>
         ) : (
-          <UserGrid
-            users={users}
-            loading={isLoading}
-            page={page}
-            totalPages={totalPages}
-            onPageChange={setPage}
-          />
+          <div className="flex flex-col flex-grow justify-between">
+            <UserGrid
+              users={users}
+              loading={isLoading}
+              page={page}
+              totalPages={totalPages}
+              onPageChange={setPage}
+            />
+          </div>
         )}
       </div>
     </>
