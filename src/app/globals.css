@@ -204,3 +204,7 @@ body {
     opacity: 1;
   }
 }
+
+.bubble:hover {
+  transform: translate(-50%, -50%) scale(1.2); /* Grow 20% bigger */
+}

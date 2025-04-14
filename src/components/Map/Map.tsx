@@ -53,6 +53,13 @@ export const FlockMap: React.FC = () => {
     transitionDuration: 500,
   });
 
+  const [hoveredCity, setHoveredCity] = React.useState<{
+    city: string;
+    value: number;
+    x: number;
+    y: number;
+  } | null>(null);
+
   const [selectedState, setSelectedState] = React.useState<string | null>(null);
   const [hoveredStateId, setHoveredStateId] = React.useState<number | null>(null);
   const [hoverInfo, setHoverInfo] = React.useState<{
@@ -220,7 +227,15 @@ export const FlockMap: React.FC = () => {
               <Marker key={city} longitude={coords[0]} latitude={coords[1]}>
                 <div
                   className="bubble"
-                  title={`${city}: ${value} grads`}
+                  onMouseEnter={(e) => {
+                    setHoveredCity({
+                      city,
+                      value,
+                      x: e.clientX,
+                      y: e.clientY,
+                    });
+                  }}
+                  onMouseLeave={() => setHoveredCity(null)}
                   style={{
                     width: `${bubbleSize}px`,
                     height: `${bubbleSize}px`,
@@ -228,8 +243,8 @@ export const FlockMap: React.FC = () => {
                     borderRadius: '50%',
                     opacity: 0.8,
                     border: '1px solid #333',
-                    transform: 'translate(-50%, -50%) scale(0)', // start small
-                    animation: 'bubble-pop 0.5s ease forwards',
+                    transform: 'translate(-50%, -50%) scale(1)',
+                    transition: 'transform 0.2s ease',
                     cursor: 'pointer',
                   }}
                 />
@@ -266,6 +281,19 @@ export const FlockMap: React.FC = () => {
         >
           <div className="font-medium">{hoverInfo.name}</div>
           <div className="text-gray-500">{hoverInfo.value} grads</div>
+        </div>
+      )}
+      {hoveredCity && (
+        <div
+          className="fixed bg-white px-3 py-2 rounded-lg shadow-md border border-gray-100 text-xs z-50 pointer-events-none"
+          style={{
+            left: hoveredCity.x,
+            top: hoveredCity.y,
+            transform: 'translate(-50%, -100%)',
+          }}
+        >
+          <div className="font-medium">{hoveredCity.city}</div>
+          <div className="text-gray-500">{hoveredCity.value} grads</div>
         </div>
       )}
 
