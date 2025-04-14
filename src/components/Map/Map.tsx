@@ -1,6 +1,6 @@
 'use client';
 import * as React from 'react';
-import Map, { Source, Layer, Marker, LayerProps, ViewState } from 'react-map-gl/maplibre';
+import { Map as MapGL, Source, Layer, Marker, LayerProps, MapRef } from 'react-map-gl/maplibre';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { useQuery } from '@tanstack/react-query';
 import { scaleQuantize } from 'd3-scale';
@@ -46,6 +46,8 @@ const hoverLayerStyle: LayerProps = {
 };
 
 export const FlockMap: React.FC = () => {
+  const mapRef = React.useRef<MapRef>(null);
+
   const [viewState, setViewState] = React.useState({
     longitude: -97,
     latitude: 38,
@@ -153,28 +155,33 @@ export const FlockMap: React.FC = () => {
     const [lon, lat] = centroid.geometry.coordinates;
 
     setSelectedState(clickedState);
-    setViewState({
-      longitude: lon,
-      latitude: lat,
-      zoom: 6,
-      transitionDuration: 500,
-    });
-  };
 
-  const handleViewStateChange = (evt: { viewState: ViewState }) => {
-    setViewState((prev) => ({
-      ...evt.viewState,
-      transitionDuration: prev.transitionDuration,
-    }));
+    if (mapRef.current) {
+      mapRef.current.flyTo({
+        center: [lon, lat],
+        zoom: 6,
+        speed: 1.2, // slower is smoother
+        curve: 1.5, // curvature of flight path
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        easing: (t: any) => t, // linear easing
+        essential: true,
+      });
+    }
   };
 
   return (
     <div className="w-full h-full relative">
-      <Map
+      <MapGL
         {...viewState}
+        ref={mapRef}
         style={{ width: '100%', height: '100%' }}
         mapStyle={`https://api.maptiler.com/maps/streets/style.json?key=OSNs9Q0u9qOO5KUhz2WB`}
-        onMove={handleViewStateChange}
+        onMove={(evt) => {
+          setViewState((prev) => ({
+            ...evt.viewState,
+            transitionDuration: prev.transitionDuration,
+          }));
+        }}
         interactiveLayerIds={['states-fill']}
         onClick={(event) => {
           const feature = event.features?.[0];
@@ -251,7 +258,7 @@ export const FlockMap: React.FC = () => {
               </Marker>
             );
           })}
-      </Map>
+      </MapGL>
 
       {/* Zoom Controls */}
       <div className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col gap-2 z-10">
@@ -322,12 +329,17 @@ export const FlockMap: React.FC = () => {
         <button
           onClick={() => {
             setSelectedState(null);
-            setViewState({
-              longitude: -97,
-              latitude: 38,
-              zoom: 3,
-              transitionDuration: 500,
-            });
+            if (mapRef.current) {
+              mapRef.current.flyTo({
+                center: [-97, 38],
+                zoom: 3,
+                speed: 1.2,
+                curve: 1.5,
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                easing: (t: any) => t,
+                essential: true,
+              });
+            }
           }}
           className="absolute top-4 right-4 bg-white px-4 py-2 rounded-lg shadow-md border border-gray-100 hover:bg-gray-50 transition z-10"
         >

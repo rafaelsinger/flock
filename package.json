@@ -30,6 +30,7 @@
     "@turf/center": "^7.2.0",
     "@types/nodemailer": "^6.4.17",
     "classnames": "^2.5.1",
+    "d3-ease": "^3.0.1",
     "d3-scale": "^4.0.2",
     "eslint-config-prettier": "^10.1.2",
     "eslint-plugin-prettier": "^5.2.6",
@@ -52,6 +53,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
+    "@types/d3-ease": "^3.0.2",
     "@types/d3-scale": "^4.0.9",
     "@types/node": "^20",
     "@types/react": "^19",

@@ -205,6 +205,11 @@ body {
   }
 }
 
+.bubble {
+  animation: bubble-pop 0.5s ease forwards;
+}
+
 .bubble:hover {
-  transform: translate(-50%, -50%) scale(1.2); /* Grow 20% bigger */
+  transform: translate(-50%, -50%) scale(1.3);
+  transition: transform 0.2s ease;
 }
