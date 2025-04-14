@@ -246,26 +246,102 @@ export const LandingPage = () => {
                   }}
                 />
 
-                {/* 3D Card effect - improved performance with will-change */}
+                {/* World Map with Boston connections - replacing static logo */}
                 <div
-                  className="relative h-[220px] w-[220px] sm:h-[280px] sm:w-[280px] md:h-[400px] md:w-[400px] transform perspective-1000 transition-transform duration-300 group"
+                  className="relative h-[220px] w-[320px] sm:h-[280px] sm:w-[400px] md:h-[400px] md:w-[500px] transform perspective-1000 transition-transform duration-300 group"
                   style={{
                     transform: `perspective(1000px) rotateX(${rotation.x}deg) rotateY(${rotation.y}deg) scale3d(1, 1, 1)`,
                     willChange: 'transform',
                   }}
                 >
+                  {/* Map background with improved subtle gradient and pink tint */}
+                  <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-[#F9C5D1]/20 to-white/60 backdrop-blur-sm border border-white/40 shadow-xl overflow-hidden">
+                    {/* Enhanced world map overlay with pink tint */}
+                    <div className="absolute inset-0">
+                      <div className="absolute inset-0 bg-[#F9C5D1]/10 mix-blend-multiply"></div>
+                      <Image
+                        src="/world-map.svg"
+                        alt="World Map"
+                        fill
+                        className="object-cover opacity-40"
+                        style={{
+                          filter: 'drop-shadow(0 0 8px rgba(249, 197, 209, 0.3))',
+                        }}
+                      />
+                    </div>
+
+                    {/* Boston marker - enhanced pulsing red dot with improved position */}
+                    <div className="absolute top-[32%] left-[22%] w-4 h-4 md:w-5 md:h-5">
+                      <div className="absolute inset-0 rounded-full bg-[#F28B82] animate-ping opacity-70"></div>
+                      <div className="absolute inset-0 rounded-full bg-gradient-to-br from-[#F28B82] to-[#F9C5D1] shadow-lg"></div>
+                    </div>
+
+                    {/* Random dots representing people across countries */}
+                    {/* North America dots */}
+                    <div className="absolute top-[25%] left-[18%] w-1.5 h-1.5 rounded-full bg-[#F9C5D1] opacity-80"></div>
+                    <div className="absolute top-[28%] left-[15%] w-2 h-2 rounded-full bg-[#A7D7F9] opacity-80"></div>
+                    <div className="absolute top-[33%] left-[16%] w-1.5 h-1.5 rounded-full bg-[#F9C5D1] opacity-80"></div>
+                    <div className="absolute top-[30%] left-[19%] w-1 h-1 rounded-full bg-[#A7D7F9] opacity-80"></div>
+                    <div className="absolute top-[36%] left-[14%] w-2 h-2 rounded-full bg-[#F9C5D1] opacity-80"></div>
+                    <div className="absolute top-[29%] left-[20%] w-1.5 h-1.5 rounded-full bg-[#A7D7F9] opacity-80 animate-pulse-slow"></div>
+
+                    {/* Europe dots */}
+                    <div className="absolute top-[26%] left-[40%] w-1.5 h-1.5 rounded-full bg-[#F9C5D1] opacity-80"></div>
+                    <div className="absolute top-[29%] left-[42%] w-1 h-1 rounded-full bg-[#A7D7F9] opacity-80"></div>
+                    <div className="absolute top-[25%] left-[45%] w-2 h-2 rounded-full bg-[#F9C5D1] opacity-80 animate-pulse-slow"></div>
+                    <div className="absolute top-[28%] left-[39%] w-1.5 h-1.5 rounded-full bg-[#A7D7F9] opacity-80"></div>
+                    <div className="absolute top-[30%] left-[44%] w-1 h-1 rounded-full bg-[#F9C5D1] opacity-80"></div>
+
+                    {/* Asia dots */}
+                    <div className="absolute top-[28%] left-[60%] w-1.5 h-1.5 rounded-full bg-[#F9C5D1] opacity-80"></div>
+                    <div className="absolute top-[32%] left-[65%] w-1 h-1 rounded-full bg-[#A7D7F9] opacity-80"></div>
+                    <div className="absolute top-[34%] left-[70%] w-1.5 h-1.5 rounded-full bg-[#F9C5D1] opacity-80"></div>
+                    <div className="absolute top-[30%] left-[75%] w-2 h-2 rounded-full bg-[#A7D7F9] opacity-80 animate-pulse-slow"></div>
+                    <div className="absolute top-[33%] left-[80%] w-1 h-1 rounded-full bg-[#F9C5D1] opacity-80"></div>
+                    <div className="absolute top-[35%] left-[55%] w-1.5 h-1.5 rounded-full bg-[#A7D7F9] opacity-80"></div>
+
+                    {/* Australia dots */}
+                    <div className="absolute top-[65%] left-[75%] w-2 h-2 rounded-full bg-[#F9C5D1] opacity-80"></div>
+                    <div className="absolute top-[68%] left-[80%] w-1 h-1 rounded-full bg-[#A7D7F9] opacity-80 animate-pulse-slow"></div>
+                    <div className="absolute top-[67%] left-[77%] w-1.5 h-1.5 rounded-full bg-[#F9C5D1] opacity-80"></div>
+
+                    {/* South America dots */}
+                    <div className="absolute top-[55%] left-[30%] w-1.5 h-1.5 rounded-full bg-[#F9C5D1] opacity-80"></div>
+                    <div className="absolute top-[60%] left-[28%] w-2 h-2 rounded-full bg-[#A7D7F9] opacity-80 animate-pulse-slow"></div>
+                    <div className="absolute top-[58%] left-[32%] w-1 h-1 rounded-full bg-[#F9C5D1] opacity-80"></div>
+                    <div className="absolute top-[63%] left-[30%] w-1.5 h-1.5 rounded-full bg-[#A7D7F9] opacity-80"></div>
+
+                    {/* Africa dots */}
+                    <div className="absolute top-[42%] left-[48%] w-1.5 h-1.5 rounded-full bg-[#F9C5D1] opacity-80"></div>
+                    <div className="absolute top-[45%] left-[45%] w-1 h-1 rounded-full bg-[#A7D7F9] opacity-80"></div>
+                    <div className="absolute top-[48%] left-[47%] w-2 h-2 rounded-full bg-[#F9C5D1] opacity-80 animate-pulse-slow"></div>
+                    <div className="absolute top-[46%] left-[50%] w-1.5 h-1.5 rounded-full bg-[#A7D7F9] opacity-80"></div>
+
+                    {/* Interactive elements: pulse rings that follow cursor/touch position */}
+                    <div
+                      className="absolute rounded-full border border-[#F9C5D1]/40 pointer-events-none"
+                      style={{
+                        width: '60px',
+                        height: '60px',
+                        top: `calc(${50 + mousePosition.y * 30}% - 30px)`,
+                        left: `calc(${50 + mousePosition.x * 30}% - 30px)`,
+                        opacity: 0.5,
+                        transition: 'top 0.5s ease-out, left 0.5s ease-out',
+                        boxShadow: '0 0 15px rgba(249, 197, 209, 0.3)',
+                        animation: 'ping-slow 3s ease-in-out infinite',
+                      }}
+                    ></div>
+
+                    {/* Overlay text */}
+                    <div className="absolute bottom-3 right-3 text-xs text-[#333333]/70 font-medium backdrop-blur-sm bg-white/40 px-2 py-1 rounded-full">
+                      BC Eagles Worldwide
+                    </div>
+                  </div>
+
                   {/* Add reflection effect */}
-                  <div className="absolute inset-0 rounded-3xl bg-gradient-to-tr from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <div className="absolute inset-0 rounded-3xl bg-gradient-to-tr from-white/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 
-                  <Image
-                    src="/logo.svg"
-                    alt="Flock Illustration"
-                    fill
-                    className="object-contain drop-shadow-xl"
-                    priority
-                  />
-
-                  {/* Add floating UI elements around illustration - hide on very small screens */}
+                  {/* Add floating UI elements around illustration */}
                   <div className="absolute -right-4 top-1/4 p-2 bg-white rounded-lg shadow-lg animate-float-medium hidden sm:block">
                     <Users className="w-6 h-6 text-[#F28B82]" />
                   </div>

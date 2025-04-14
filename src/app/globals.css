@@ -173,3 +173,20 @@ body {
     transform: translateY(0);
   }
 }
+
+/* Map connection animation */
+@keyframes drawLine {
+  0% {
+    opacity: 0;
+    transform-origin: left;
+    transform: scaleX(0) translateY(0);
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform-origin: left;
+    transform: scaleX(1) translateY(0);
+  }
+}
