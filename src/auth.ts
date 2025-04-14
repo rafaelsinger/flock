@@ -6,6 +6,7 @@ import { PrismaAdapter } from '@auth/prisma-adapter';
 import { User } from './types/user';
 import { prisma } from './lib/prisma';
 import authConfig from './auth.config';
+import { redirect } from 'next/navigation';
 import { NextResponse } from 'next/server';
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
@@ -13,11 +14,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   session: { strategy: 'jwt' },
   callbacks: {
     authorized: async ({ request, auth }) => {
-      console.log('SHOULD YOU BE ALLOWED TO SEE THIS: ', !!auth);
-      if (!auth) {
-        return NextResponse.json('Invalid auth token', { status: 401 });
-      }
-      return true;
+      return !!auth;
     },
     signIn({ account, profile }) {
       if (
@@ -36,18 +33,23 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
       if (trigger === 'signIn' && user?.id) {
         try {
-          const userData = await prisma.user.findUnique({
-            where: { id: user.id },
-          });
-          if (userData) {
-            token.userSession = userData;
+          // Make sure we have a base URL
+          const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
+          const response = await fetch(`${baseUrl}/api/users/${user.id}`);
+
+          if (!response.ok) {
+            throw new Error('Failed to fetch user data');
           }
+
+          const userData = await response.json();
+          token.userSession = userData;
         } catch (error) {
-          console.error('Error fetching user data:', error);
+          console.error('Error fetching user data in JWT callback:', error);
+          token.userSession = user;
         }
       }
-      if (trigger === 'update') {
-        if (session) token = { ...token, ...session };
+      if (trigger === 'update' && session) {
+        token = { ...token, ...session };
       }
       return token;
     },
