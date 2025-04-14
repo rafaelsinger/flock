@@ -76,6 +76,7 @@ export const FlockMap: React.FC<FlockMapProps> = ({ onCitySelect }) => {
   } | null>(null);
 
   const [zoomedIn, setZoomedIn] = React.useState(false);
+  const [mapLoaded, setMapLoaded] = React.useState(false);
 
   const { data: locationData, isLoading } = useQuery<LocationData>({
     queryKey: ['locationData', selectedState],
@@ -183,6 +184,8 @@ export const FlockMap: React.FC<FlockMapProps> = ({ onCitySelect }) => {
     }
   };
 
+  const showSkeleton = !mapLoaded || isLoading;
+
   return (
     <div className={`w-full h-full relative ${zoomedIn ? 'bg-gray-50' : 'bg-[#F9F9F9]'}`}>
       <MapGL
@@ -198,6 +201,7 @@ export const FlockMap: React.FC<FlockMapProps> = ({ onCitySelect }) => {
           }));
         }}
         interactiveLayerIds={['states-fill']}
+        onLoad={() => setMapLoaded(true)}
         onClick={(event) => {
           const feature = event.features?.[0];
           if (feature && !selectedState) {
@@ -241,9 +245,9 @@ export const FlockMap: React.FC<FlockMapProps> = ({ onCitySelect }) => {
             const coords = CITY_COORDINATES[city];
             if (!coords) return null;
 
-            // Smarter, nonlinear size scaling
+            // Nonlinear size scaling
             const normalizedValue = Math.sqrt(value) / Math.sqrt(maxValue); // 0 to 1
-            const bubbleSize = Math.min(40, 10 + normalizedValue * 30); // control min/max
+            const bubbleSize = Math.min(50, 10 + normalizedValue * 40); // control min/max
 
             return (
               <Marker key={city} longitude={coords[0]} latitude={coords[1]}>
@@ -326,7 +330,7 @@ export const FlockMap: React.FC<FlockMapProps> = ({ onCitySelect }) => {
           {selectedState ? 'City Graduates' : 'State Graduates'}
         </div>
         <div className="space-y-2.5">
-          {isLoading
+          {showSkeleton
             ? renderLegendSkeleton()
             : legendData.map(({ range, color }) => (
                 <div key={range} className="flex items-center gap-2.5">
