@@ -58,6 +58,10 @@ const Step3: FC = () => {
     }
   }, [previousData, router]);
 
+  useEffect(() => {
+    router.prefetch('/onboarding/step4');
+  }, [router]);
+
   if (!previousData || !previousData.postGradType) {
     return null;
   }

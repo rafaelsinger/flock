@@ -71,6 +71,10 @@ const Step4: FC = () => {
     }
   }, [previousData, router]);
 
+  useEffect(() => {
+    router.prefetch('/onboarding/review');
+  }, [router]);
+
   if (!previousData || !previousData.postGradType) {
     return null;
   }

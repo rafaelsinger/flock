@@ -1,6 +1,6 @@
 'use client';
 
-import { FC, useState } from 'react';
+import { FC, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { BsBriefcase } from 'react-icons/bs';
 import { LuGraduationCap } from 'react-icons/lu';
@@ -32,6 +32,11 @@ const Step1: FC = () => {
       updateOnboardingData.mutate(type);
     }, 400); // Slight delay for animation
   };
+
+  useEffect(() => {
+    router.prefetch('/onboarding/step2-work');
+    router.prefetch('/onboarding/step2-school');
+  }, [router]);
 
   return (
     <motion.div

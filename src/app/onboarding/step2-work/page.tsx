@@ -52,6 +52,10 @@ const Step2Work: FC = () => {
     }
   }, [previousData, router]);
 
+  useEffect(() => {
+    router.prefetch('/onboarding/step3');
+  }, [router]);
+
   if (!previousData || previousData.postGradType !== PostGradType.work) {
     return null;
   }

@@ -49,6 +49,10 @@ const Step2School: FC = () => {
     setIsFormValid(formData.school.trim() !== '' && formData.program.trim() !== '');
   }, [formData]);
 
+  useEffect(() => {
+    router.prefetch('/onboarding/step3');
+  }, [router]);
+
   if (!previousData || previousData.postGradType !== PostGradType.school) {
     return null;
   }
