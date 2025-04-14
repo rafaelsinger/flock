@@ -164,31 +164,6 @@ export const LandingPage = () => {
               />
             </div>
 
-            {/* Enhanced floating decorative elements - optimized for all screen sizes */}
-            <div className="absolute inset-0 pointer-events-none z-0">
-              <div
-                className="absolute right-[25%] top-[20%] w-8 h-8 md:w-12 md:h-12 rounded-lg bg-[#F9C5D1]/40 animate-float-slow hidden sm:block"
-                style={{
-                  transform: `translate(${mousePosition.x * 40}px, ${mousePosition.y * 40}px) rotate(${rotation.x}deg)`,
-                  willChange: 'transform',
-                }}
-              />
-              <div
-                className="absolute right-[35%] bottom-[25%] w-6 h-6 md:w-10 md:h-10 rounded-md bg-[#F28B82]/20 rotate-45 animate-float-fast hidden sm:block"
-                style={{
-                  transform: `translate(${mousePosition.x * 30}px, ${mousePosition.y * 30}px) rotate(${45 + rotation.y}deg)`,
-                  willChange: 'transform',
-                }}
-              />
-              <div
-                className="absolute left-[30%] bottom-[15%] w-12 h-12 md:w-14 md:h-14 rounded-full border-2 border-[#F9C5D1]/30 animate-float-medium hidden sm:block"
-                style={{
-                  transform: `translate(${mousePosition.x * 25}px, ${mousePosition.y * 25}px)`,
-                  willChange: 'transform',
-                }}
-              />
-            </div>
-
             <div className="grid gap-8 lg:gap-16 md:grid-cols-2 items-center relative z-10 my-8 md:my-0">
               {/* Content Column - Enhanced with better animations */}
               <div className="flex flex-col space-y-8 max-w-lg">
@@ -224,14 +199,6 @@ export const LandingPage = () => {
                     <span>Start with BC Email</span>
                     <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                   </Button>
-                  {/* COMMENTED OUT FOR NOW UNTIL WE HAVE A REAL NUMBER
-                  <div className="flex items-center justify-center mt-2 sm:mt-0 bg-white/80 backdrop-blur-sm py-2 px-4 rounded-lg border border-gray-100">
-                    <Users className="w-4 h-4 mr-1.5 text-[#F28B82]" />
-                    <span className="text-sm sm:text-base text-[#333333]/70">
-                      <span className="font-medium">200+</span> BC grads joined
-                    </span>
-                  </div>
-                  */}
                 </div>
               </div>
 
@@ -331,23 +298,22 @@ export const LandingPage = () => {
                         animation: 'ping-slow 3s ease-in-out infinite',
                       }}
                     ></div>
-
-                    {/* Overlay text */}
-                    <div className="absolute bottom-3 right-3 text-xs text-[#333333]/70 font-medium backdrop-blur-sm bg-white/40 px-2 py-1 rounded-full">
-                      BC Eagles Worldwide
-                    </div>
                   </div>
 
                   {/* Add reflection effect */}
                   <div className="absolute inset-0 rounded-3xl bg-gradient-to-tr from-white/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 
-                  {/* Add floating UI elements around illustration */}
+                  {/* Add floating UI elements around the map */}
                   <div className="absolute -right-4 top-1/4 p-2 bg-white rounded-lg shadow-lg animate-float-medium hidden sm:block">
                     <Users className="w-6 h-6 text-[#F28B82]" />
                   </div>
 
                   <div className="absolute -left-4 bottom-1/4 p-2 bg-white rounded-lg shadow-lg animate-float-slow hidden sm:block">
                     <Users className="w-6 h-6 text-[#A7D7F9]" />
+                  </div>
+
+                  <div className="absolute right-1/4 -bottom-4 p-2 bg-white rounded-lg shadow-lg animate-float-fast hidden sm:block">
+                    <Users className="w-6 h-6 text-[#F28B82]" />
                   </div>
                 </div>
               </div>
