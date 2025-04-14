@@ -272,13 +272,13 @@ export const FlockMap: React.FC = () => {
       <div className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col gap-2 z-10">
         <button
           onClick={() => setViewState((s) => ({ ...s, zoom: Math.min(8, s.zoom * 1.2) }))}
-          className="p-2 bg-white rounded-lg shadow-md border hover:bg-gray-50 transition"
+          className="p-2 cursor-pointer bg-white rounded-lg shadow-md border transition transform hover:scale-110 hover:bg-gray-100 hover:shadow-lg"
         >
           <Plus className="w-4 h-4 text-[#333]" />
         </button>
         <button
           onClick={() => setViewState((s) => ({ ...s, zoom: Math.max(1, s.zoom / 1.2) }))}
-          className="p-2 bg-white rounded-lg shadow-md border hover:bg-gray-50 transition"
+          className="p-2 cursor-pointer bg-white rounded-lg shadow-md border transition transform hover:scale-110 hover:bg-gray-100 hover:shadow-lg"
         >
           <Minus className="w-4 h-4 text-[#333]" />
         </button>
@@ -291,7 +291,7 @@ export const FlockMap: React.FC = () => {
           style={{
             left: hoverInfo.x,
             top: hoverInfo.y,
-            transform: 'translate(-50%, 200%)',
+            transform: 'translate(-20%, 300%)',
           }}
         >
           <div className="font-medium text-[#333]">{hoverInfo.name}</div>
