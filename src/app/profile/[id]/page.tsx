@@ -28,7 +28,7 @@ const labelClasses = 'block text-sm font-medium text-[#333333] mb-2';
 const ProfilePage: FC = () => {
   const params = useParams();
   const userId = params.id as string;
-  const { data: session } = useSession();
+  const { data: session, update } = useSession();
   const isOwnProfile = session?.user.id === userId;
   const queryClient = useQueryClient();
 
@@ -63,7 +63,9 @@ const ProfilePage: FC = () => {
 
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: async (user) => {
+      // update session
+      await update(user);
       // Invalidate and refetch the user data
       queryClient.invalidateQueries({ queryKey: ['user', userId] });
       setIsEditing(false);

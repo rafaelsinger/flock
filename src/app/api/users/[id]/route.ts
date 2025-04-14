@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { auth } from '@/auth';
 import { UserUpdate } from '@/types/user';
 
-export async function GET(request: NextRequest) {
+export const GET = auth(async function GET(request: NextRequest) {
   try {
     const id = request.url.split('/users/')[1];
     const user = await prisma.user.findFirst({
@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
     console.error('Error fetching user:', error);
     return new NextResponse('Internal Server Error', { status: 500 });
   }
-}
+});
 
 export async function PUT(request: Request, context: { params: { id: string } }) {
   const { params } = await context;

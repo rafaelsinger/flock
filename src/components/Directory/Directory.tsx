@@ -9,15 +9,14 @@ import { DirectoryContent } from './DirectoryContent';
 import { useRouter } from 'next/navigation';
 
 export const Directory = () => {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const router = useRouter();
 
-  // Prefer session ID, fall back to store ID
   const userId = session?.user?.id;
   const isOnboarded = session?.user.isOnboarded;
 
-  // Check if onboarding is complete
-  if (!isOnboarded) {
+  // Check if onboarding is complete and session isn't loading
+  if (!isOnboarded && status !== 'loading') {
     router.push('/onboarding/step1');
 
     // Show loading while redirecting
