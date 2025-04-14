@@ -86,7 +86,7 @@ const Step2School: FC = () => {
 
   return (
     <motion.div className="space-y-8" variants={pageVariants} initial="hidden" animate="visible">
-      <OnboardingProgress currentStep={2} totalSteps={4} />
+      <OnboardingProgress currentStep={2} totalSteps={5} />
 
       <motion.div className="text-center" variants={itemVariants}>
         <h1 className="text-3xl font-semibold text-[#333333] mb-3">Tell us about your studies</h1>

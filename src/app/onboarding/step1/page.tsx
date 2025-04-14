@@ -45,7 +45,7 @@ const Step1: FC = () => {
       transition={{ duration: 0.4 }}
       className="space-y-8"
     >
-      <OnboardingProgress currentStep={1} totalSteps={4} />
+      <OnboardingProgress currentStep={1} totalSteps={5} />
 
       <div className="text-center">
         <motion.div

@@ -116,7 +116,7 @@ const Step3: FC = () => {
       initial="hidden"
       animate="visible"
     >
-      <OnboardingProgress currentStep={3} totalSteps={4} />
+      <OnboardingProgress currentStep={3} totalSteps={5} />
 
       <motion.div className="text-center" variants={itemVariants}>
         <h1 className="text-3xl font-semibold text-[#333333] mb-3">Where are you headed?</h1>

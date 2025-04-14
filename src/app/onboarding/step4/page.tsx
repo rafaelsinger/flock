@@ -161,7 +161,7 @@ const Step4: FC = () => {
       initial="hidden"
       animate="visible"
     >
-      <OnboardingProgress currentStep={4} totalSteps={4} />
+      <OnboardingProgress currentStep={4} totalSteps={5} />
 
       <motion.div className="text-center" variants={itemVariants}>
         <h1 className="text-3xl font-semibold text-[#333333] mb-3">Privacy Preferences</h1>
