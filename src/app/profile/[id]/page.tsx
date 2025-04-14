@@ -1,17 +1,20 @@
 'use client';
 
-import { FC, useState } from 'react';
+import { FC, useState, useRef, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useSession, signOut } from 'next-auth/react';
 import { IoArrowBack } from 'react-icons/io5';
-import { BsBriefcase } from 'react-icons/bs';
+import { BsBriefcase, BsGeoAlt, BsEyeFill, BsPerson } from 'react-icons/bs';
 import { LuGraduationCap } from 'react-icons/lu';
-import { FaEdit, FaSignOutAlt } from 'react-icons/fa';
+import { FaEdit, FaSignOutAlt, FaBuilding, FaUniversity } from 'react-icons/fa';
+import { MdWork } from 'react-icons/md';
+import { HiOutlineAcademicCap } from 'react-icons/hi';
 import { NotFoundState } from '@/components/NotFoundState/NotFoundState';
 import { capitalize } from '@/lib/utils';
 import { useUserData } from '@/hooks/useUserData';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   User,
   getDisplayRole,
@@ -22,8 +25,28 @@ import {
 
 // Common input classes for consistency with onboarding flow
 const inputClasses =
-  'w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:border-[#F9C5D1] focus:ring-2 focus:ring-[#F9C5D1]/20 outline-none transition-colors hover:border-[#F9C5D1]/50 cursor-text text-[#333333]';
-const labelClasses = 'block text-sm font-medium text-[#333333] mb-2';
+  'w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-[#F9C5D1] focus:ring-2 focus:ring-[#F9C5D1]/20 outline-none transition-all hover:border-[#F9C5D1]/50 cursor-text text-[#333333]';
+const labelClasses = 'flex items-center text-sm font-medium text-[#333333] mb-2';
+
+// Animation variants
+const containerVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.4,
+      staggerChildren: 0.1,
+    },
+  },
+  exit: { opacity: 0, y: -20, transition: { duration: 0.2 } },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 10 },
+  visible: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -10 },
+};
 
 const ProfilePage: FC = () => {
   const params = useParams();
@@ -34,6 +57,8 @@ const ProfilePage: FC = () => {
 
   const [isEditing, setIsEditing] = useState(false);
   const [editedUserData, setEditedUserData] = useState<User | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const profileCardRef = useRef<HTMLDivElement>(null);
 
   // Use React Query to fetch user data
   const { data: userData, isLoading, error } = useUserData(userId);
@@ -46,9 +71,17 @@ const ProfilePage: FC = () => {
     }
   };
 
+  // Scroll to top of profile card when switching modes
+  useEffect(() => {
+    if (profileCardRef.current) {
+      profileCardRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [isEditing]);
+
   // Mutation for updating user data
   const updateUserMutation = useMutation({
     mutationFn: async (updatedData: User) => {
+      setIsSubmitting(true);
       const response = await fetch(`/api/users/${userId}`, {
         method: 'PUT',
         headers: {
@@ -64,11 +97,16 @@ const ProfilePage: FC = () => {
       return response.json();
     },
     onSuccess: async (user) => {
-      // update session
+      // Update session
       await update(user);
       // Invalidate and refetch the user data
       queryClient.invalidateQueries({ queryKey: ['user', userId] });
       setIsEditing(false);
+      setIsSubmitting(false);
+    },
+    onError: (error) => {
+      console.error('Error updating user data:', error);
+      setIsSubmitting(false);
     },
   });
 
@@ -84,11 +122,18 @@ const ProfilePage: FC = () => {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto max-w-4xl py-8 px-4">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-gray-200 rounded w-1/4"></div>
-          <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-          <div className="h-24 bg-gray-200 rounded"></div>
+      <div className="min-h-screen bg-[#FFF9F8] py-12 px-4 sm:px-6">
+        <div className="max-w-4xl mx-auto">
+          <div className="animate-pulse space-y-6">
+            <div className="h-8 bg-gray-200 rounded w-1/4"></div>
+            <div className="h-48 bg-white rounded-2xl shadow-sm border border-[#F9C5D1]/10">
+              <div className="p-8 space-y-4">
+                <div className="h-8 bg-gray-200 rounded w-2/3"></div>
+                <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                <div className="h-4 bg-gray-200 rounded w-1/3"></div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -106,42 +151,66 @@ const ProfilePage: FC = () => {
   }
 
   return (
-    <div className="container mx-auto max-w-4xl py-8 px-4">
-      {/* Back Navigation and Sign Out */}
-      <div className="flex justify-between items-center mb-8">
-        <Link
-          href="/"
-          className="inline-flex items-center text-[#333333] hover:text-[#F28B82] transition-all hover:translate-y-[-1px] cursor-pointer"
+    <div className="min-h-screen bg-[#FFF9F8] py-12 px-4 sm:px-6">
+      <div className="max-w-4xl mx-auto">
+        {/* Back Navigation and Sign Out */}
+        <motion.div
+          className="flex justify-between items-center mb-8"
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
         >
-          <IoArrowBack className="mr-2" />
-          Back to Directory
-        </Link>
-
-        {isOwnProfile && (
-          <button
-            onClick={handleSignOut}
-            className="inline-flex items-center text-[#666666] hover:text-[#333333] transition-all hover:translate-y-[-1px] cursor-pointer"
+          <Link
+            href="/"
+            className="inline-flex items-center text-[#333333] hover:text-[#F28B82] transition-all hover:translate-y-[-1px] cursor-pointer"
           >
-            <FaSignOutAlt className="mr-2" />
-            Sign Out
-          </button>
-        )}
-      </div>
+            <IoArrowBack className="mr-2" />
+            Back to Directory
+          </Link>
 
-      {/* Profile Card */}
-      <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-sm p-8 border border-[#F9C5D1]/20">
-        {isEditing ? (
-          // Edit Form
-          <EditForm
-            userData={editedUserData!}
-            setUserData={setEditedUserData}
-            onSave={handleSave}
-            onCancel={() => setIsEditing(false)}
-          />
-        ) : (
-          // View Mode
-          <ViewMode userData={userData} isOwnProfile={isOwnProfile} onEdit={handleEditClick} />
-        )}
+          {isOwnProfile && (
+            <motion.button
+              onClick={handleSignOut}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="inline-flex items-center text-[#666666] hover:text-[#333333] transition-all cursor-pointer px-4 py-2 rounded-lg hover:bg-gray-50"
+            >
+              <FaSignOutAlt className="mr-2" />
+              Sign Out
+            </motion.button>
+          )}
+        </motion.div>
+
+        {/* Profile Card */}
+        <motion.div
+          ref={profileCardRef}
+          className="bg-white rounded-2xl shadow-sm p-8 border border-[#F9C5D1]/20 transition-all hover:shadow-md"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+        >
+          <AnimatePresence mode="wait">
+            {isEditing ? (
+              // Edit Form
+              <EditForm
+                key="edit-form"
+                userData={editedUserData!}
+                setUserData={setEditedUserData}
+                onSave={handleSave}
+                onCancel={() => setIsEditing(false)}
+                isSubmitting={isSubmitting}
+              />
+            ) : (
+              // View Mode
+              <ViewMode
+                key="view-mode"
+                userData={userData}
+                isOwnProfile={isOwnProfile}
+                onEdit={handleEditClick}
+              />
+            )}
+          </AnimatePresence>
+        </motion.div>
       </div>
     </div>
   );
@@ -161,42 +230,155 @@ const ViewMode = ({ userData, isOwnProfile, onEdit }: ViewModeProps) => {
   const displayRole = getDisplayRole(userData);
   const displayCompany = getDisplayCompany(userData);
 
+  const renderProfileIcon = () => {
+    return userData.postGradType === 'work' ? (
+      <motion.div
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ delay: 0.2 }}
+        className="w-16 h-16 rounded-full bg-[#F28B82]/10 flex items-center justify-center"
+      >
+        <BsBriefcase className="text-[#F28B82] text-2xl" />
+      </motion.div>
+    ) : (
+      <motion.div
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ delay: 0.2 }}
+        className="w-16 h-16 rounded-full bg-[#A7D7F9]/10 flex items-center justify-center"
+      >
+        <LuGraduationCap className="text-[#A7D7F9] text-2xl" />
+      </motion.div>
+    );
+  };
+
   return (
-    <div className="relative">
+    <motion.div
+      className="relative"
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      exit="exit"
+    >
       {isOwnProfile && (
-        <button
+        <motion.button
           onClick={onEdit}
-          className="absolute top-0 right-0 inline-flex items-center text-[#F28B82] hover:text-[#E67C73] transition-all hover:translate-y-[-1px] cursor-pointer"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className="absolute top-0 right-0 inline-flex items-center px-4 py-2 rounded-lg bg-[#F9C5D1]/10 text-[#F28B82] hover:bg-[#F9C5D1]/20 transition-all cursor-pointer"
         >
           <FaEdit className="mr-2" />
           Edit Profile
-        </button>
+        </motion.button>
       )}
 
-      <h1 className="text-4xl font-semibold text-[#333333] mb-6">{userData.name}</h1>
+      <div className="flex flex-col md:flex-row md:items-start gap-6">
+        {renderProfileIcon()}
 
-      {/* Only show if the user is viewing their own profile or if at least one visibility setting is true */}
-      {(showRole || showCompany) && (
-        <div className="flex items-center mb-4">
-          {userData.postGradType === 'work' ? (
-            <BsBriefcase className="text-[#F28B82] text-xl mr-3" />
-          ) : (
-            <LuGraduationCap className="text-[#A7D7F9] text-xl mr-3" />
+        <div className="flex-1">
+          <motion.h1 className="text-4xl font-semibold text-[#333333] mb-6" variants={itemVariants}>
+            {userData.name}
+          </motion.h1>
+
+          {/* Only show if the user is viewing their own profile or if at least one visibility setting is true */}
+          {(showRole || showCompany) && (
+            <motion.div className="flex items-start space-x-2 mb-4" variants={itemVariants}>
+              <div className="mt-1">
+                {userData.postGradType === 'work' ? (
+                  <MdWork className="text-[#F28B82] text-xl" />
+                ) : (
+                  <HiOutlineAcademicCap className="text-[#A7D7F9] text-xl" />
+                )}
+              </div>
+              <div>
+                <p className="text-lg text-[#333333]">
+                  {showRole && <span className="font-medium">{capitalize(displayRole)}</span>}
+                  {showRole && showCompany && ' at '}
+                  {showCompany && displayCompany}
+                </p>
+                {isOwnProfile && !showRole && (
+                  <p className="text-sm text-[#666666] italic">
+                    Your role is hidden from other users
+                  </p>
+                )}
+                {isOwnProfile && !showCompany && (
+                  <p className="text-sm text-[#666666] italic">
+                    Your {userData.postGradType === 'work' ? 'company' : 'school'} is hidden from
+                    other users
+                  </p>
+                )}
+              </div>
+            </motion.div>
           )}
-          <p className="text-lg text-[#333333]">
-            {showRole && capitalize(displayRole)}
-            {showRole && showCompany && ' at '}
-            {showCompany && displayCompany}
-          </p>
-        </div>
-      )}
 
-      <div className="mb-6">
-        <p className="text-lg text-[#333333]">
-          {userData.city}, {userData.state}, {userData.country}
-        </p>
+          <motion.div className="flex items-start space-x-2 mb-4" variants={itemVariants}>
+            <BsGeoAlt className="text-[#F28B82] text-xl mt-1" />
+            <div>
+              <p className="text-lg text-[#333333]">
+                {userData.city}
+                {userData.state && `, ${userData.state}`}
+                {userData.boroughDistrict && `, ${userData.boroughDistrict}`}
+                {userData.country && userData.country !== 'USA' && `, ${userData.country}`}
+              </p>
+            </div>
+          </motion.div>
+
+          {isOwnProfile && (
+            <motion.div
+              className="mt-8 p-4 rounded-xl bg-[#FFF9F8] border border-[#F9C5D1]/10"
+              variants={itemVariants}
+              whileHover={{ y: -2, boxShadow: '0 4px 6px rgba(249, 197, 209, 0.1)' }}
+            >
+              <div className="flex items-center space-x-2 mb-2">
+                <BsEyeFill className="text-[#F28B82] text-sm" />
+                <h3 className="font-medium text-[#333333]">Visibility Settings</h3>
+              </div>
+              <ul className="space-y-2 text-[#666666] pl-4">
+                {userData.postGradType === 'work' ? (
+                  <>
+                    <li className="flex items-center space-x-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#F28B82]"></span>
+                      <span>
+                        {userData.visibilityOptions?.company
+                          ? 'Company name visible to classmates'
+                          : 'Company name hidden from classmates'}
+                      </span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#F28B82]"></span>
+                      <span>
+                        {userData.visibilityOptions?.title
+                          ? 'Role visible to classmates'
+                          : 'Role hidden from classmates'}
+                      </span>
+                    </li>
+                  </>
+                ) : (
+                  <>
+                    <li className="flex items-center space-x-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#A7D7F9]"></span>
+                      <span>
+                        {userData.visibilityOptions?.school
+                          ? 'School name visible to classmates'
+                          : 'School name hidden from classmates'}
+                      </span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#A7D7F9]"></span>
+                      <span>
+                        {userData.visibilityOptions?.program
+                          ? 'Program visible to classmates'
+                          : 'Program hidden from classmates'}
+                      </span>
+                    </li>
+                  </>
+                )}
+              </ul>
+            </motion.div>
+          )}
+        </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
@@ -205,12 +387,21 @@ interface EditFormProps {
   setUserData: (userData: User) => void;
   onSave: () => void;
   onCancel: () => void;
+  isSubmitting: boolean;
 }
 
-const EditForm = ({ userData, setUserData, onSave, onCancel }: EditFormProps) => {
+const EditForm = ({ userData, setUserData, onSave, onCancel, isSubmitting }: EditFormProps) => {
   // Determine which visibility labels to show based on user type
   const roleLabel = userData.postGradType === 'work' ? 'Role' : 'Program';
   const companyLabel = userData.postGradType === 'work' ? 'Company' : 'School';
+
+  const [activeField, setActiveField] = useState<string | null>(null);
+
+  // Animation variants for input fields
+  const inputVariants = {
+    focus: { scale: 1.02, boxShadow: '0 4px 6px rgba(249, 197, 209, 0.1)' },
+    blur: { scale: 1, boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)' },
+  };
 
   // Update visibility settings based on user type
   const handleVisibilityChange = (field: string, value: boolean) => {
@@ -263,116 +454,241 @@ const EditForm = ({ userData, setUserData, onSave, onCancel }: EditFormProps) =>
   };
 
   return (
-    <form
+    <motion.form
       onSubmit={(e) => {
         e.preventDefault();
         onSave();
       }}
       className="space-y-6"
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      exit="exit"
     >
-      <div>
-        <label className={labelClasses}>Name</label>
-        <input
-          type="text"
-          value={userData.name}
-          onChange={(e) => setUserData({ ...userData, name: e.target.value })}
-          className={inputClasses}
-        />
-      </div>
+      <motion.div className="flex justify-between items-center mb-6" variants={itemVariants}>
+        <h2 className="text-2xl font-semibold text-[#333333]">Edit Your Profile</h2>
+      </motion.div>
 
-      <div>
-        <label className={labelClasses}>Type</label>
-        <select
-          value={userData.postGradType}
-          onChange={(e) => handleTypeChange(e.target.value as 'work' | 'school')}
-          className={inputClasses.replace('cursor-text', 'cursor-pointer')}
+      <motion.div variants={itemVariants}>
+        <label htmlFor="name" className={labelClasses}>
+          <BsPerson className="mr-2 text-[#F28B82]" />
+          Name
+        </label>
+        <motion.div variants={inputVariants} animate={activeField === 'name' ? 'focus' : 'blur'}>
+          <input
+            id="name"
+            type="text"
+            value={userData.name || ''}
+            onChange={(e) => setUserData({ ...userData, name: e.target.value })}
+            onFocus={() => setActiveField('name')}
+            onBlur={() => setActiveField(null)}
+            className={inputClasses}
+          />
+        </motion.div>
+      </motion.div>
+
+      <motion.div variants={itemVariants}>
+        <label htmlFor="type" className={labelClasses}>
+          {userData.postGradType === 'work' ? (
+            <BsBriefcase className="mr-2 text-[#F28B82]" />
+          ) : (
+            <LuGraduationCap className="mr-2 text-[#A7D7F9]" />
+          )}
+          Type
+        </label>
+        <motion.div variants={inputVariants} animate={activeField === 'type' ? 'focus' : 'blur'}>
+          <select
+            id="type"
+            value={userData.postGradType}
+            onChange={(e) => handleTypeChange(e.target.value as 'work' | 'school')}
+            onFocus={() => setActiveField('type')}
+            onBlur={() => setActiveField(null)}
+            className={inputClasses.replace('cursor-text', 'cursor-pointer')}
+          >
+            <option value="work">Working</option>
+            <option value="school">Studying</option>
+          </select>
+        </motion.div>
+      </motion.div>
+
+      <motion.div variants={itemVariants}>
+        <label htmlFor="role" className={labelClasses}>
+          {userData.postGradType === 'work' ? (
+            <MdWork className="mr-2 text-[#F28B82]" />
+          ) : (
+            <HiOutlineAcademicCap className="mr-2 text-[#A7D7F9]" />
+          )}
+          {roleLabel}
+        </label>
+        <motion.div variants={inputVariants} animate={activeField === 'role' ? 'focus' : 'blur'}>
+          <input
+            id="role"
+            type="text"
+            value={userData.postGradType === 'work' ? userData.title || '' : userData.program || ''}
+            onChange={(e) => {
+              if (userData.postGradType === 'work') {
+                setUserData({ ...userData, title: e.target.value });
+              } else {
+                setUserData({ ...userData, program: e.target.value });
+              }
+            }}
+            onFocus={() => setActiveField('role')}
+            onBlur={() => setActiveField(null)}
+            className={inputClasses}
+          />
+        </motion.div>
+      </motion.div>
+
+      <motion.div variants={itemVariants}>
+        <label htmlFor="company" className={labelClasses}>
+          {userData.postGradType === 'work' ? (
+            <FaBuilding className="mr-2 text-[#F28B82]" />
+          ) : (
+            <FaUniversity className="mr-2 text-[#A7D7F9]" />
+          )}
+          {companyLabel}
+        </label>
+        <motion.div variants={inputVariants} animate={activeField === 'company' ? 'focus' : 'blur'}>
+          <input
+            id="company"
+            type="text"
+            value={
+              userData.postGradType === 'work' ? userData.company || '' : userData.school || ''
+            }
+            onChange={(e) => {
+              if (userData.postGradType === 'work') {
+                setUserData({ ...userData, company: e.target.value });
+              } else {
+                setUserData({ ...userData, school: e.target.value });
+              }
+            }}
+            onFocus={() => setActiveField('company')}
+            onBlur={() => setActiveField(null)}
+            className={inputClasses}
+          />
+        </motion.div>
+      </motion.div>
+
+      <motion.div variants={itemVariants}>
+        <label htmlFor="location" className={labelClasses}>
+          <BsGeoAlt className="mr-2 text-[#F28B82]" />
+          City
+        </label>
+        <motion.div variants={inputVariants} animate={activeField === 'city' ? 'focus' : 'blur'}>
+          <input
+            id="city"
+            type="text"
+            value={userData.city || ''}
+            onChange={(e) => setUserData({ ...userData, city: e.target.value })}
+            onFocus={() => setActiveField('city')}
+            onBlur={() => setActiveField(null)}
+            className={inputClasses}
+          />
+        </motion.div>
+      </motion.div>
+
+      {/* Update visibility section */}
+      <motion.div
+        className="p-4 rounded-xl bg-[#FFF9F8] border border-[#F9C5D1]/10 space-y-3 mt-4"
+        variants={itemVariants}
+      >
+        <div className="flex items-center space-x-2">
+          <BsEyeFill className="text-[#F28B82]" />
+          <h3 className="text-sm font-medium text-[#333333]">Privacy Settings</h3>
+        </div>
+
+        <motion.label
+          className="flex items-center justify-between p-2 hover:bg-white/50 rounded-lg transition-all cursor-pointer"
+          whileHover={{ scale: 1.01, backgroundColor: 'rgba(249, 197, 209, 0.05)' }}
+          whileTap={{ scale: 0.99 }}
         >
-          <option value="work">Working</option>
-          <option value="school">Studying</option>
-        </select>
-      </div>
-
-      <div>
-        <label className={labelClasses}>{roleLabel}</label>
-        <input
-          type="text"
-          value={userData.postGradType === 'work' ? userData.title || '' : userData.program || ''}
-          onChange={(e) => {
-            if (userData.postGradType === 'work') {
-              setUserData({ ...userData, title: e.target.value });
-            } else {
-              setUserData({ ...userData, program: e.target.value });
-            }
-          }}
-          className={inputClasses}
-        />
-      </div>
-
-      <div>
-        <label className={labelClasses}>{companyLabel}</label>
-        <input
-          type="text"
-          value={userData.postGradType === 'work' ? userData.company || '' : userData.school || ''}
-          onChange={(e) => {
-            if (userData.postGradType === 'work') {
-              setUserData({ ...userData, company: e.target.value });
-            } else {
-              setUserData({ ...userData, school: e.target.value });
-            }
-          }}
-          className={inputClasses}
-        />
-      </div>
-
-      {/* Update visibility checkboxes */}
-      <div className="space-y-2 mt-6">
-        <h3 className="text-sm font-medium text-[#333333]">Privacy Settings</h3>
-
-        <label className="flex items-center space-x-2">
-          <input
-            type="checkbox"
-            checked={
-              userData.postGradType === 'work'
-                ? (userData.visibilityOptions.title ?? true)
-                : (userData.visibilityOptions.program ?? true)
-            }
-            onChange={(e) => handleVisibilityChange('role', e.target.checked)}
-            className="rounded text-[#F28B82] focus:ring-[#F28B82]"
-          />
           <span className="text-sm text-[#666666]">Show {roleLabel.toLowerCase()}</span>
-        </label>
+          <motion.div whileTap={{ scale: 0.9 }}>
+            <input
+              type="checkbox"
+              checked={
+                userData.postGradType === 'work'
+                  ? (userData.visibilityOptions?.title ?? true)
+                  : (userData.visibilityOptions?.program ?? true)
+              }
+              onChange={(e) => handleVisibilityChange('role', e.target.checked)}
+              className="h-5 w-5 rounded-md border-gray-300 text-[#F28B82] focus:ring-[#F28B82]"
+            />
+          </motion.div>
+        </motion.label>
 
-        <label className="flex items-center space-x-2">
-          <input
-            type="checkbox"
-            checked={
-              userData.postGradType === 'work'
-                ? (userData.visibilityOptions.company ?? true)
-                : (userData.visibilityOptions.school ?? true)
-            }
-            onChange={(e) => handleVisibilityChange('company', e.target.checked)}
-            className="rounded text-[#F28B82] focus:ring-[#F28B82]"
-          />
+        <motion.label
+          className="flex items-center justify-between p-2 hover:bg-white/50 rounded-lg transition-all cursor-pointer"
+          whileHover={{ scale: 1.01, backgroundColor: 'rgba(249, 197, 209, 0.05)' }}
+          whileTap={{ scale: 0.99 }}
+        >
           <span className="text-sm text-[#666666]">Show {companyLabel.toLowerCase()}</span>
-        </label>
-      </div>
+          <motion.div whileTap={{ scale: 0.9 }}>
+            <input
+              type="checkbox"
+              checked={
+                userData.postGradType === 'work'
+                  ? (userData.visibilityOptions?.company ?? true)
+                  : (userData.visibilityOptions?.school ?? true)
+              }
+              onChange={(e) => handleVisibilityChange('company', e.target.checked)}
+              className="h-5 w-5 rounded-md border-gray-300 text-[#F28B82] focus:ring-[#F28B82]"
+            />
+          </motion.div>
+        </motion.label>
+      </motion.div>
 
-      <div className="flex justify-end space-x-4">
-        <button
+      <motion.div variants={itemVariants} className="flex justify-end space-x-4 pt-4">
+        <motion.button
           type="button"
           onClick={onCancel}
-          className="px-4 py-2 text-[#666666] hover:text-[#333333] transition-all hover:translate-y-[-1px] cursor-pointer"
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          className="px-6 py-2.5 rounded-lg text-[#666666] hover:text-[#333333] transition-colors cursor-pointer hover:bg-gray-50 active:bg-gray-100"
         >
           Cancel
-        </button>
-        <button
+        </motion.button>
+        <motion.button
           type="submit"
-          className="px-4 py-2 bg-[#F28B82] hover:bg-[#E67C73] text-white rounded-lg transition-all hover:translate-y-[-1px] cursor-pointer"
+          disabled={isSubmitting}
+          whileHover={!isSubmitting ? { scale: 1.02 } : {}}
+          whileTap={!isSubmitting ? { scale: 0.98 } : {}}
+          className={`px-6 py-2.5 rounded-lg transition-all cursor-pointer shadow-sm hover:shadow ${
+            isSubmitting
+              ? 'bg-[#F9C5D1]/50 cursor-not-allowed text-white/70'
+              : 'bg-[#F28B82] hover:bg-[#E67C73] text-white'
+          }`}
         >
-          Save Changes
-        </button>
-      </div>
-    </form>
+          {isSubmitting ? (
+            <span className="flex items-center">
+              <svg
+                className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
+              </svg>
+              Saving...
+            </span>
+          ) : (
+            'Save Changes'
+          )}
+        </motion.button>
+      </motion.div>
+    </motion.form>
   );
 };
 
