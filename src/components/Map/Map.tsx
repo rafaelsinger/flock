@@ -210,21 +210,28 @@ export const FlockMap: React.FC = () => {
           locationData &&
           Object.entries(locationData).map(([city, value]) => {
             const coords = CITY_COORDINATES[city];
-            if (!coords) return null; // Don't crash if missing coords
+            if (!coords) return null;
+
+            // Smarter, nonlinear size scaling
+            const normalizedValue = Math.sqrt(value) / Math.sqrt(maxValue); // 0 to 1
+            const bubbleSize = Math.min(40, 10 + normalizedValue * 30); // control min/max
 
             return (
               <Marker key={city} longitude={coords[0]} latitude={coords[1]}>
                 <div
+                  className="bubble"
+                  title={`${city}: ${value} grads`}
                   style={{
-                    width: Math.min(40, 10 + (value / maxValue) * 30),
-                    height: Math.min(40, 10 + (value / maxValue) * 30),
+                    width: `${bubbleSize}px`,
+                    height: `${bubbleSize}px`,
                     backgroundColor: colorScale(value),
                     borderRadius: '50%',
-                    opacity: 0.7,
+                    opacity: 0.8,
                     border: '1px solid #333',
-                    transform: 'translate(-50%, -50%)',
+                    transform: 'translate(-50%, -50%) scale(0)', // start small
+                    animation: 'bubble-pop 0.5s ease forwards',
+                    cursor: 'pointer',
                   }}
-                  title={`${city}: ${value} grads`}
                 />
               </Marker>
             );
