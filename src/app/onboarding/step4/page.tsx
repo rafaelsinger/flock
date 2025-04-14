@@ -3,7 +3,6 @@
 import { FC, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useUserStore } from '@/store/userStore';
 import { UserUpdate } from '@/types/user';
 
 type WorkFormData = {
@@ -26,7 +25,6 @@ const Step4: FC = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
   const previousData = queryClient.getQueryData(['onboardingData']) as UserUpdate;
-  const { updateUser } = useUserStore();
 
   const updateOnboardingData = useMutation({
     mutationFn: (visibilityData: UserUpdate) => {
@@ -43,11 +41,6 @@ const Step4: FC = () => {
     },
     onSuccess: (data) => {
       queryClient.setQueryData(['onboardingData'], data);
-
-      // Update UserStore with current step
-      updateUser({
-        isOnboarded: false,
-      });
 
       router.push('/onboarding/review');
     },
