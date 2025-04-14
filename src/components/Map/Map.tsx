@@ -22,6 +22,7 @@ const CITY_COORDINATES: { [city: string]: [number, number] } = {
   'San Diego': [-117.1611, 32.7157],
   Sacramento: [-121.4944, 38.5816],
   Fresno: [-119.7871, 36.7378],
+  Oakland: [-122.2712, 37.8044],
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -69,10 +70,19 @@ export const FlockMap: React.FC = () => {
         if (!response.ok) throw new Error('Failed to fetch location data');
         return response.json();
       } else {
+        // TODO: replace with actual API call
         // Fetch city-level data (mocked here)
-        const response = await fetch(`/api/users/locations?state=${selectedState}`);
-        if (!response.ok) throw new Error('Failed to fetch city data');
-        return response.json();
+        // const response = await fetch(`/api/users/locations?state=${selectedState}`);
+        // if (!response.ok) throw new Error('Failed to fetch city data');
+        // return response.json();
+        return {
+          'Los Angeles': 400,
+          'San Francisco': 320,
+          'San Diego': 250,
+          Sacramento: 150,
+          Fresno: 100,
+          Oakland: 90,
+        };
       }
     },
     enabled: true,
@@ -200,7 +210,8 @@ export const FlockMap: React.FC = () => {
           locationData &&
           Object.entries(locationData).map(([city, value]) => {
             const coords = CITY_COORDINATES[city];
-            if (!coords) return null;
+            if (!coords) return null; // Don't crash if missing coords
+
             return (
               <Marker key={city} longitude={coords[0]} latitude={coords[1]}>
                 <div
@@ -211,7 +222,9 @@ export const FlockMap: React.FC = () => {
                     borderRadius: '50%',
                     opacity: 0.7,
                     border: '1px solid #333',
+                    transform: 'translate(-50%, -50%)',
                   }}
+                  title={`${city}: ${value} grads`}
                 />
               </Marker>
             );
