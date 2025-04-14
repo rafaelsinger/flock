@@ -6,7 +6,7 @@ import { PrismaAdapter } from '@auth/prisma-adapter';
 import { User } from './types/user';
 import { prisma } from './lib/prisma';
 import authConfig from './auth.config';
-import { redirect } from 'next/navigation';
+import { NextResponse } from 'next/server';
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: PrismaAdapter(prisma),
@@ -14,7 +14,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   callbacks: {
     authorized: async ({ request, auth }) => {
       console.log('SHOULD YOU BE ALLOWED TO SEE THIS: ', !!auth);
-      if (!!auth) {
+      if (!auth) {
         return NextResponse.json('Invalid auth token', { status: 401 });
       }
       return true;
@@ -34,10 +34,17 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.id = user.id;
         token.isOnboarded = user.isOnboarded;
       }
-      if (trigger === 'signIn') {
-        const response = await fetch(`${process.env.NEXTAUTH_URL}/api/users/${user.id}`);
-        const userData = await response.json();
-        token.userSession = userData;
+      if (trigger === 'signIn' && user?.id) {
+        try {
+          const userData = await prisma.user.findUnique({
+            where: { id: user.id },
+          });
+          if (userData) {
+            token.userSession = userData;
+          }
+        } catch (error) {
+          console.error('Error fetching user data:', error);
+        }
       }
       if (trigger === 'update') {
         if (session) token = { ...token, ...session };
