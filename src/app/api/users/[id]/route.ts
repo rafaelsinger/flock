@@ -4,8 +4,11 @@ import { auth } from '@/auth';
 import { UserUpdate } from '@/types/user';
 
 export const GET = auth(async function GET(request: NextRequest) {
+  const id = request.url.split('/users/')[1];
+  if (!id) {
+    return new NextResponse('No ID provided', { status: 400 });
+  }
   try {
-    const id = request.url.split('/users/')[1];
     const user = await prisma.user.findFirst({
       where: {
         id: id,

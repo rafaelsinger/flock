@@ -15,7 +15,7 @@ export const Header = ({ transparent = false }: HeaderProps) => {
 
   // Handle sign in
   const handleSignIn = () => {
-    signIn('google', { callbackUrl: '/onboarding/step1' });
+    signIn('google');
   };
 
   // Handle scroll behavior
