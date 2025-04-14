@@ -35,15 +35,25 @@ const itemVariants = {
 interface DirectoryContentProps {
   filters: FilterOptions;
   onFiltersChange: (filters: FilterOptions) => void;
+  savedFilters: Record<string, FilterOptions>;
+  onSaveFilter: (name: string, filter: FilterOptions) => void;
+  onDeleteFilter: (name: string) => void;
+  onSelectFilter: (name: string) => void;
 }
 
-export const DirectoryContent: React.FC<DirectoryContentProps> = ({ filters, onFiltersChange }) => {
+export const DirectoryContent: React.FC<DirectoryContentProps> = ({
+  filters,
+  onFiltersChange,
+  savedFilters,
+  onSaveFilter,
+  onDeleteFilter,
+  onSelectFilter,
+}) => {
   const { data: session } = useSession();
   const [page, setPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTypeFilter, setActiveTypeFilter] = useState<'all' | 'work' | 'school'>('all');
   const [isMapFullscreen, setIsMapFullscreen] = useState(false);
-  const [savedFilters, setSavedFilters] = useState<Record<string, FilterOptions>>({});
 
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
@@ -101,14 +111,6 @@ export const DirectoryContent: React.FC<DirectoryContentProps> = ({ filters, onF
     return () => window.removeEventListener('keydown', handleEscKey);
   }, [isMapFullscreen]);
 
-  // Load saved filters on mount
-  useEffect(() => {
-    const storedFilters = localStorage.getItem('savedFilters');
-    if (storedFilters) {
-      setSavedFilters(JSON.parse(storedFilters));
-    }
-  }, []);
-
   // Use React Query to fetch users
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['users', page, debouncedSearchQuery, filters, activeTypeFilter],
@@ -157,34 +159,6 @@ export const DirectoryContent: React.FC<DirectoryContentProps> = ({ filters, onF
   const userCity = session?.user?.city;
   const userState = session?.user?.state;
   const hasUserLocation = !!(userCity && userState);
-
-  // Handle saving filters
-  const handleSaveFilter = (name: string, filter: FilterOptions) => {
-    const newSavedFilters = {
-      ...savedFilters,
-      [name]: filter,
-    };
-    setSavedFilters(newSavedFilters);
-    localStorage.setItem('savedFilters', JSON.stringify(newSavedFilters));
-  };
-
-  // Handle deleting filters
-  const handleDeleteFilter = (name: string) => {
-    const { [name]: _, ...restFilters } = savedFilters; // eslint-disable-line @typescript-eslint/no-unused-vars
-    setSavedFilters(restFilters);
-    localStorage.setItem('savedFilters', JSON.stringify(restFilters));
-  };
-
-  // Handle selecting a saved filter
-  const handleSelectFilter = (name: string) => {
-    const filter = savedFilters[name];
-    if (filter) {
-      onFiltersChange({
-        ...filter,
-        savedFilter: name,
-      });
-    }
-  };
 
   // Determine content to render based on fullscreen state
   const renderContent = () => {
@@ -289,9 +263,9 @@ export const DirectoryContent: React.FC<DirectoryContentProps> = ({ filters, onF
                   onFilter={handleFilter}
                   currentFilters={filters}
                   savedFilters={savedFilters}
-                  onSaveFilter={handleSaveFilter}
-                  onDeleteFilter={handleDeleteFilter}
-                  onSelectFilter={handleSelectFilter}
+                  onSaveFilter={onSaveFilter}
+                  onDeleteFilter={onDeleteFilter}
+                  onSelectFilter={onSelectFilter}
                 />
               </div>
             </div>

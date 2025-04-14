@@ -6,6 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 import { scaleQuantize } from 'd3-scale';
 import { Plus, Minus } from 'lucide-react';
 import center from '@turf/center';
+import { STATE_NAME_TO_ABBREV } from '@/constants/location';
 
 // Types
 interface LocationData {
@@ -164,6 +165,9 @@ export const FlockMap: React.FC<FlockMapProps> = ({ onCitySelect }) => {
     const clickedState = feature.properties?.name;
     if (!clickedState) return;
 
+    const stateAbbrev = STATE_NAME_TO_ABBREV[clickedState];
+    if (!stateAbbrev) return;
+
     const centroid = center(feature);
     const [lon, lat] = centroid.geometry.coordinates;
 
@@ -175,13 +179,15 @@ export const FlockMap: React.FC<FlockMapProps> = ({ onCitySelect }) => {
         center: [lon, lat],
         zoom: 6,
         pitch: 30,
-        speed: 1.2, // slower is smoother
-        curve: 1.5, // curvature of flight path
+        speed: 1.2,
+        curve: 1.5,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        easing: (t: any) => t, // linear easing
+        easing: (t: any) => t,
         essential: true,
       });
     }
+
+    onCitySelect('', stateAbbrev);
   };
 
   const showSkeleton = !mapLoaded || isLoading;
@@ -253,7 +259,7 @@ export const FlockMap: React.FC<FlockMapProps> = ({ onCitySelect }) => {
               <Marker key={city} longitude={coords[0]} latitude={coords[1]}>
                 <div
                   className="bubble"
-                  onClick={() => onCitySelect(city, selectedState)}
+                  onClick={() => onCitySelect(city, STATE_NAME_TO_ABBREV[selectedState])}
                   onMouseEnter={(e) => {
                     setHoveredCity({
                       city,
@@ -349,6 +355,7 @@ export const FlockMap: React.FC<FlockMapProps> = ({ onCitySelect }) => {
         <button
           onClick={() => {
             setSelectedState(null);
+            onCitySelect('', '');
             setZoomedIn(false);
             if (mapRef.current) {
               mapRef.current.flyTo({

@@ -10,12 +10,13 @@ import { motion } from 'framer-motion';
 import { Footer } from '@/components/Footer';
 import { TopDestinations } from '@/components/TopDestinations';
 import { FlockMap } from '../Map/Map';
-export interface FilterOptions {
+
+interface FilterOptions {
   postGradType?: 'work' | 'school' | 'all';
   country?: string;
   state?: string;
   city?: string;
-  industry?: string;
+  savedFilter?: string;
 }
 
 export const Directory = () => {
@@ -23,6 +24,7 @@ export const Directory = () => {
   const router = useRouter();
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [filters, setFilters] = useState<FilterOptions>({});
+  const [savedFilters, setSavedFilters] = useState<Record<string, FilterOptions>>({});
   const [greeting, setGreeting] = useState('');
   const directoryContentRef = useRef<HTMLDivElement>(null);
 
@@ -46,6 +48,14 @@ export const Directory = () => {
     else setGreeting('Good evening');
   }, []);
 
+  // Load saved filters on mount
+  useEffect(() => {
+    const storedFilters = localStorage.getItem('savedFilters');
+    if (storedFilters) {
+      setSavedFilters(JSON.parse(storedFilters));
+    }
+  }, []);
+
   // Show loading while redirecting
   if (isRedirecting || (!isOnboarded && status !== 'loading')) {
     return (
@@ -63,21 +73,45 @@ export const Directory = () => {
     );
   }
 
-  // Update the handler to include scrolling
+  const handleFiltersChange = (newFilters: FilterOptions) => {
+    setFilters(newFilters);
+  };
+
   const handleCitySelect = (city: string, state: string) => {
     setFilters((prev) => ({
       ...prev,
       city,
       state,
+      country: 'USA',
     }));
+  };
 
-    // Scroll to directory content with a small delay to allow for state update
-    setTimeout(() => {
-      directoryContentRef.current?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start',
+  // Handle saving filters
+  const handleSaveFilter = (name: string, filter: FilterOptions) => {
+    const newSavedFilters = {
+      ...savedFilters,
+      [name]: filter,
+    };
+    setSavedFilters(newSavedFilters);
+    localStorage.setItem('savedFilters', JSON.stringify(newSavedFilters));
+  };
+
+  // Handle deleting filters
+  const handleDeleteFilter = (name: string) => {
+    const { [name]: _, ...restFilters } = savedFilters; // eslint-disable-line @typescript-eslint/no-unused-vars
+    setSavedFilters(restFilters);
+    localStorage.setItem('savedFilters', JSON.stringify(restFilters));
+  };
+
+  // Handle selecting a saved filter
+  const handleSelectFilter = (name: string) => {
+    const filter = savedFilters[name];
+    if (filter) {
+      setFilters({
+        ...filter,
+        savedFilter: name,
       });
-    }, 100);
+    }
   };
 
   return (
@@ -209,7 +243,14 @@ export const Directory = () => {
               animate={{ y: 0, opacity: 1 }}
               transition={{ duration: 0.4, delay: 0.3 }}
             >
-              <DirectoryContent filters={filters} onFiltersChange={setFilters} />
+              <DirectoryContent
+                filters={filters}
+                onFiltersChange={handleFiltersChange}
+                savedFilters={savedFilters}
+                onSaveFilter={handleSaveFilter}
+                onDeleteFilter={handleDeleteFilter}
+                onSelectFilter={handleSelectFilter}
+              />
             </motion.div>
 
             {/* Top Destinations */}

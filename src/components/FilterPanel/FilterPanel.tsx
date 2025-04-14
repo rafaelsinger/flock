@@ -105,6 +105,14 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
     };
   }, [isOpen]);
 
+  // Update local state when filters change
+  useEffect(() => {
+    setPostGradType(currentFilters.postGradType || 'all');
+    setCountry(currentFilters.country || '');
+    setState(currentFilters.state || '');
+    setCity(currentFilters.city || '');
+  }, [currentFilters]);
+
   const handleFilterChange = (newFilters: Partial<FilterOptions>) => {
     const updatedFilters = { ...currentFilters, ...newFilters };
     setPostGradType(updatedFilters.postGradType || 'all');
