@@ -6,6 +6,7 @@ import { PostGradType } from '@prisma/client';
 export interface User {
   id: string;
   name: string;
+  email: string;
   postGradType: PostGradType;
   isOnboarded: boolean;
   title?: string | null;
