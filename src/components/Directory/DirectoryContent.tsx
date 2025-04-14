@@ -14,7 +14,6 @@ interface FilterOptions {
   country?: string;
   state?: string;
   city?: string;
-  industry?: string[];
   savedFilter?: string;
 }
 
@@ -74,10 +73,6 @@ export const DirectoryContent: React.FC = () => {
 
       if (filters.city) {
         params.city = filters.city;
-      }
-
-      if (filters.industry && filters.industry.length > 0) {
-        params.industry = filters.industry.join(',');
       }
 
       return new URLSearchParams(params);
@@ -406,24 +401,6 @@ export const DirectoryContent: React.FC = () => {
                     City: {filters.city}
                     <button
                       onClick={() => setFilters({ ...filters, city: undefined })}
-                      className="ml-1 text-gray-500 hover:text-[#F28B82]"
-                    >
-                      <MdClear size={14} />
-                    </button>
-                  </motion.span>
-                )}
-
-                {filters.industry && filters.industry.length > 0 && (
-                  <motion.span
-                    className="px-2 py-1 bg-gray-100 rounded-md text-xs text-gray-700 flex items-center"
-                    initial={{ scale: 0.8, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    exit={{ scale: 0.8, opacity: 0 }}
-                    whileHover={{ scale: 1.05 }}
-                  >
-                    Industries: {filters.industry.length}
-                    <button
-                      onClick={() => setFilters({ ...filters, industry: undefined })}
                       className="ml-1 text-gray-500 hover:text-[#F28B82]"
                     >
                       <MdClear size={14} />

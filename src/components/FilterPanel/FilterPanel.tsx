@@ -2,7 +2,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Filter, Check, X, BookmarkPlus, Bookmark, Trash2 } from 'lucide-react';
 import { US_STATES, COUNTRIES } from '@/constants/location';
-import { INDUSTRIES } from '@/constants/industries';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface FilterOptions {
@@ -10,7 +9,6 @@ interface FilterOptions {
   country?: string;
   state?: string;
   city?: string;
-  industry?: string[];
   savedFilter?: string;
 }
 
@@ -71,9 +69,6 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({ onFilter, currentFilte
   const [country, setCountry] = useState(currentFilters.country || '');
   const [state, setState] = useState(currentFilters.state || '');
   const [city, setCity] = useState(currentFilters.city || '');
-  const [industries, setIndustries] = useState<string[]>(
-    (currentFilters.industry as string[]) || []
-  );
   const [savedFilters, setSavedFilters] = useState<Record<string, FilterOptions>>({});
   const [filterName, setFilterName] = useState('');
   const [showSaveForm, setShowSaveForm] = useState(false);
@@ -113,7 +108,6 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({ onFilter, currentFilte
     setCountry(currentFilters.country || '');
     setState(currentFilters.state || '');
     setCity(currentFilters.city || '');
-    setIndustries((currentFilters.industry as string[]) || []);
   }, [currentFilters]);
 
   const handleFilterChange = (newFilters: Partial<FilterOptions>) => {
@@ -122,17 +116,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({ onFilter, currentFilte
     setCountry(updatedFilters.country || '');
     setState(updatedFilters.state || '');
     setCity(updatedFilters.city || '');
-    setIndustries((updatedFilters.industry as string[]) || []);
     onFilter(updatedFilters);
-  };
-
-  const handleIndustryToggle = (industry: string) => {
-    const updatedIndustries = industries.includes(industry)
-      ? industries.filter((i) => i !== industry)
-      : [...industries, industry];
-
-    setIndustries(updatedIndustries);
-    handleFilterChange({ industry: updatedIndustries.length ? updatedIndustries : undefined });
   };
 
   const handleSaveFilter = () => {
@@ -145,7 +129,6 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({ onFilter, currentFilte
         country,
         state,
         city,
-        industry: industries,
       },
     };
 
@@ -172,7 +155,6 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({ onFilter, currentFilte
       setCountry(filter.country || '');
       setState(filter.state || '');
       setCity(filter.city || '');
-      setIndustries((filter.industry as string[]) || []);
       onFilter({
         ...filter,
         savedFilter: name,
@@ -317,25 +299,6 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({ onFilter, currentFilte
                   />
                 </motion.div>
 
-                <motion.div variants={itemVariants}>
-                  <label className={labelClasses}>Industries</label>
-                  <div className="space-y-2 max-h-40 overflow-y-auto p-2 border border-gray-200 rounded-lg">
-                    {INDUSTRIES.map(({ value, label }) => (
-                      <motion.div key={value} className="flex items-center" whileHover={{ x: 2 }}>
-                        <label className="flex items-center space-x-2 cursor-pointer p-1 rounded hover:bg-gray-50 w-full">
-                          <input
-                            type="checkbox"
-                            checked={industries.includes(value)}
-                            onChange={() => handleIndustryToggle(value)}
-                            className="h-4 w-4 rounded-sm border-gray-300 text-[#F28B82] focus:ring-[#F28B82]"
-                          />
-                          <span className="text-sm text-gray-700">{label}</span>
-                        </label>
-                      </motion.div>
-                    ))}
-                  </div>
-                </motion.div>
-
                 {/* Save Filter Form */}
                 <AnimatePresence>
                   {showSaveForm && (
@@ -391,7 +354,6 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({ onFilter, currentFilte
                         country: '',
                         state: '',
                         city: '',
-                        industry: undefined,
                       });
                     }}
                     className="flex items-center gap-2 text-sm text-gray-500 hover:text-[#333333] transition-colors"
@@ -413,7 +375,6 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({ onFilter, currentFilte
                     country,
                     state,
                     city,
-                    industry: industries,
                   });
                   setIsOpen(false);
                 }}

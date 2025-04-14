@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/auth';
+import { Prisma } from '@prisma/client';
 
 export const GET = auth(async function GET(request: NextRequest) {
   try {
@@ -23,8 +24,8 @@ export const GET = auth(async function GET(request: NextRequest) {
     // Calculate skip for pagination
     const skip = (page - 1) * limit;
 
-    // Build the where clause for filtering
-    const where = {
+    // Start building where clause with basic visibility requirements
+    const where: Prisma.UserWhereInput = {
       AND: [
         // Search condition
         search
