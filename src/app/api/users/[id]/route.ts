@@ -61,6 +61,7 @@ export async function PUT(request: Request, context: { params: { id: string } })
         city: userData.city,
         state: userData.state,
         country: userData.country,
+        lookingForRoommate: userData.lookingForRoommate,
         visibilityOptions: userData.visibilityOptions,
       },
     });

@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { FilterPanel } from '@/components/FilterPanel';
 import { UserGrid } from '@/components/UserGrid';
 import { MdClear, MdSearch, MdRefresh } from 'react-icons/md';
-import { FaGraduationCap, FaBriefcase } from 'react-icons/fa';
+import { FaGraduationCap, FaBriefcase, FaHome } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useSession } from 'next-auth/react';
@@ -14,6 +14,7 @@ interface FilterOptions {
   state?: string;
   city?: string;
   savedFilter?: string;
+  lookingForRoommate?: boolean;
 }
 
 const ITEMS_PER_PAGE = 12;
@@ -54,6 +55,7 @@ export const DirectoryContent: React.FC<DirectoryContentProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTypeFilter, setActiveTypeFilter] = useState<'all' | 'work' | 'school'>('all');
   const [isMapFullscreen, setIsMapFullscreen] = useState(false);
+  const [showRoommateOnly, setShowRoommateOnly] = useState(false);
 
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
@@ -89,15 +91,20 @@ export const DirectoryContent: React.FC<DirectoryContentProps> = ({
         params.city = filters.city;
       }
 
+      // Add roommate filter
+      if (filters.lookingForRoommate || showRoommateOnly) {
+        params.lookingForRoommate = 'true';
+      }
+
       return new URLSearchParams(params);
     },
-    [debouncedSearchQuery, filters, activeTypeFilter]
+    [debouncedSearchQuery, filters, activeTypeFilter, showRoommateOnly]
   );
 
   // Reset to page 1 when search or filters change
   useEffect(() => {
     setPage(1);
-  }, [debouncedSearchQuery, filters, activeTypeFilter]);
+  }, [debouncedSearchQuery, filters, activeTypeFilter, showRoommateOnly]);
 
   // Handle escape key to exit fullscreen map
   useEffect(() => {
@@ -131,7 +138,8 @@ export const DirectoryContent: React.FC<DirectoryContentProps> = ({
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     Object.entries(filters).some(([_, value]) => value && value !== 'all') ||
     searchQuery ||
-    activeTypeFilter !== 'all';
+    activeTypeFilter !== 'all' ||
+    showRoommateOnly;
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
@@ -145,10 +153,19 @@ export const DirectoryContent: React.FC<DirectoryContentProps> = ({
     setSearchQuery('');
     onFiltersChange({});
     setActiveTypeFilter('all');
+    setShowRoommateOnly(false);
   };
 
   const handleTypeFilterChange = (type: 'all' | 'work' | 'school') => {
     setActiveTypeFilter(type);
+  };
+
+  const handleRoommateFilterChange = () => {
+    setShowRoommateOnly(!showRoommateOnly);
+    // If we're showing in the main filter buttons, clear it from the filters object if it exists
+    if (filters.lookingForRoommate) {
+      onFiltersChange({ ...filters, lookingForRoommate: undefined });
+    }
   };
 
   // Get user's general location (city & state) if available
@@ -234,6 +251,20 @@ export const DirectoryContent: React.FC<DirectoryContentProps> = ({
               >
                 <FaGraduationCap className="text-sm" />
                 <span>Studying</span>
+              </motion.button>
+
+              <motion.button
+                onClick={handleRoommateFilterChange}
+                className={`px-4 py-2 rounded-full border ${
+                  showRoommateOnly
+                    ? 'bg-[#8FC9A9]/10 border-[#8FC9A9] text-[#8FC9A9]'
+                    : 'border-gray-200 text-gray-600 hover:border-[#8FC9A9]'
+                } transition-all flex items-center gap-2`}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <FaHome className="text-sm" />
+                <span>Roommates</span>
               </motion.button>
 
               {hasUserLocation && (
@@ -390,6 +421,42 @@ export const DirectoryContent: React.FC<DirectoryContentProps> = ({
                     <button
                       onClick={() => onFiltersChange({ ...filters, city: undefined })}
                       className="ml-1 text-gray-500 hover:text-[#F28B82]"
+                    >
+                      <MdClear size={14} />
+                    </button>
+                  </motion.span>
+                )}
+
+                {showRoommateOnly && (
+                  <motion.span
+                    className="px-2 py-1 bg-[#8FC9A9]/10 rounded-md text-xs text-[#8FC9A9] flex items-center"
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0.8, opacity: 0 }}
+                    whileHover={{ scale: 1.05 }}
+                  >
+                    Looking for Roommates
+                    <button
+                      onClick={() => setShowRoommateOnly(false)}
+                      className="ml-1 text-gray-500 hover:text-[#8FC9A9]"
+                    >
+                      <MdClear size={14} />
+                    </button>
+                  </motion.span>
+                )}
+
+                {filters.lookingForRoommate && !showRoommateOnly && (
+                  <motion.span
+                    className="px-2 py-1 bg-[#8FC9A9]/10 rounded-md text-xs text-[#8FC9A9] flex items-center"
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0.8, opacity: 0 }}
+                    whileHover={{ scale: 1.05 }}
+                  >
+                    Looking for Roommates
+                    <button
+                      onClick={() => onFiltersChange({ ...filters, lookingForRoommate: undefined })}
+                      className="ml-1 text-gray-500 hover:text-[#8FC9A9]"
                     >
                       <MdClear size={14} />
                     </button>

@@ -10,6 +10,7 @@ interface FilterOptions {
   state?: string;
   city?: string;
   savedFilter?: string;
+  lookingForRoommate?: boolean;
 }
 
 interface FilterPanelProps {
@@ -80,6 +81,9 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
   const [country, setCountry] = useState(currentFilters.country || '');
   const [state, setState] = useState(currentFilters.state || '');
   const [city, setCity] = useState(currentFilters.city || '');
+  const [lookingForRoommate, setLookingForRoommate] = useState(
+    currentFilters.lookingForRoommate || false
+  );
   const [filterName, setFilterName] = useState('');
   const [showSaveForm, setShowSaveForm] = useState(false);
 
@@ -111,6 +115,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
     setCountry(currentFilters.country || '');
     setState(currentFilters.state || '');
     setCity(currentFilters.city || '');
+    setLookingForRoommate(currentFilters.lookingForRoommate || false);
   }, [currentFilters]);
 
   const handleFilterChange = (newFilters: Partial<FilterOptions>) => {
@@ -119,6 +124,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
     setCountry(updatedFilters.country || '');
     setState(updatedFilters.state || '');
     setCity(updatedFilters.city || '');
+    setLookingForRoommate(updatedFilters.lookingForRoommate || false);
     onFilter(updatedFilters);
   };
 
@@ -130,6 +136,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
       country,
       state,
       city,
+      lookingForRoommate,
     });
 
     setFilterName('');
@@ -281,6 +288,28 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
                   />
                 </motion.div>
 
+                <motion.div variants={itemVariants}>
+                  <div className="flex items-center mb-2">
+                    <input
+                      type="checkbox"
+                      id="roommate-checkbox"
+                      checked={lookingForRoommate}
+                      onChange={(e) =>
+                        handleFilterChange({
+                          lookingForRoommate: e.target.checked,
+                        })
+                      }
+                      className="w-4 h-4 text-[#8FC9A9] border-gray-300 rounded focus:ring-[#8FC9A9]"
+                    />
+                    <label
+                      htmlFor="roommate-checkbox"
+                      className="ml-2 text-sm font-medium text-[#333333]"
+                    >
+                      Looking for roommates
+                    </label>
+                  </div>
+                </motion.div>
+
                 {/* Save Filter Form */}
                 <AnimatePresence>
                   {showSaveForm && (
@@ -336,6 +365,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
                         country: '',
                         state: '',
                         city: '',
+                        lookingForRoommate: false,
                       });
                     }}
                     className="flex items-center gap-2 text-sm text-gray-500 hover:text-[#333333] transition-colors"

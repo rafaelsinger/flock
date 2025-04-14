@@ -11,6 +11,7 @@ import { IoLocationOutline } from 'react-icons/io5';
 import { MdOutlineLocationCity } from 'react-icons/md';
 import { TbMap2 } from 'react-icons/tb';
 import { HiOutlineGlobeAlt } from 'react-icons/hi';
+import { IoMdPeople } from 'react-icons/io';
 
 const Step3: FC = () => {
   const router = useRouter();
@@ -22,6 +23,7 @@ const Step3: FC = () => {
     state: '',
     city: '',
     boroughDistrict: '',
+    lookingForRoommate: false,
   });
 
   const [isFormValid, setIsFormValid] = useState(false);
@@ -43,6 +45,7 @@ const Step3: FC = () => {
         state: locationData.state,
         city: locationData.city,
         boroughDistrict: locationData.boroughDistrict,
+        lookingForRoommate: locationData.lookingForRoommate,
       };
       return Promise.resolve(data);
     },
@@ -248,6 +251,30 @@ const Step3: FC = () => {
               </motion.div>
             </motion.div>
           )}
+
+          <motion.div variants={itemVariants} initial="hidden" animate="visible">
+            <label className={`${labelClasses} mb-3`}>
+              <IoMdPeople className="mr-2 text-[#F28B82]" />
+              Looking for Roommates
+            </label>
+            <motion.div className="flex items-center">
+              <input
+                type="checkbox"
+                id="lookingForRoommate"
+                checked={formData.lookingForRoommate}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    lookingForRoommate: e.target.checked,
+                  }))
+                }
+                className="w-5 h-5 text-[#F28B82] border-gray-300 rounded focus:ring-[#F9C5D1]"
+              />
+              <label htmlFor="lookingForRoommate" className="ml-2 text-sm text-[#666666]">
+                I&apos;m looking for roommate(s) in my postgrad destination
+              </label>
+            </motion.div>
+          </motion.div>
         </div>
 
         <motion.div variants={itemVariants} className="flex justify-end space-x-4">

@@ -7,7 +7,7 @@ import { useSession, signOut } from 'next-auth/react';
 import { IoArrowBack } from 'react-icons/io5';
 import { BsBriefcase, BsGeoAlt, BsEyeFill, BsPerson } from 'react-icons/bs';
 import { LuGraduationCap } from 'react-icons/lu';
-import { FaEdit, FaSignOutAlt, FaBuilding, FaUniversity } from 'react-icons/fa';
+import { FaEdit, FaSignOutAlt, FaBuilding, FaUniversity, FaHome } from 'react-icons/fa';
 import { MdWork } from 'react-icons/md';
 import { HiOutlineAcademicCap } from 'react-icons/hi';
 import { NotFoundState } from '@/components/NotFoundState/NotFoundState';
@@ -323,6 +323,16 @@ const ViewMode = ({ userData, isOwnProfile, onEdit }: ViewModeProps) => {
             </div>
           </motion.div>
 
+          {/* Roommate status */}
+          {userData.lookingForRoommate && (
+            <motion.div className="flex items-start space-x-2 mb-4" variants={itemVariants}>
+              <FaHome className="text-[#8FC9A9] text-xl mt-1" />
+              <div>
+                <p className="text-lg font-medium text-[#8FC9A9]">Looking for roommates</p>
+              </div>
+            </motion.div>
+          )}
+
           {/* Email display */}
           {userData.email && (
             <motion.div className="flex items-start space-x-2 mb-4" variants={itemVariants}>
@@ -446,6 +456,14 @@ const EditForm = ({ userData, setUserData, onSave, onCancel, isSubmitting }: Edi
     setUserData({
       ...userData,
       visibilityOptions: updatedVisibilityOptions,
+    });
+  };
+
+  // Handle roommate status change
+  const handleRoommateStatusChange = (isLookingForRoommate: boolean) => {
+    setUserData({
+      ...userData,
+      lookingForRoommate: isLookingForRoommate,
     });
   };
 
@@ -637,6 +655,28 @@ const EditForm = ({ userData, setUserData, onSave, onCancel, isSubmitting }: Edi
             className={inputClasses}
           />
         </motion.div>
+      </motion.div>
+
+      <motion.div variants={itemVariants} className="space-y-4">
+        <label className={labelClasses}>Roommate Status</label>
+        <div className="bg-white border border-gray-200 rounded-lg p-4 space-y-2">
+          <div className="flex items-center space-x-3">
+            <input
+              type="checkbox"
+              id="looking-for-roommate"
+              checked={userData.lookingForRoommate || false}
+              onChange={(e) => handleRoommateStatusChange(e.target.checked)}
+              className="w-4 h-4 text-[#8FC9A9] border-gray-300 rounded focus:ring-[#8FC9A9]/80"
+            />
+            <label htmlFor="looking-for-roommate" className="flex items-center cursor-pointer">
+              <FaHome className="text-[#8FC9A9] mr-2" />
+              <span>I&apos;m looking for roommates in my post-grad destination</span>
+            </label>
+          </div>
+          <p className="text-xs text-gray-500 pl-7">
+            This will be visible to your classmates in the directory
+          </p>
+        </div>
       </motion.div>
 
       {/* Update visibility section */}

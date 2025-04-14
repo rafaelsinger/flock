@@ -18,6 +18,7 @@ export interface User {
   country: string;
   industry?: string | null;
   boroughDistrict?: string | null;
+  lookingForRoommate?: boolean | null;
   visibilityOptions: {
     title?: boolean;
     company?: boolean;

@@ -20,6 +20,7 @@ export const GET = auth(async function GET(request: NextRequest) {
     const state = searchParams.get('state') || '';
     const city = searchParams.get('city') || '';
     const industry = searchParams.get('industry') || '';
+    const lookingForRoommate = searchParams.get('lookingForRoommate') === 'true';
 
     // Calculate skip for pagination
     const skip = (page - 1) * limit;
@@ -55,6 +56,8 @@ export const GET = auth(async function GET(request: NextRequest) {
               },
             }
           : { OR: [] },
+        // Roommate filter
+        lookingForRoommate ? { lookingForRoommate: true } : { OR: [] },
       ],
     };
 
@@ -73,6 +76,7 @@ export const GET = auth(async function GET(request: NextRequest) {
         company: true,
         school: true,
         postGradType: true,
+        lookingForRoommate: true,
         visibilityOptions: true,
         industry: {
           select: {
@@ -139,6 +143,8 @@ export const POST = auth(async function POST(request: NextRequest) {
         // School-specific fields
         school: userData.postGradType === 'school' ? userData.school?.name : null,
         program: userData.postGradType === 'school' ? userData.school?.program : null,
+        // Roommate preference
+        lookingForRoommate: userData.lookingForRoommate ?? false,
         // Visibility settings
         visibilityOptions: {
           showRole: userData.visibility?.showRole ?? true,
