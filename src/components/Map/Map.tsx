@@ -71,6 +71,8 @@ export const FlockMap: React.FC = () => {
     y: number;
   } | null>(null);
 
+  const [zoomedIn, setZoomedIn] = React.useState(false);
+
   const { data: locationData, isLoading } = useQuery<LocationData>({
     queryKey: ['locationData', selectedState],
     queryFn: async () => {
@@ -111,7 +113,7 @@ export const FlockMap: React.FC = () => {
 
   const colorScale = scaleQuantize<string>()
     .domain([0, maxValue])
-    .range(['#FFEAE8', '#FFD1CC', '#FFA69E', '#FF7B6F', '#FF4D3D', '#F28B82']);
+    .range(['#fef0d9', '#fdcc8a', '#fc8d59', '#e34a33', '#b30000']);
 
   const fillColorExpression = [
     'match',
@@ -123,14 +125,17 @@ export const FlockMap: React.FC = () => {
   ];
 
   const getLegendData = () => {
-    const step = Math.ceil(maxValue / 6);
+    const step = Math.ceil(maxValue / 5);
+    const buildRange = (start: number, end: number) => {
+      return start === end ? `${start}` : `${start}-${end}`;
+    };
+
     return [
-      { range: `0-${step - 1}`, color: '#FFEAE8' },
-      { range: `${step}-${2 * step - 1}`, color: '#FFD1CC' },
-      { range: `${2 * step}-${3 * step - 1}`, color: '#FFA69E' },
-      { range: `${3 * step}-${4 * step - 1}`, color: '#FF7B6F' },
-      { range: `${4 * step}-${5 * step - 1}`, color: '#FF4D3D' },
-      { range: `${5 * step}+`, color: '#F28B82' },
+      { range: buildRange(0, step), color: '#fef0d9' },
+      { range: buildRange(step + 1, 2 * step), color: '#fdcc8a' },
+      { range: buildRange(2 * step + 1, 3 * step), color: '#fc8d59' },
+      { range: buildRange(3 * step + 1, 4 * step), color: '#e34a33' },
+      { range: `${4 * step + 1}+`, color: '#b30000' }, // 5th bucket is always open-ended
     ];
   };
 
@@ -155,11 +160,13 @@ export const FlockMap: React.FC = () => {
     const [lon, lat] = centroid.geometry.coordinates;
 
     setSelectedState(clickedState);
+    setZoomedIn(true);
 
     if (mapRef.current) {
       mapRef.current.flyTo({
         center: [lon, lat],
         zoom: 6,
+        pitch: 30,
         speed: 1.2, // slower is smoother
         curve: 1.5, // curvature of flight path
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -170,12 +177,13 @@ export const FlockMap: React.FC = () => {
   };
 
   return (
-    <div className="w-full h-full relative">
+    <div className={`w-full h-full relative ${zoomedIn ? 'bg-gray-50' : 'bg-[#F9F9F9]'}`}>
       <MapGL
         {...viewState}
         ref={mapRef}
         style={{ width: '100%', height: '100%' }}
         mapStyle={`https://api.maptiler.com/maps/streets/style.json?key=OSNs9Q0u9qOO5KUhz2WB`}
+        cursor={hoveredStateId !== null ? 'pointer' : 'grab'}
         onMove={(evt) => {
           setViewState((prev) => ({
             ...evt.viewState,
@@ -283,10 +291,10 @@ export const FlockMap: React.FC = () => {
           style={{
             left: hoverInfo.x,
             top: hoverInfo.y,
-            transform: 'translate(-50%, -100%)',
+            transform: 'translate(-50%, 200%)',
           }}
         >
-          <div className="font-medium">{hoverInfo.name}</div>
+          <div className="font-medium text-[#333]">{hoverInfo.name}</div>
           <div className="text-gray-500">{hoverInfo.value} grads</div>
         </div>
       )}
@@ -299,7 +307,7 @@ export const FlockMap: React.FC = () => {
             transform: 'translate(-50%, -100%)',
           }}
         >
-          <div className="font-medium">{hoveredCity.city}</div>
+          <div className="font-medium text-[#333]">{hoveredCity.city}</div>
           <div className="text-gray-500">{hoveredCity.value} grads</div>
         </div>
       )}
@@ -329,11 +337,13 @@ export const FlockMap: React.FC = () => {
         <button
           onClick={() => {
             setSelectedState(null);
+            setZoomedIn(false);
             if (mapRef.current) {
               mapRef.current.flyTo({
                 center: [-97, 38],
                 zoom: 3,
                 speed: 1.2,
+                pitch: 0,
                 curve: 1.5,
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 easing: (t: any) => t,
@@ -341,7 +351,7 @@ export const FlockMap: React.FC = () => {
               });
             }
           }}
-          className="absolute top-4 right-4 bg-white px-4 py-2 rounded-lg shadow-md border border-gray-100 hover:bg-gray-50 transition z-10"
+          className="absolute top-4 right-4 p-2 bg-white rounded-lg shadow-md border hover:bg-gray-50 transition z-10 text-[#333]"
         >
           Back to USA
         </button>

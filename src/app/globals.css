@@ -193,10 +193,11 @@ body {
 
 @keyframes bubble-pop {
   0% {
-    transform: translate(-50%, -50%) scale(0);
+    transform: translate(-50%, -50%) scale(0.5);
     opacity: 0;
   }
   50% {
+    transform: translate(-50%, -50%) scale(1.2);
     opacity: 1;
   }
   100% {
@@ -206,7 +207,7 @@ body {
 }
 
 .bubble {
-  animation: bubble-pop 0.5s ease forwards;
+  animation: bubble-pop 0.6s ease-out forwards;
 }
 
 .bubble:hover {
