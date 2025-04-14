@@ -3,19 +3,19 @@
 import { FC, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import type { OnboardingData } from '@/types/onboarding';
 import { US_STATES, COUNTRIES, STATES_WITH_BOROUGHS } from '@/constants/location';
+import { UserUpdate } from '@/types/user';
 
 const Step3: FC = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const previousData = queryClient.getQueryData(['onboardingData']) as OnboardingData;
+  const previousData = queryClient.getQueryData(['onboardingData']) as UserUpdate;
 
   const [formData, setFormData] = useState({
     country: 'USA',
     state: '',
     city: '',
-    borough: '',
+    boroughDistrict: '',
   });
 
   const [isFormValid, setIsFormValid] = useState(false);
@@ -29,10 +29,13 @@ const Step3: FC = () => {
   }, [formData]);
 
   const updateOnboardingData = useMutation({
-    mutationFn: (locationData: OnboardingData['location']) => {
-      const data: OnboardingData = {
+    mutationFn: (locationData: UserUpdate) => {
+      const data: UserUpdate = {
         ...previousData,
-        location: locationData,
+        country: locationData.country,
+        state: locationData.state,
+        city: locationData.city,
+        boroughDistrict: locationData.boroughDistrict,
       };
       return Promise.resolve(data);
     },
@@ -64,7 +67,7 @@ const Step3: FC = () => {
       // Only include state for USA
       state: showStateField ? formData.state : '',
       // Only include borough for specific states
-      borough: showBoroughField ? formData.borough : '',
+      borough: showBoroughField ? formData.boroughDistrict : '',
     };
     updateOnboardingData.mutate(locationData);
   };
@@ -163,7 +166,7 @@ const Step3: FC = () => {
               <input
                 type="text"
                 id="borough"
-                value={formData.borough}
+                value={formData.boroughDistrict}
                 onChange={(e) => setFormData((prev) => ({ ...prev, borough: e.target.value }))}
                 className={inputClasses}
                 placeholder="e.g. Brooklyn or Mission District"

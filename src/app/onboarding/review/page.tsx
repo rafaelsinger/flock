@@ -5,21 +5,28 @@ import { useRouter } from 'next/navigation';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { BsBriefcase } from 'react-icons/bs';
 import { LuGraduationCap } from 'react-icons/lu';
-import type { OnboardingData } from '@/types/onboarding';
-import { useUserStore } from '@/store/userStore';
+import { useSession } from 'next-auth/react';
+import { UserUpdate } from '@/types/user';
 
 const ReviewPage: FC = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const data = queryClient.getQueryData(['onboardingData']) as OnboardingData;
+  const data = queryClient.getQueryData(['onboardingData']) as UserUpdate;
   const isFinalizingRef = useRef(false);
-  const { updateUser } = useUserStore();
+  const { data: sessionStorage, update } = useSession();
 
   const finalizeOnboarding = useMutation({
-    mutationFn: async (finalData: OnboardingData) => {
+    mutationFn: async (finalData: UserUpdate) => {
       isFinalizingRef.current = true;
-      const response = await fetch('/api/users', {
-        method: 'POST',
+      finalData = { ...finalData, isOnboarded: true };
+
+      // Check if we have a valid session with user ID
+      if (!sessionStorage?.user?.id) {
+        throw new Error('No user ID found in session');
+      }
+
+      const response = await fetch(`/api/users/${sessionStorage.user.id}`, {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -32,8 +39,12 @@ const ReviewPage: FC = () => {
 
       return response.json();
     },
-    onSuccess: (user) => {
-      updateUser(user);
+    onSuccess: async (user) => {
+      await update({
+        userSession: {
+          ...user,
+        },
+      });
 
       queryClient.removeQueries({ queryKey: ['onboardingData'] });
       router.push('/');
@@ -52,6 +63,10 @@ const ReviewPage: FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!sessionStorage?.user?.id) {
+      console.error('No user ID found in session');
+      return;
+    }
     finalizeOnboarding.mutate(data);
   };
 
@@ -77,16 +92,16 @@ const ReviewPage: FC = () => {
           </div>
 
           {/* Details */}
-          {data.postGradType === 'work' && data.work && (
+          {data.postGradType === 'work' && (
             <div className="space-y-2">
               <p className="text-[#333333]">
-                <span className="font-medium">Company:</span> {data.work.company}
+                <span className="font-medium">Company:</span> {data.company}
               </p>
               <p className="text-[#333333]">
-                <span className="font-medium">Role:</span> {data.work.role}
+                <span className="font-medium">Role:</span> {data.title}
               </p>
               <p className="text-[#333333]">
-                <span className="font-medium">Industry:</span> {data.work.industry}
+                <span className="font-medium">Industry:</span> {data.industry}
               </p>
             </div>
           )}
@@ -94,21 +109,21 @@ const ReviewPage: FC = () => {
           {data.postGradType === 'school' && data.school && (
             <div className="space-y-2">
               <p className="text-[#333333]">
-                <span className="font-medium">School:</span> {data.school.name}
+                <span className="font-medium">School:</span> {data.name}
               </p>
               <p className="text-[#333333]">
-                <span className="font-medium">Program:</span> {data.school.program}
+                <span className="font-medium">Program:</span> {data.program}
               </p>
             </div>
           )}
 
           {/* Location */}
-          {data.location && (
+          {data.state && data.city && (
             <div className="pt-4 border-t space-y-2">
               <h3 className="font-medium text-[#333333]">Location</h3>
               <p className="text-[#333333]">
-                {data.location.city}, {data.location.state}
-                {data.location.borough && `, ${data.location.borough}`}
+                {data.city}, {data.state}
+                {data.boroughDistrict && `, ${data.boroughDistrict}`}
               </p>
             </div>
           )}
@@ -119,13 +134,13 @@ const ReviewPage: FC = () => {
             <ul className="space-y-1 text-[#666666]">
               {data.postGradType === 'work' ? (
                 <>
-                  {data.visibility?.showCompany && <li>• Company name visible to classmates</li>}
-                  {data.visibility?.showRole && <li>• Role visible to classmates</li>}
+                  {data.visibilityOptions?.company && <li>• Company name visible to classmates</li>}
+                  {data.visibilityOptions?.title && <li>• Role visible to classmates</li>}
                 </>
               ) : (
                 <>
-                  {data.visibility?.showSchool && <li>• School name visible to classmates</li>}
-                  {data.visibility?.showProgram && <li>• Program visible to classmates</li>}
+                  {data.visibilityOptions?.school && <li>• School name visible to classmates</li>}
+                  {data.visibilityOptions?.program && <li>• Program visible to classmates</li>}
                 </>
               )}
             </ul>

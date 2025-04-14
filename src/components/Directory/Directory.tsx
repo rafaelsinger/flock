@@ -18,6 +18,8 @@ export const Directory = () => {
   const userId = session?.user?.id || user?.id;
   const isOnboarded = user?.isOnboarded;
 
+  console.log({ isOnboarded, isLoading });
+
   // Check if onboarding is complete
   if (!isLoading && isOnboarded === false) {
     router.push('/onboarding/step1');

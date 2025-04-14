@@ -216,7 +216,7 @@ const EditForm = ({ userData, setUserData, onSave, onCancel }: EditFormProps) =>
 
     if (field === 'role') {
       if (userData.postGradType === 'work') {
-        updatedVisibilityOptions.role = value;
+        updatedVisibilityOptions.title = value;
       } else {
         updatedVisibilityOptions.program = value;
       }
@@ -331,7 +331,7 @@ const EditForm = ({ userData, setUserData, onSave, onCancel }: EditFormProps) =>
             type="checkbox"
             checked={
               userData.postGradType === 'work'
-                ? (userData.visibilityOptions.role ?? true)
+                ? (userData.visibilityOptions.title ?? true)
                 : (userData.visibilityOptions.program ?? true)
             }
             onChange={(e) => handleVisibilityChange('role', e.target.checked)}

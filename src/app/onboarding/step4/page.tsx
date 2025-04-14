@@ -3,20 +3,41 @@
 import { FC, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import type { OnboardingData } from '@/types/onboarding';
 import { useUserStore } from '@/store/userStore';
+import { UserUpdate } from '@/types/user';
+
+type WorkFormData = {
+  visibilityOptions: {
+    company: boolean;
+    title: boolean;
+  };
+};
+
+type SchoolFormData = {
+  visibilityOptions: {
+    school: boolean;
+    program: boolean;
+  };
+};
+
+type FormData = WorkFormData | SchoolFormData;
 
 const Step4: FC = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const previousData = queryClient.getQueryData(['onboardingData']) as OnboardingData;
+  const previousData = queryClient.getQueryData(['onboardingData']) as UserUpdate;
   const { updateUser } = useUserStore();
 
   const updateOnboardingData = useMutation({
-    mutationFn: (visibilityData: OnboardingData['visibility']) => {
-      const data: OnboardingData = {
+    mutationFn: (visibilityData: UserUpdate) => {
+      const data: UserUpdate = {
         ...previousData,
-        visibility: visibilityData,
+        visibilityOptions: {
+          company: visibilityData.visibilityOptions?.company,
+          title: visibilityData.visibilityOptions?.title,
+          school: visibilityData.visibilityOptions?.school,
+          program: visibilityData.visibilityOptions?.program,
+        },
       };
       return Promise.resolve(data);
     },
@@ -31,15 +52,19 @@ const Step4: FC = () => {
       router.push('/onboarding/review');
     },
   });
-  const [formData, setFormData] = useState(
+  const [formData, setFormData] = useState<FormData>(
     previousData?.postGradType === 'work'
       ? {
-          showCompany: true,
-          showRole: true,
+          visibilityOptions: {
+            company: true,
+            title: true,
+          },
         }
       : {
-          showSchool: true,
-          showProgram: true,
+          visibilityOptions: {
+            school: true,
+            program: true,
+          },
         }
   );
 
@@ -56,6 +81,59 @@ const Step4: FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     updateOnboardingData.mutate(formData);
+  };
+
+  // Replace the onChange handlers with these type-safe versions
+  const handleCompanySchoolChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (previousData.postGradType === 'work') {
+      setFormData(
+        (prev) =>
+          ({
+            ...prev,
+            visibilityOptions: {
+              ...(prev as WorkFormData).visibilityOptions,
+              company: e.target.checked,
+            },
+          }) as WorkFormData
+      );
+    } else {
+      setFormData(
+        (prev) =>
+          ({
+            ...prev,
+            visibilityOptions: {
+              ...(prev as SchoolFormData).visibilityOptions,
+              school: e.target.checked,
+            },
+          }) as SchoolFormData
+      );
+    }
+  };
+
+  const handleTitleProgramChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (previousData.postGradType === 'work') {
+      setFormData(
+        (prev) =>
+          ({
+            ...prev,
+            visibilityOptions: {
+              ...(prev as WorkFormData).visibilityOptions,
+              title: e.target.checked,
+            },
+          }) as WorkFormData
+      );
+    } else {
+      setFormData(
+        (prev) =>
+          ({
+            ...prev,
+            visibilityOptions: {
+              ...(prev as SchoolFormData).visibilityOptions,
+              program: e.target.checked,
+            },
+          }) as SchoolFormData
+      );
+    }
   };
 
   return (
@@ -81,15 +159,11 @@ const Step4: FC = () => {
               <input
                 type="checkbox"
                 checked={
-                  previousData.postGradType === 'work' ? formData.showCompany : formData.showSchool
+                  previousData.postGradType === 'work'
+                    ? (formData as WorkFormData).visibilityOptions.company
+                    : (formData as SchoolFormData).visibilityOptions.school
                 }
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    [previousData.postGradType === 'work' ? 'showCompany' : 'showSchool']:
-                      e.target.checked,
-                  }))
-                }
+                onChange={handleCompanySchoolChange}
                 className="h-6 w-6 rounded border-gray-300 text-[#F9C5D1] focus:ring-[#F9C5D1] transition-colors cursor-pointer"
               />
             </label>
@@ -107,15 +181,11 @@ const Step4: FC = () => {
               <input
                 type="checkbox"
                 checked={
-                  previousData.postGradType === 'work' ? formData.showRole : formData.showProgram
+                  previousData.postGradType === 'work'
+                    ? (formData as WorkFormData).visibilityOptions.title
+                    : (formData as SchoolFormData).visibilityOptions.program
                 }
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    [previousData.postGradType === 'work' ? 'showRole' : 'showProgram']:
-                      e.target.checked,
-                  }))
-                }
+                onChange={handleTitleProgramChange}
                 className="h-6 w-6 rounded border-gray-300 text-[#F9C5D1] focus:ring-[#F9C5D1] transition-colors cursor-pointer"
               />
             </label>

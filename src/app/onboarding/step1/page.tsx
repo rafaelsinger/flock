@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation';
 import { BsBriefcase } from 'react-icons/bs';
 import { LuGraduationCap } from 'react-icons/lu';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import type { PostGradType, OnboardingData } from '@/types/onboarding';
+import { PostGradType } from '@prisma/client';
+import { UserUpdate } from '@/types/user';
 
 const Step1: FC = () => {
   const router = useRouter();
@@ -13,7 +14,7 @@ const Step1: FC = () => {
 
   const updateOnboardingData = useMutation({
     mutationFn: (type: PostGradType) => {
-      const data: OnboardingData = { postGradType: type };
+      const data: UserUpdate = { postGradType: type };
       return Promise.resolve(data);
     },
     onSuccess: (data) => {

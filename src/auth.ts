@@ -24,14 +24,17 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
       return false;
     },
-    jwt({ token, user, trigger }) {
+    jwt({ token, user, trigger, session }) {
       if (trigger === 'signIn' || trigger === 'signUp') {
         token.id = user.id;
       }
+      if (trigger === 'update') {
+        if (session) token = { ...token, ...session };
+      }
       return token;
     },
-    session({ session, token }) {
-      session.user.id = token.id;
+    session({ session, token, trigger }) {
+      session.user = { ...session.user, ...token };
       return session;
     },
   },

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/auth';
+import { UserUpdate } from '@/types/user';
 
 export async function GET(request: NextRequest) {
   try {
@@ -26,11 +27,20 @@ export async function PUT(request: Request, context: { params: { id: string } })
   const { params } = context;
   try {
     const session = await auth();
-    if (!session || session.user.id !== params.id) {
-      return new NextResponse('Unauthorized', { status: 401 });
+
+    if (!session?.user) {
+      return new NextResponse('Unauthorized - No session', { status: 401 });
     }
 
-    const userData = await request.json();
+    if (!params?.id) {
+      return new NextResponse('Bad Request - Missing ID parameter', { status: 400 });
+    }
+
+    if (session.user.id !== params.id) {
+      return new NextResponse('Unauthorized - User ID mismatch', { status: 401 });
+    }
+
+    const userData: UserUpdate = await request.json();
 
     const updatedUser = await prisma.user.update({
       where: {
@@ -43,6 +53,7 @@ export async function PUT(request: Request, context: { params: { id: string } })
         program: userData.program,
         company: userData.company,
         school: userData.school,
+        isOnboarded: userData.isOnboarded,
         city: userData.city,
         state: userData.state,
         country: userData.country,

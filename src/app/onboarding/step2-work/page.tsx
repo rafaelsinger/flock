@@ -3,17 +3,17 @@
 import { FC, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import type { OnboardingData } from '@/types/onboarding';
 import { INDUSTRIES } from '@/constants/industries';
+import { UserUpdate } from '@/types/user';
 
 const Step2Work: FC = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const previousData = queryClient.getQueryData(['onboardingData']) as OnboardingData;
+  const previousData = queryClient.getQueryData(['onboardingData']) as UserUpdate;
 
   const [formData, setFormData] = useState({
     company: '',
-    role: '',
+    title: '',
     industry: '',
   });
 
@@ -21,15 +21,17 @@ const Step2Work: FC = () => {
 
   useEffect(() => {
     setIsFormValid(
-      formData.company.trim() !== '' && formData.role.trim() !== '' && formData.industry !== ''
+      formData.company.trim() !== '' && formData.title.trim() !== '' && formData.industry !== ''
     );
   }, [formData]);
 
   const updateOnboardingData = useMutation({
-    mutationFn: (workData: OnboardingData['work']) => {
-      const data: OnboardingData = {
+    mutationFn: (workData: UserUpdate) => {
+      const data: UserUpdate = {
         ...previousData,
-        work: workData,
+        company: workData.company,
+        title: workData.title,
+        industry: workData.industry,
       };
       return Promise.resolve(data);
     },
@@ -86,8 +88,8 @@ const Step2Work: FC = () => {
             <input
               type="text"
               id="role"
-              value={formData.role}
-              onChange={(e) => setFormData((prev) => ({ ...prev, role: e.target.value }))}
+              value={formData.title}
+              onChange={(e) => setFormData((prev) => ({ ...prev, title: e.target.value }))}
               className="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:border-[#F9C5D1] focus:ring-2 focus:ring-[#F9C5D1]/20 outline-none transition-colors text-[#333333]"
               placeholder="e.g. Software Engineer"
               required
