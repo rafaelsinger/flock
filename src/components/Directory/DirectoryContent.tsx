@@ -133,10 +133,6 @@ export const DirectoryContent: React.FC<DirectoryContentProps> = ({
     searchQuery ||
     activeTypeFilter !== 'all';
 
-  console.log(Object.keys(filters));
-  console.log(searchQuery);
-  console.log(activeTypeFilter !== 'all');
-
   const handleSearch = (query: string) => {
     setSearchQuery(query);
   };

@@ -60,15 +60,14 @@ export const FlockMap: React.FC<FlockMapProps> = ({ onCitySelect }) => {
     transitionDuration: 500,
   });
 
+  const [selectedState, setSelectedState] = React.useState<string | null>(null);
+  const [hoveredStateId, setHoveredStateId] = React.useState<number | null>(null);
   const [hoveredCity, setHoveredCity] = React.useState<{
     city: string;
     value: number;
     x: number;
     y: number;
   } | null>(null);
-
-  const [selectedState, setSelectedState] = React.useState<string | null>(null);
-  const [hoveredStateId, setHoveredStateId] = React.useState<number | null>(null);
   const [hoverInfo, setHoverInfo] = React.useState<{
     name: string;
     value: number;
@@ -192,6 +191,32 @@ export const FlockMap: React.FC<FlockMapProps> = ({ onCitySelect }) => {
 
   const showSkeleton = !mapLoaded || isLoading;
 
+  const handleMouseMove = React.useCallback(
+    (event: maplibregl.MapLayerMouseEvent) => {
+      const feature = event.features?.[0];
+      if (feature && mapRef.current) {
+        const name = feature.properties?.name || 'Unknown';
+        const value = locationData?.[name] || 0;
+
+        const rect = mapRef.current.getMap().getCanvas().getBoundingClientRect();
+        const correctedX = rect.left + event.point.x;
+        const correctedY = rect.top + event.point.y;
+
+        setHoveredStateId(feature.id as number);
+        setHoverInfo({
+          name,
+          value,
+          x: correctedX,
+          y: correctedY,
+        });
+      } else {
+        setHoveredStateId(null);
+        setHoverInfo(null);
+      }
+    },
+    [locationData]
+  );
+
   return (
     <div className={`w-full h-full relative ${zoomedIn ? 'bg-gray-50' : 'bg-[#F9F9F9]'}`}>
       <MapGL
@@ -214,23 +239,7 @@ export const FlockMap: React.FC<FlockMapProps> = ({ onCitySelect }) => {
             handleStateClick(feature);
           }
         }}
-        onMouseMove={(event) => {
-          const feature = event.features?.[0];
-          if (feature) {
-            setHoveredStateId(feature.id as number);
-            const name = feature.properties?.name || 'Unknown';
-            const value = locationData?.[name] || 0;
-            setHoverInfo({
-              name,
-              value,
-              x: event.point.x,
-              y: event.point.y,
-            });
-          } else {
-            setHoveredStateId(null);
-            setHoverInfo(null);
-          }
-        }}
+        onMouseMove={handleMouseMove}
         onMouseLeave={() => {
           setHoveredStateId(null);
           setHoverInfo(null);
@@ -251,9 +260,8 @@ export const FlockMap: React.FC<FlockMapProps> = ({ onCitySelect }) => {
             const coords = CITY_COORDINATES[city];
             if (!coords) return null;
 
-            // Nonlinear size scaling
-            const normalizedValue = Math.sqrt(value) / Math.sqrt(maxValue); // 0 to 1
-            const bubbleSize = Math.min(50, 10 + normalizedValue * 40); // control min/max
+            const normalizedValue = Math.sqrt(value) / Math.sqrt(maxValue);
+            const bubbleSize = Math.min(50, 10 + normalizedValue * 40);
 
             return (
               <Marker key={city} longitude={coords[0]} latitude={coords[1]}>
@@ -261,6 +269,14 @@ export const FlockMap: React.FC<FlockMapProps> = ({ onCitySelect }) => {
                   className="bubble"
                   onClick={() => onCitySelect(city, STATE_NAME_TO_ABBREV[selectedState])}
                   onMouseEnter={(e) => {
+                    setHoveredCity({
+                      city,
+                      value,
+                      x: e.clientX,
+                      y: e.clientY,
+                    });
+                  }}
+                  onMouseMove={(e) => {
                     setHoveredCity({
                       city,
                       value,
@@ -284,6 +300,34 @@ export const FlockMap: React.FC<FlockMapProps> = ({ onCitySelect }) => {
               </Marker>
             );
           })}
+
+        {/* Tooltips */}
+        {hoverInfo && !selectedState && (
+          <div
+            className="fixed bg-white px-3 py-2 rounded-lg shadow-md border border-gray-100 pointer-events-none z-50 text-xs"
+            style={{
+              left: hoverInfo.x,
+              top: hoverInfo.y,
+              transform: 'translate(0px, -100%)',
+            }}
+          >
+            <div className="font-medium text-[#333]">{hoverInfo.name}</div>
+            <div className="text-gray-500">{hoverInfo.value} grads</div>
+          </div>
+        )}
+        {hoveredCity && (
+          <div
+            className="fixed bg-white px-3 py-2 rounded-lg shadow-md border border-gray-100 text-xs z-50 pointer-events-none"
+            style={{
+              left: hoveredCity.x,
+              top: hoveredCity.y,
+              transform: 'translate(-50%, -100%)',
+            }}
+          >
+            <div className="font-medium text-[#333]">{hoveredCity.city}</div>
+            <div className="text-gray-500">{hoveredCity.value} grads</div>
+          </div>
+        )}
       </MapGL>
 
       {/* Zoom Controls */}
@@ -301,34 +345,6 @@ export const FlockMap: React.FC<FlockMapProps> = ({ onCitySelect }) => {
           <Minus className="w-4 h-4 text-[#333]" />
         </button>
       </div>
-
-      {/* Tooltip */}
-      {hoverInfo && !selectedState && (
-        <div
-          className="fixed bg-white px-3 py-2 rounded-lg shadow-md border border-gray-100 pointer-events-none z-50 text-xs"
-          style={{
-            left: hoverInfo.x,
-            top: hoverInfo.y,
-            transform: 'translate(-20%, 300%)',
-          }}
-        >
-          <div className="font-medium text-[#333]">{hoverInfo.name}</div>
-          <div className="text-gray-500">{hoverInfo.value} grads</div>
-        </div>
-      )}
-      {hoveredCity && (
-        <div
-          className="fixed bg-white px-3 py-2 rounded-lg shadow-md border border-gray-100 text-xs z-50 pointer-events-none"
-          style={{
-            left: hoveredCity.x,
-            top: hoveredCity.y,
-            transform: 'translate(-50%, -100%)',
-          }}
-        >
-          <div className="font-medium text-[#333]">{hoveredCity.city}</div>
-          <div className="text-gray-500">{hoveredCity.value} grads</div>
-        </div>
-      )}
 
       {/* Legend */}
       <div className="absolute top-4 left-4 bg-white rounded-lg shadow-md border border-gray-100 p-3 z-10">
