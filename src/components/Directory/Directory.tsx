@@ -84,6 +84,14 @@ export const Directory = () => {
       state,
       country: 'USA',
     }));
+    if (city) {
+      setTimeout(() => {
+        directoryContentRef.current?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start',
+        });
+      }, 100);
+    }
   };
 
   // Handle saving filters
