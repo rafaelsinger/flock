@@ -145,15 +145,18 @@ export const FlockMap: React.FC<FlockMapProps> = ({ onCitySelect }) => {
 
   const legendData = getLegendData();
 
-  const renderLegendSkeleton = () =>
-    Array(6)
-      .fill(0)
-      .map((_, index) => (
-        <div key={index} className="flex items-center gap-2.5">
-          <div className="w-4 h-4 rounded border border-gray-100 bg-gray-200 animate-pulse" />
-          <div className="h-4 w-12 bg-gray-200 rounded animate-pulse" />
-        </div>
-      ));
+  const renderLegendSkeleton = () => (
+    <div className="space-y-2.5">
+      {Array(5)
+        .fill(0)
+        .map((_, index) => (
+          <div key={index} className="flex items-center gap-2.5">
+            <div className="w-4 h-4 rounded border border-gray-100 bg-gray-200 animate-pulse" />
+            <div className="h-4 w-12 bg-gray-200 rounded animate-pulse" />
+          </div>
+        ))}
+    </div>
+  );
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleStateClick = (feature: any) => {
