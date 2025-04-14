@@ -2,11 +2,10 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { FilterPanel } from '@/components/FilterPanel';
 import { UserGrid } from '@/components/UserGrid';
-import { MdClear, MdSearch, MdRefresh, MdFullscreen, MdFullscreenExit } from 'react-icons/md';
+import { MdClear, MdSearch, MdRefresh } from 'react-icons/md';
 import { FaGraduationCap, FaBriefcase } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useDebounce } from '@/hooks/useDebounce';
-import { Map } from '@/components/Map';
 import { useSession } from 'next-auth/react';
 
 interface FilterOptions {
@@ -33,11 +32,26 @@ const itemVariants = {
   visible: { y: 0, opacity: 1 },
 };
 
-export const DirectoryContent: React.FC = () => {
+interface DirectoryContentProps {
+  filters: FilterOptions;
+  onFiltersChange: (filters: FilterOptions) => void;
+  savedFilters: Record<string, FilterOptions>;
+  onSaveFilter: (name: string, filter: FilterOptions) => void;
+  onDeleteFilter: (name: string) => void;
+  onSelectFilter: (name: string) => void;
+}
+
+export const DirectoryContent: React.FC<DirectoryContentProps> = ({
+  filters,
+  onFiltersChange,
+  savedFilters,
+  onSaveFilter,
+  onDeleteFilter,
+  onSelectFilter,
+}) => {
   const { data: session } = useSession();
   const [page, setPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
-  const [filters, setFilters] = useState<FilterOptions>({});
   const [activeTypeFilter, setActiveTypeFilter] = useState<'all' | 'work' | 'school'>('all');
   const [isMapFullscreen, setIsMapFullscreen] = useState(false);
 
@@ -114,20 +128,22 @@ export const DirectoryContent: React.FC = () => {
   const totalUsers = data?.total || 0;
   const totalPages = data ? Math.ceil(data.total / ITEMS_PER_PAGE) : 1;
   const hasFiltersActive =
-    Object.keys(filters).length > 0 || searchQuery || activeTypeFilter !== 'all';
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    Object.entries(filters).some(([_, value]) => value && value !== 'all') ||
+    searchQuery ||
+    activeTypeFilter !== 'all';
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
   };
 
   const handleFilter = (newFilters: FilterOptions) => {
-    setFilters(newFilters);
+    onFiltersChange(newFilters);
   };
 
-  // Modify the handleClearFilters function
   const handleClearFilters = () => {
     setSearchQuery('');
-    setFilters({});
+    onFiltersChange({});
     setActiveTypeFilter('all');
   };
 
@@ -142,30 +158,6 @@ export const DirectoryContent: React.FC = () => {
 
   // Determine content to render based on fullscreen state
   const renderContent = () => {
-    if (isMapFullscreen) {
-      return (
-        <motion.div
-          className="fixed inset-0 z-50 bg-white"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-        >
-          <div className="h-full relative">
-            <Map />
-
-            <motion.button
-              onClick={() => setIsMapFullscreen(false)}
-              className="absolute top-4 right-4 z-10 bg-white p-2 rounded-full shadow-md hover:shadow-lg transition-all text-gray-800"
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-            >
-              <MdFullscreenExit size={24} />
-            </motion.button>
-          </div>
-        </motion.div>
-      );
-    }
-
     return (
       <motion.div
         variants={containerVariants}
@@ -173,24 +165,6 @@ export const DirectoryContent: React.FC = () => {
         animate="visible"
         className="space-y-6"
       >
-        {/* Map Section */}
-        <motion.div
-          className="h-[500px] rounded-xl overflow-hidden bg-white shadow-sm border border-gray-100 relative"
-          variants={itemVariants}
-          whileHover={{ boxShadow: '0 10px 25px -5px rgba(167, 215, 249, 0.15)' }}
-        >
-          <Map />
-
-          <motion.button
-            onClick={() => setIsMapFullscreen(true)}
-            className="absolute top-4 right-4 z-10 bg-white p-2 rounded-full shadow-md hover:shadow-lg transition-all text-gray-800"
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-          >
-            <MdFullscreen size={24} />
-          </motion.button>
-        </motion.div>
-
         {/* Search and Filters */}
         <motion.div
           className="bg-white rounded-xl p-5 shadow-sm border border-gray-100"
@@ -281,7 +255,14 @@ export const DirectoryContent: React.FC = () => {
               )}
 
               <div className="flex-grow md:flex-grow-0 text-right md:text-left">
-                <FilterPanel onFilter={handleFilter} currentFilters={filters} />
+                <FilterPanel
+                  onFilter={handleFilter}
+                  currentFilters={filters}
+                  savedFilters={savedFilters}
+                  onSaveFilter={onSaveFilter}
+                  onDeleteFilter={onDeleteFilter}
+                  onSelectFilter={onSelectFilter}
+                />
               </div>
             </div>
           </div>
@@ -344,7 +325,7 @@ export const DirectoryContent: React.FC = () => {
                   >
                     Saved: {filters.savedFilter}
                     <button
-                      onClick={() => setFilters({})}
+                      onClick={() => onFiltersChange({ ...filters, savedFilter: undefined })}
                       className="ml-1 text-gray-500 hover:text-[#F28B82]"
                     >
                       <MdClear size={14} />
@@ -363,7 +344,12 @@ export const DirectoryContent: React.FC = () => {
                     Country: {filters.country}
                     <button
                       onClick={() =>
-                        setFilters({ ...filters, country: undefined, state: undefined })
+                        onFiltersChange({
+                          ...filters,
+                          country: undefined,
+                          state: undefined,
+                          city: undefined,
+                        })
                       }
                       className="ml-1 text-gray-500 hover:text-[#F28B82]"
                     >
@@ -382,7 +368,9 @@ export const DirectoryContent: React.FC = () => {
                   >
                     State: {filters.state}
                     <button
-                      onClick={() => setFilters({ ...filters, state: undefined })}
+                      onClick={() =>
+                        onFiltersChange({ ...filters, state: undefined, city: undefined })
+                      }
                       className="ml-1 text-gray-500 hover:text-[#F28B82]"
                     >
                       <MdClear size={14} />
@@ -400,7 +388,7 @@ export const DirectoryContent: React.FC = () => {
                   >
                     City: {filters.city}
                     <button
-                      onClick={() => setFilters({ ...filters, city: undefined })}
+                      onClick={() => onFiltersChange({ ...filters, city: undefined })}
                       className="ml-1 text-gray-500 hover:text-[#F28B82]"
                     >
                       <MdClear size={14} />

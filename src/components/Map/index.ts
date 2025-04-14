@@ -1,1 +1,1 @@
-export { Map } from './Map';
+export { FlockMap as Map } from './Map';

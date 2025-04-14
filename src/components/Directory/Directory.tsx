@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { FaUserCircle } from 'react-icons/fa';
@@ -9,12 +9,24 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Footer } from '@/components/Footer';
 import { TopDestinations } from '@/components/TopDestinations';
+import { FlockMap } from '../Map/Map';
+
+interface FilterOptions {
+  postGradType?: 'work' | 'school' | 'all';
+  country?: string;
+  state?: string;
+  city?: string;
+  savedFilter?: string;
+}
 
 export const Directory = () => {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [isRedirecting, setIsRedirecting] = useState(false);
+  const [filters, setFilters] = useState<FilterOptions>({});
+  const [savedFilters, setSavedFilters] = useState<Record<string, FilterOptions>>({});
   const [greeting, setGreeting] = useState('');
+  const directoryContentRef = useRef<HTMLDivElement>(null);
 
   const userId = session?.user?.id;
   const isOnboarded = session?.user?.isOnboarded;
@@ -36,6 +48,14 @@ export const Directory = () => {
     else setGreeting('Good evening');
   }, []);
 
+  // Load saved filters on mount
+  useEffect(() => {
+    const storedFilters = localStorage.getItem('savedFilters');
+    if (storedFilters) {
+      setSavedFilters(JSON.parse(storedFilters));
+    }
+  }, []);
+
   // Show loading while redirecting
   if (isRedirecting || (!isOnboarded && status !== 'loading')) {
     return (
@@ -52,6 +72,55 @@ export const Directory = () => {
       </div>
     );
   }
+
+  const handleFiltersChange = (newFilters: FilterOptions) => {
+    setFilters(newFilters);
+  };
+
+  const handleCitySelect = (city: string, state: string) => {
+    setFilters((prev) => ({
+      ...prev,
+      city,
+      state,
+      country: 'USA',
+    }));
+    if (city) {
+      setTimeout(() => {
+        directoryContentRef.current?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start',
+        });
+      }, 100);
+    }
+  };
+
+  // Handle saving filters
+  const handleSaveFilter = (name: string, filter: FilterOptions) => {
+    const newSavedFilters = {
+      ...savedFilters,
+      [name]: filter,
+    };
+    setSavedFilters(newSavedFilters);
+    localStorage.setItem('savedFilters', JSON.stringify(newSavedFilters));
+  };
+
+  // Handle deleting filters
+  const handleDeleteFilter = (name: string) => {
+    const { [name]: _, ...restFilters } = savedFilters; // eslint-disable-line @typescript-eslint/no-unused-vars
+    setSavedFilters(restFilters);
+    localStorage.setItem('savedFilters', JSON.stringify(restFilters));
+  };
+
+  // Handle selecting a saved filter
+  const handleSelectFilter = (name: string) => {
+    const filter = savedFilters[name];
+    if (filter) {
+      setFilters({
+        ...filter,
+        savedFilter: name,
+      });
+    }
+  };
 
   return (
     <>
@@ -164,13 +233,32 @@ export const Directory = () => {
               </div>
             </motion.div>
 
+            {/* Map Section */}
+            <motion.div
+              className="h-[500px] mb-12 rounded-xl overflow-hidden bg-white shadow-md border border-gray-100 relative"
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ duration: 0.4, delay: 0.2 }}
+              whileHover={{ boxShadow: '0 10px 25px -5px rgba(167, 215, 249, 0.15)' }}
+            >
+              <FlockMap onCitySelect={handleCitySelect} />
+            </motion.div>
+
             {/* Directory Content */}
             <motion.div
+              ref={directoryContentRef}
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ duration: 0.4, delay: 0.3 }}
             >
-              <DirectoryContent />
+              <DirectoryContent
+                filters={filters}
+                onFiltersChange={handleFiltersChange}
+                savedFilters={savedFilters}
+                onSaveFilter={handleSaveFilter}
+                onDeleteFilter={handleDeleteFilter}
+                onSelectFilter={handleSelectFilter}
+              />
             </motion.div>
 
             {/* Top Destinations */}

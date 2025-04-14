@@ -14,7 +14,11 @@ interface FilterOptions {
 
 interface FilterPanelProps {
   onFilter: (filters: FilterOptions) => void;
-  currentFilters?: FilterOptions;
+  currentFilters: FilterOptions;
+  savedFilters: Record<string, FilterOptions>;
+  onSaveFilter: (name: string, filter: FilterOptions) => void;
+  onDeleteFilter: (name: string) => void;
+  onSelectFilter: (name: string) => void;
 }
 
 // Animation variants
@@ -63,13 +67,19 @@ const SavedFilter = ({
   );
 };
 
-export const FilterPanel: React.FC<FilterPanelProps> = ({ onFilter, currentFilters = {} }) => {
+export const FilterPanel: React.FC<FilterPanelProps> = ({
+  onFilter,
+  currentFilters,
+  savedFilters,
+  onSaveFilter,
+  onDeleteFilter,
+  onSelectFilter,
+}) => {
   const [isOpen, setIsOpen] = useState(false);
   const [postGradType, setPostGradType] = useState(currentFilters.postGradType || 'all');
   const [country, setCountry] = useState(currentFilters.country || '');
   const [state, setState] = useState(currentFilters.state || '');
   const [city, setCity] = useState(currentFilters.city || '');
-  const [savedFilters, setSavedFilters] = useState<Record<string, FilterOptions>>({});
   const [filterName, setFilterName] = useState('');
   const [showSaveForm, setShowSaveForm] = useState(false);
 
@@ -95,14 +105,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({ onFilter, currentFilte
     };
   }, [isOpen]);
 
-  // Load saved filters
-  useEffect(() => {
-    const storedFilters = localStorage.getItem('savedFilters');
-    if (storedFilters) {
-      setSavedFilters(JSON.parse(storedFilters));
-    }
-  }, []);
-
+  // Update local state when filters change
   useEffect(() => {
     setPostGradType(currentFilters.postGradType || 'all');
     setCountry(currentFilters.country || '');
@@ -122,44 +125,23 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({ onFilter, currentFilte
   const handleSaveFilter = () => {
     if (!filterName) return;
 
-    const newSavedFilters = {
-      ...savedFilters,
-      [filterName]: {
-        postGradType,
-        country,
-        state,
-        city,
-      },
-    };
+    onSaveFilter(filterName, {
+      postGradType,
+      country,
+      state,
+      city,
+    });
 
-    setSavedFilters(newSavedFilters);
-    localStorage.setItem('savedFilters', JSON.stringify(newSavedFilters));
     setFilterName('');
     setShowSaveForm(false);
   };
 
   const handleDeleteFilter = (name: string) => {
-    // Create a new object without the entry to be deleted
-    const restFilters = Object.entries(savedFilters)
-      .filter(([key]) => key !== name)
-      .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {});
-
-    setSavedFilters(restFilters);
-    localStorage.setItem('savedFilters', JSON.stringify(restFilters));
+    onDeleteFilter(name);
   };
 
   const handleSelectFilter = (name: string) => {
-    const filter = savedFilters[name];
-    if (filter) {
-      setPostGradType(filter.postGradType || 'all');
-      setCountry(filter.country || '');
-      setState(filter.state || '');
-      setCity(filter.city || '');
-      onFilter({
-        ...filter,
-        savedFilter: name,
-      });
-    }
+    onSelectFilter(name);
   };
 
   const selectClasses =
