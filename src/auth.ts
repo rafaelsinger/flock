@@ -59,7 +59,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         session.user.isOnboarded = token.isOnboarded;
       }
       if (token.userSession) {
-        session.user = { ...session.user, ...token.userSession };
+        session.user = { ...session.user, ...token };
       }
       return session;
     },
