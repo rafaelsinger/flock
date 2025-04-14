@@ -4,7 +4,6 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { FaUserCircle } from 'react-icons/fa';
-import { Map } from '@/components/Map';
 import { DirectoryContent } from './DirectoryContent';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
@@ -13,9 +12,11 @@ export const Directory = () => {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [isRedirecting, setIsRedirecting] = useState(false);
+  const [greeting, setGreeting] = useState('');
 
   const userId = session?.user?.id;
-  const isOnboarded = session?.user.isOnboarded;
+  const isOnboarded = session?.user?.isOnboarded;
+  const userName = session?.user?.name?.split(' ')[0];
 
   // Handle redirection in useEffect instead of during render
   useEffect(() => {
@@ -24,6 +25,14 @@ export const Directory = () => {
       router.push('/onboarding/step1');
     }
   }, [isOnboarded, status, router]);
+
+  // Set greeting based on time of day
+  useEffect(() => {
+    const hour = new Date().getHours();
+    if (hour < 12) setGreeting('Good morning');
+    else if (hour < 18) setGreeting('Good afternoon');
+    else setGreeting('Good evening');
+  }, []);
 
   // Show loading while redirecting
   if (isRedirecting || (!isOnboarded && status !== 'loading')) {
@@ -43,7 +52,7 @@ export const Directory = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#FFF9F8] overflow-hidden relative">
+    <div className="min-h-screen bg-[#FFF9F8] overflow-hidden relative pt-5 pb-10">
       {/* Background elements */}
       <div className="absolute top-0 right-0 w-64 h-64 bg-[#F9C5D1]/10 rounded-full -mr-20 -mt-20 blur-3xl"></div>
       <div className="absolute bottom-0 left-0 w-80 h-80 bg-[#A7D7F9]/10 rounded-full -ml-40 -mb-40 blur-3xl"></div>
@@ -51,7 +60,7 @@ export const Directory = () => {
       <main className="container max-w-7xl mx-auto px-4 sm:px-6 py-8 relative z-10">
         {/* Header */}
         <motion.div
-          className="mb-12 bg-white rounded-xl p-8 shadow-sm border border-gray-100 relative overflow-hidden"
+          className="mb-8 bg-white rounded-xl p-6 md:p-8 shadow-sm border border-gray-100 relative overflow-hidden"
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.4 }}
@@ -62,23 +71,32 @@ export const Directory = () => {
 
           <div className="flex flex-col md:flex-row md:items-center md:justify-between">
             <div>
-              <motion.h1
-                className="text-4xl font-bold text-[#333333] mb-2"
+              <motion.div
+                className="flex items-center gap-2"
                 initial={{ x: -10, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ delay: 0.1 }}
               >
-                <span className="inline-block mr-2">🦩</span>
-                Directory
-              </motion.h1>
-              <motion.p
-                className="text-lg text-[#666666]"
+                <span className="text-4xl">🦩</span>
+                <h1 className="text-4xl font-bold text-[#333333]">Directory</h1>
+              </motion.div>
+
+              <motion.div
                 initial={{ x: -10, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ delay: 0.2 }}
               >
-                Discover where your classmates are heading after graduation
-              </motion.p>
+                {userName ? (
+                  <p className="text-lg text-[#666666] mt-2">
+                    {greeting}, <span className="text-[#F28B82] font-medium">{userName}</span>!
+                    Discover where your classmates are heading after graduation.
+                  </p>
+                ) : (
+                  <p className="text-lg text-[#666666] mt-2">
+                    Discover where your classmates are heading after graduation
+                  </p>
+                )}
+              </motion.div>
             </div>
 
             {/* Profile Link */}
@@ -108,17 +126,6 @@ export const Directory = () => {
               </motion.div>
             )}
           </div>
-        </motion.div>
-
-        {/* Map Section */}
-        <motion.div
-          className="h-[500px] mb-12 rounded-xl overflow-hidden bg-white shadow-md border border-gray-100 relative"
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.4, delay: 0.2 }}
-          whileHover={{ boxShadow: '0 10px 25px -5px rgba(167, 215, 249, 0.15)' }}
-        >
-          <Map />
         </motion.div>
 
         {/* Directory Content */}

@@ -1,9 +1,9 @@
-import React from 'react';
-import { MapPin, Building } from 'lucide-react';
-import Link from 'next/link';
+import React, { useState } from 'react';
+import { MapPin, Building, Mail, Briefcase, GraduationCap } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
-import { User, getDisplayCompany } from '@/types/user';
+import { User, getDisplayCompany, getDisplayRole } from '@/types/user';
+import { motion } from 'framer-motion';
 
 interface UserCardProps {
   user: User;
@@ -13,9 +13,11 @@ interface UserCardProps {
 export const UserCard: React.FC<UserCardProps> = ({ user, prefetch = false }) => {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const [isExpanded, setIsExpanded] = useState(false);
 
-  const location = `${user.city}, ${user.state}`;
-  const company = user.visibilityOptions.company ? getDisplayCompany(user) : undefined;
+  const location = `${user.city}${user.state ? `, ${user.state}` : ''}`;
+  const company = user.visibilityOptions?.company !== false ? getDisplayCompany(user) : undefined;
+  const role = user.visibilityOptions?.title !== false ? getDisplayRole(user) : undefined;
 
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -40,35 +42,98 @@ export const UserCard: React.FC<UserCardProps> = ({ user, prefetch = false }) =>
     }
   };
 
+  const cardVariants = {
+    hover: {
+      y: -8,
+      boxShadow: '0 10px 25px -5px rgba(249, 197, 209, 0.3)',
+      transition: { duration: 0.3 },
+    },
+  };
+
+  const expandVariants = {
+    closed: { height: 0, opacity: 0 },
+    open: { height: 'auto', opacity: 1, transition: { duration: 0.3 } },
+  };
+
+  // Determine icon based on post-grad type
+  const PostGradIcon = user.postGradType === 'work' ? Briefcase : GraduationCap;
+  const iconColor = user.postGradType === 'work' ? '#F28B82' : '#A7D7F9';
+
   return (
-    <Link
-      href={`/profile/${user.id}`}
-      onClick={handleClick}
-      prefetch={false}
+    <motion.div
+      className="bg-white rounded-xl border border-gray-100 overflow-hidden hover:border-[#F9C5D1]/30"
+      whileHover="hover"
+      variants={cardVariants}
       onMouseEnter={handleMouseEnter}
     >
-      <div className="bg-white rounded-lg border border-gray-100 p-4 hover:shadow-md transition-all duration-200 cursor-pointer group">
-        <div className="flex items-start gap-4">
-          <div className="flex-1">
-            <h3 className="font-medium text-[#333333] group-hover:text-[#F28B82] transition-colors">
-              {user.name}
-            </h3>
-            <div className="mt-2 space-y-1">
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <MapPin className="h-4 w-4" /> {location}
-              </div>
-              {company && (
-                <div className="flex items-center gap-2 text-sm text-gray-600">
-                  <Building className="h-4 w-4" /> {company}
-                </div>
-              )}
+      <div onClick={() => setIsExpanded(!isExpanded)} className="p-5 cursor-pointer">
+        <div className="flex items-start justify-between">
+          {/* User Icon */}
+          <div className="flex items-center gap-3">
+            <div
+              className={`w-10 h-10 rounded-full flex items-center justify-center ${user.postGradType === 'work' ? 'bg-[#F9C5D1]/10' : 'bg-[#A7D7F9]/10'}`}
+            >
+              <PostGradIcon className={`h-5 w-5 text-[${iconColor}]`} />
+            </div>
+            <div>
+              <h3 className="font-medium text-[#333333] text-lg group-hover:text-[#F28B82] transition-colors">
+                {user.name}
+              </h3>
+              {role && <p className="text-sm text-gray-600">{role}</p>}
             </div>
           </div>
-          <span className="text-sm text-[#F28B82] hover:text-[#F28B82]/80 transition-colors cursor-pointer hover:translate-x-0.5 duration-200">
-            View Profile →
-          </span>
+
+          {/* Expand/Collapse indicator */}
+          <motion.div
+            animate={{ rotate: isExpanded ? 180 : 0 }}
+            transition={{ duration: 0.3 }}
+            className="text-gray-400"
+          >
+            ⌄
+          </motion.div>
+        </div>
+
+        {/* Basic info always visible */}
+        <div className="mt-4 space-y-2">
+          <div className="flex items-center gap-2 text-sm text-gray-600">
+            <MapPin className="h-4 w-4 text-[#F28B82]" />
+            <span>{location}</span>
+          </div>
+          {company && (
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+              <Building className="h-4 w-4 text-[#F28B82]" />
+              <span>{company}</span>
+            </div>
+          )}
         </div>
       </div>
-    </Link>
+
+      {/* Expandable section */}
+      <motion.div
+        variants={expandVariants}
+        initial="closed"
+        animate={isExpanded ? 'open' : 'closed'}
+        className="overflow-hidden"
+      >
+        <div className="px-5 pb-5 pt-0 border-t border-gray-100">
+          {user.email && (
+            <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
+              <Mail className="h-4 w-4 text-[#F28B82]" />
+              <span>{user.email}</span>
+            </div>
+          )}
+
+          <motion.button
+            onClick={handleClick}
+            className="w-full mt-2 bg-gradient-to-r from-[#F9C5D1] to-[#F28B82] text-white py-2 px-4 rounded-lg"
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.98 }}
+            transition={{ duration: 0.2 }}
+          >
+            View Full Profile
+          </motion.button>
+        </div>
+      </motion.div>
+    </motion.div>
   );
 };

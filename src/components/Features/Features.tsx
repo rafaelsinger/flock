@@ -20,18 +20,18 @@ export const Features: React.FC = () => {
     {
       title: 'Real-time Collaboration',
       description: 'Work together seamlessly with your team in real-time',
-      icon: '🤝'
+      icon: '🤝',
     },
     {
       title: 'Smart Organization',
       description: 'Keep your projects organized with intelligent tools',
-      icon: '📊'
+      icon: '📊',
     },
     {
       title: 'Secure Communication',
       description: 'End-to-end encrypted messaging for your peace of mind',
-      icon: '🔒'
-    }
+      icon: '🔒',
+    },
   ];
 
   return (
@@ -44,4 +44,4 @@ export const Features: React.FC = () => {
       </div>
     </section>
   );
-}; 
+};
