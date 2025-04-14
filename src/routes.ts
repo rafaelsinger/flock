@@ -1,7 +1,7 @@
 /**
  * Public routes that don't require authentication
  */
-export const publicRoutes = ['/'];
+export const publicRoutes = ['/', '/privacy', '/terms', '/contact'];
 
 /**
  * Routes that are used for authentication
