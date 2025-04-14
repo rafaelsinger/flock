@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function PUT(request: Request, context: { params: { id: string } }) {
-  const { params } = context;
+  const { params } = await context;
   try {
     const session = await auth();
 

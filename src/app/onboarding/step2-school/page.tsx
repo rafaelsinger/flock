@@ -69,7 +69,7 @@ const Step2School: FC = () => {
               type="text"
               id="school"
               value={formData.school}
-              onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
+              onChange={(e) => setFormData((prev) => ({ ...prev, school: e.target.value }))}
               className="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:border-[#A7D7F9] focus:ring-2 focus:ring-[#A7D7F9]/20 outline-none transition-colors text-[#333333]"
               placeholder="e.g. Stanford University"
               required

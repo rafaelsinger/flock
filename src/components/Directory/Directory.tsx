@@ -6,22 +6,18 @@ import { useSession } from 'next-auth/react';
 import { FaUserCircle } from 'react-icons/fa';
 import { Map } from '@/components/Map';
 import { DirectoryContent } from './DirectoryContent';
-import { useUserStore } from '@/store/userStore';
 import { useRouter } from 'next/navigation';
 
 export const Directory = () => {
   const { data: session } = useSession();
-  const { user, isLoading } = useUserStore();
   const router = useRouter();
 
   // Prefer session ID, fall back to store ID
-  const userId = session?.user?.id || user?.id;
-  const isOnboarded = user?.isOnboarded;
-
-  console.log({ isOnboarded, isLoading });
+  const userId = session?.user?.id;
+  const isOnboarded = session?.user.isOnboarded;
 
   // Check if onboarding is complete
-  if (!isLoading && isOnboarded === false) {
+  if (!isOnboarded) {
     router.push('/onboarding/step1');
 
     // Show loading while redirecting
