@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { FaUserCircle } from 'react-icons/fa';
@@ -25,6 +25,7 @@ export const Directory = () => {
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [filters, setFilters] = useState<FilterOptions>({});
   const [greeting, setGreeting] = useState('');
+  const directoryContentRef = useRef<HTMLDivElement>(null);
 
   const userId = session?.user?.id;
   const isOnboarded = session?.user?.isOnboarded;
@@ -63,13 +64,21 @@ export const Directory = () => {
     );
   }
 
-  // Add this handler
+  // Update the handler to include scrolling
   const handleCitySelect = (city: string, state: string) => {
     setFilters((prev) => ({
       ...prev,
       city,
       state,
     }));
+
+    // Scroll to directory content with a small delay to allow for state update
+    setTimeout(() => {
+      directoryContentRef.current?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      });
+    }, 100);
   };
 
   return (
@@ -196,6 +205,7 @@ export const Directory = () => {
 
             {/* Directory Content */}
             <motion.div
+          ref={directoryContentRef}
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ duration: 0.4, delay: 0.3 }}
