@@ -1,9 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
-import { useUserStore } from '@/store/userStore';
 import { User } from '@/types/user';
+import { useSession } from 'next-auth/react';
 
 export function useUserData(userId: string) {
-  const { user } = useUserStore();
+  const { data: session } = useSession();
+  const user = session?.user;
   const shouldFetch = user?.id !== userId;
 
   const query = useQuery({

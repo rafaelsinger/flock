@@ -1,6 +1,8 @@
 import React from 'react';
 import { UserCard } from '@/components/UserCard/UserCard';
 import { User } from '@/types/user';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Users } from 'lucide-react';
 
 interface UserGridProps {
   users: User[];
@@ -19,52 +21,141 @@ export const UserGrid: React.FC<UserGridProps> = ({
   onPageChange,
   prefetchUserData = true,
 }) => {
+  // Calculate visible page numbers
+  const getVisiblePages = () => {
+    const delta = 2; // Number of pages to show before and after current page
+    const range = [];
+    const start = Math.max(1, page - delta);
+    const end = Math.min(totalPages, page + delta);
+
+    // Always show first page
+    if (start > 1) {
+      range.push(1);
+      if (start > 2) range.push('...');
+    }
+
+    // Add the range around current page
+    for (let i = start; i <= end; i++) {
+      range.push(i);
+    }
+
+    // Always show last page
+    if (end < totalPages) {
+      if (end < totalPages - 1) range.push('...');
+      range.push(totalPages);
+    }
+
+    return range;
+  };
+
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {users.map((user) => (
-          <UserCard key={user.id} user={user} prefetch={prefetchUserData} />
-        ))}
-      </div>
+      <AnimatePresence mode="wait">
+        {loading ? (
+          <motion.div
+            key="loading"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="py-12"
+          >
+            <div className="flex flex-col items-center justify-center space-y-4">
+              <div className="w-16 h-16 border-4 border-[#F28B82] border-t-transparent rounded-full animate-spin"></div>
+              <p className="text-gray-500 animate-pulse">Loading users...</p>
+            </div>
+          </motion.div>
+        ) : users.length === 0 ? (
+          <motion.div
+            key="empty"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="py-12 bg-gray-50 rounded-lg"
+          >
+            <div className="flex flex-col items-center justify-center space-y-3 p-8">
+              <div className="bg-gray-100 p-4 rounded-full">
+                <Users className="h-8 w-8 text-gray-400" />
+              </div>
+              <h3 className="text-lg font-medium text-gray-700">No users found</h3>
+              <p className="text-gray-500 text-center max-w-md">
+                Try adjusting your filters or search criteria to find the users you&apos;re looking
+                for.
+              </p>
+            </div>
+          </motion.div>
+        ) : (
+          <motion.div
+            key="results"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {users.map((user, index) => (
+                <motion.div
+                  key={user.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{
+                    opacity: 1,
+                    y: 0,
+                    transition: { delay: index * 0.05 },
+                  }}
+                  whileHover={{ y: -4 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <UserCard user={user} prefetch={prefetchUserData} />
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {loading && (
-        <div className="text-center">
-          <div className="animate-pulse text-gray-500">Loading...</div>
-        </div>
-      )}
-
-      {!loading && users.length > 0 && (
-        <div className="flex justify-center items-center space-x-2">
+      {!loading && users.length > 0 && totalPages > 1 && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="flex justify-center items-center space-x-1 mt-8"
+        >
           <button
             onClick={() => onPageChange(Math.max(1, page - 1))}
             disabled={page === 1}
-            className="px-3 py-1 rounded border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:border-[#F28B82] transition-colors"
+            className="px-3 py-1.5 rounded-md border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:border-[#F28B82] hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-[#F28B82] focus:ring-opacity-30"
+            aria-label="Previous page"
           >
             ←
           </button>
 
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
-            <button
-              key={pageNum}
-              onClick={() => onPageChange(pageNum)}
-              className={`px-3 py-1 rounded cursor-pointer ${
-                pageNum === page
-                  ? 'bg-[#F28B82] text-white'
-                  : 'border border-gray-200 hover:border-[#F28B82]'
-              } transition-colors`}
-            >
-              {pageNum}
-            </button>
-          ))}
+          {getVisiblePages().map((pageNum, i) =>
+            pageNum === '...' ? (
+              <span key={`ellipsis-${i}`} className="px-3 py-1.5">
+                ...
+              </span>
+            ) : (
+              <button
+                key={`page-${pageNum}`}
+                onClick={() => typeof pageNum === 'number' && onPageChange(pageNum)}
+                className={`px-3 py-1.5 rounded-md cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#F28B82] focus:ring-opacity-30 ${
+                  pageNum === page
+                    ? 'bg-[#F28B82] text-white'
+                    : 'border border-gray-200 hover:border-[#F28B82] hover:bg-gray-50'
+                } transition-colors`}
+              >
+                {pageNum}
+              </button>
+            )
+          )}
 
           <button
             onClick={() => onPageChange(Math.min(totalPages, page + 1))}
             disabled={page === totalPages}
-            className="px-3 py-1 rounded border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:border-[#F28B82] transition-colors"
+            className="px-3 py-1.5 rounded-md border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:border-[#F28B82] hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-[#F28B82] focus:ring-opacity-30"
+            aria-label="Next page"
           >
             →
           </button>
-        </div>
+        </motion.div>
       )}
     </div>
   );

@@ -16,13 +16,16 @@ export interface User {
   state: string;
   country: string;
   industry?: string | null;
+  boroughDistrict?: string | null;
   visibilityOptions: {
-    role?: boolean;
+    title?: boolean;
     company?: boolean;
     school?: boolean;
     program?: boolean;
   };
 }
+
+export type UserUpdate = Partial<User>;
 
 // Helper functions for common transformations
 export const getDisplayRole = (user: User): string => {
@@ -41,7 +44,7 @@ export const isRoleVisible = (user: User, isOwnProfile: boolean): boolean => {
   return (
     isOwnProfile ||
     (user.postGradType === PostGradType.work
-      ? (user.visibilityOptions.role ?? true)
+      ? (user.visibilityOptions.title ?? true)
       : (user.visibilityOptions.program ?? true))
   );
 };
