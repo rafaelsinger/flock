@@ -1,6 +1,6 @@
 'use client';
 
-import { FC, useEffect, useRef } from 'react';
+import { FC, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { BsBriefcase } from 'react-icons/bs';
@@ -32,13 +32,8 @@ const ReviewPage: FC = () => {
 
       return response.json();
     },
-    onSuccess: (userData) => {
-      // Update the user store with the response data
-      updateUser({
-        id: userData.id,
-        name: userData.name,
-        isOnboarded: true,
-      });
+    onSuccess: (user) => {
+      updateUser(user);
 
       queryClient.removeQueries({ queryKey: ['onboardingData'] });
       router.push('/');
@@ -49,13 +44,6 @@ const ReviewPage: FC = () => {
       // You might want to show an error message to the user here
     },
   });
-
-  // Only check for missing data if we're not in the process of finalizing
-  useEffect(() => {
-    if (!isFinalizingRef.current && (!data || !data.postGradType)) {
-      router.push('/onboarding/step1');
-    }
-  }, [data, router]);
 
   // If no data, render nothing while redirect happens
   if (!data || !data.postGradType) {
