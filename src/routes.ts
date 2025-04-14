@@ -22,6 +22,7 @@ export const apiAuthPrefix = '/api/auth';
 export const publicApiRoutes = [
   '/api/users', // GET requests to fetch user data
   '/api/contact', // POST requests for contact form
+  '/api/stats/top-destinations', // GET requests for top destinations data
 ];
 
 /**

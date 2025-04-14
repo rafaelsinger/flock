@@ -151,7 +151,7 @@ export const DirectoryContent: React.FC = () => {
           exit={{ opacity: 0 }}
         >
           <div className="h-full relative">
-            <Map users={users} isLoading={isLoading} />
+            <Map />
 
             <motion.button
               onClick={() => setIsMapFullscreen(false)}
@@ -179,7 +179,7 @@ export const DirectoryContent: React.FC = () => {
           variants={itemVariants}
           whileHover={{ boxShadow: '0 10px 25px -5px rgba(167, 215, 249, 0.15)' }}
         >
-          <Map users={users} isLoading={isLoading} />
+          <Map />
 
           <motion.button
             onClick={() => setIsMapFullscreen(true)}

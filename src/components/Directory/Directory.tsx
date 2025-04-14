@@ -8,6 +8,7 @@ import { DirectoryContent } from './DirectoryContent';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Footer } from '@/components/Footer';
+import { TopDestinations } from '@/components/TopDestinations';
 
 export const Directory = () => {
   const { data: session, status } = useSession();
@@ -170,6 +171,15 @@ export const Directory = () => {
               transition={{ duration: 0.4, delay: 0.3 }}
             >
               <DirectoryContent />
+            </motion.div>
+
+            {/* Top Destinations */}
+            <motion.div
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ duration: 0.4, delay: 0.4 }}
+            >
+              <TopDestinations />
             </motion.div>
           </main>
         </div>
