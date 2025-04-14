@@ -47,11 +47,7 @@ const ReviewPage: FC = () => {
       return response.json();
     },
     onSuccess: async (user) => {
-      await update({
-        userSession: {
-          ...user,
-        },
-      });
+      await update({ user: user });
 
       queryClient.removeQueries({ queryKey: ['onboardingData'] });
       router.push('/');

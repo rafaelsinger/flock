@@ -28,6 +28,7 @@ export const GET = auth(async function GET(request: NextRequest) {
 
 export async function PUT(request: Request, context: { params: { id: string } }) {
   const { params } = await context;
+  const id = await params.id;
   try {
     const session = await auth();
 
@@ -35,11 +36,11 @@ export async function PUT(request: Request, context: { params: { id: string } })
       return new NextResponse('Unauthorized - No session', { status: 401 });
     }
 
-    if (!params?.id) {
+    if (!id) {
       return new NextResponse('Bad Request - Missing ID parameter', { status: 400 });
     }
 
-    if (session.user.id !== params.id) {
+    if (session.user.id !== id) {
       return new NextResponse('Unauthorized - User ID mismatch', { status: 401 });
     }
 
@@ -47,7 +48,7 @@ export async function PUT(request: Request, context: { params: { id: string } })
 
     const updatedUser = await prisma.user.update({
       where: {
-        id: params.id,
+        id: id,
       },
       data: {
         name: userData.name,

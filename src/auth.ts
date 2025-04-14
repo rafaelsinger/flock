@@ -27,13 +27,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       return false;
     },
     async jwt({ token, user, trigger, session }) {
-      if (trigger === 'signUp') {
-        token.id = user.id;
-        token.isOnboarded = user.isOnboarded;
-      }
-      if (trigger === 'signIn' && user?.id) {
+      // make sure token.user always exists
+      if (user?.id && !token?.user) {
         try {
-          // Make sure we have a base URL
           const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
           const response = await fetch(`${baseUrl}/api/users/${user.id}`);
 
@@ -42,24 +38,22 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           }
 
           const userData = await response.json();
-          token.userSession = userData;
+          token.user = userData;
         } catch (error) {
           console.error('Error fetching user data in JWT callback:', error);
-          token.userSession = user;
+          token.user = user;
         }
       }
-      if (trigger === 'update' && session) {
-        token = { ...token, ...session };
+      // if session i.e. update, update token.ser
+      if (session) {
+        token.user = { ...token.user, ...session.user };
       }
       return token;
     },
-    session({ session, token, trigger }) {
-      if (token.id) {
-        session.user.id = token.id;
-        session.user.isOnboarded = token.isOnboarded;
-      }
-      if (token.userSession) {
-        session.user = { ...session.user, ...token };
+    session({ session, token }) {
+      // make sure always populate the session.user using token.user
+      if (token?.user) {
+        session.user = token.user;
       }
       return session;
     },
