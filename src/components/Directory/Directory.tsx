@@ -10,10 +10,20 @@ import { motion } from 'framer-motion';
 import { Footer } from '@/components/Footer';
 import { TopDestinations } from '@/components/TopDestinations';
 
+// Add this interface
+export interface FilterOptions {
+  postGradType?: 'work' | 'school' | 'all';
+  country?: string;
+  state?: string;
+  city?: string;
+  industry?: string;
+}
+
 export const Directory = () => {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [isRedirecting, setIsRedirecting] = useState(false);
+  const [filters, setFilters] = useState<FilterOptions>({});
   const [greeting, setGreeting] = useState('');
 
   const userId = session?.user?.id;
@@ -52,6 +62,15 @@ export const Directory = () => {
       </div>
     );
   }
+
+  // Add this handler
+  const handleCitySelect = (city: string, state: string) => {
+    setFilters((prev) => ({
+      ...prev,
+      city,
+      state,
+    }));
+  };
 
   return (
     <>
@@ -135,34 +154,45 @@ export const Directory = () => {
                   </motion.div>
                 </div>
 
-                {/* Profile Link */}
-                {userId ? (
-                  <motion.div
-                    className="mt-4 md:mt-0"
-                    initial={{ x: 10, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    transition={{ delay: 0.3 }}
-                  >
-                    <Link
-                      href={`/profile/${userId}`}
-                      className="inline-flex items-center px-4 py-2 rounded-full bg-[#F9C5D1]/10 text-[#F28B82] hover:bg-[#F9C5D1]/20 transition-all hover:scale-105 group"
-                    >
-                      <FaUserCircle className="w-6 h-6 mr-2 group-hover:animate-pulse" />
-                      <span>Your Profile</span>
-                    </Link>
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    className="text-[#F28B82] mt-4 md:mt-0"
-                    initial={{ x: 10, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    transition={{ delay: 0.3 }}
-                  >
-                    <FaUserCircle className="w-6 h-6" />
-                  </motion.div>
-                )}
-              </div>
-            </motion.div>
+            {/* Profile Link */}
+            {userId ? (
+              <motion.div
+                className="mt-4 md:mt-0"
+                initial={{ x: 10, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                transition={{ delay: 0.3 }}
+              >
+                <Link
+                  href={`/profile/${userId}`}
+                  className="inline-flex items-center px-4 py-2 rounded-full bg-[#F9C5D1]/10 text-[#F28B82] hover:bg-[#F9C5D1]/20 transition-all hover:scale-105 group"
+                >
+                  <FaUserCircle className="w-6 h-6 mr-2 group-hover:animate-pulse" />
+                  <span>Your Profile</span>
+                </Link>
+              </motion.div>
+            ) : (
+              <motion.div
+                className="text-[#F28B82] mt-4 md:mt-0"
+                initial={{ x: 10, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                transition={{ delay: 0.3 }}
+              >
+                <FaUserCircle className="w-6 h-6" />
+              </motion.div>
+            )}
+          </div>
+        </motion.div>
+
+        {/* Map Section */}
+        <motion.div
+          className="h-[500px] mb-12 rounded-xl overflow-hidden bg-white shadow-md border border-gray-100 relative"
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.4, delay: 0.2 }}
+          whileHover={{ boxShadow: '0 10px 25px -5px rgba(167, 215, 249, 0.15)' }}
+        >
+          <Map onCitySelect={handleCitySelect} />
+        </motion.div>
 
             {/* Directory Content */}
             <motion.div
@@ -170,7 +200,7 @@ export const Directory = () => {
               animate={{ y: 0, opacity: 1 }}
               transition={{ duration: 0.4, delay: 0.3 }}
             >
-              <DirectoryContent />
+              <DirectoryContent filters={filters} onFiltersChange={setFilters} />
             </motion.div>
 
             {/* Top Destinations */}

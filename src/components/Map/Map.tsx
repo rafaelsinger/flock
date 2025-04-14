@@ -45,7 +45,11 @@ const hoverLayerStyle: LayerProps = {
   },
 };
 
-export const FlockMap: React.FC = () => {
+interface FlockMapProps {
+  onCitySelect: (city: string, state: string) => void;
+}
+
+export const FlockMap: React.FC<FlockMapProps> = ({ onCitySelect }) => {
   const mapRef = React.useRef<MapRef>(null);
 
   const [viewState, setViewState] = React.useState({
@@ -242,6 +246,7 @@ export const FlockMap: React.FC = () => {
               <Marker key={city} longitude={coords[0]} latitude={coords[1]}>
                 <div
                   className="bubble"
+                  onClick={() => onCitySelect(city, selectedState)}
                   onMouseEnter={(e) => {
                     setHoveredCity({
                       city,

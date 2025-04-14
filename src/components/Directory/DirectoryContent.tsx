@@ -33,11 +33,16 @@ const itemVariants = {
   visible: { y: 0, opacity: 1 },
 };
 
-export const DirectoryContent: React.FC = () => {
+interface DirectoryContentProps {
+  filters: FilterOptions;
+  onFiltersChange: (filters: FilterOptions) => void;
+}
+
+export const DirectoryContent: React.FC<DirectoryContentProps> = ({ filters, onFiltersChange }) => {
   const { data: session } = useSession();
   const [page, setPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
-  const [filters, setFilters] = useState<FilterOptions>({});
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [activeTypeFilter, setActiveTypeFilter] = useState<'all' | 'work' | 'school'>('all');
   const [isMapFullscreen, setIsMapFullscreen] = useState(false);
 
@@ -121,13 +126,13 @@ export const DirectoryContent: React.FC = () => {
   };
 
   const handleFilter = (newFilters: FilterOptions) => {
-    setFilters(newFilters);
+    onFiltersChange(newFilters);
+    setIsFilterOpen(false);
   };
 
-  // Modify the handleClearFilters function
   const handleClearFilters = () => {
     setSearchQuery('');
-    setFilters({});
+    onFiltersChange({});
     setActiveTypeFilter('all');
   };
 
@@ -344,7 +349,7 @@ export const DirectoryContent: React.FC = () => {
                   >
                     Saved: {filters.savedFilter}
                     <button
-                      onClick={() => setFilters({})}
+                      onClick={() => onFiltersChange({ ...filters, [key]: undefined })}
                       className="ml-1 text-gray-500 hover:text-[#F28B82]"
                     >
                       <MdClear size={14} />
