@@ -28,7 +28,7 @@ export const GET = auth(async function GET(request: NextRequest) {
 
 export async function PUT(request: Request, context: { params: { id: string } }) {
   const { params } = await context;
-  const id = await params.id;
+  const { id } = await params;
   try {
     const session = await auth();
 

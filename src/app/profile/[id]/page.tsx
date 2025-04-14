@@ -98,7 +98,7 @@ const ProfilePage: FC = () => {
     },
     onSuccess: async (user) => {
       // Update session
-      await update(user);
+      await update({ user });
       // Invalidate and refetch the user data
       queryClient.invalidateQueries({ queryKey: ['user', userId] });
       setIsEditing(false);
