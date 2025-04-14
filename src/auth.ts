@@ -5,11 +5,15 @@ import Google from 'next-auth/providers/google';
 import { PrismaAdapter } from '@auth/prisma-adapter';
 import { User } from './types/user';
 import { prisma } from './lib/prisma';
+import authConfig from './auth.config';
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
-  providers: [Google],
   adapter: PrismaAdapter(prisma),
+  session: { strategy: 'jwt' },
   callbacks: {
+    authorized: async ({ auth }) => {
+      return !!auth;
+    },
     signIn({ account, profile }) {
       if (
         account.provider === 'google' &&
@@ -20,17 +24,16 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
       return false;
     },
-    jwt({ token, user }) {
-      console.log({ token, user });
-      if (user) {
+    jwt({ token, user, trigger }) {
+      if (trigger === 'signIn' || trigger === 'signUp') {
         token.id = user.id;
       }
       return token;
     },
-    session({ session, user }) {
-      console.log({ session, user });
-      session.user.id = user.id;
+    session({ session, token }) {
+      session.user.id = token.id;
       return session;
     },
   },
+  ...authConfig,
 });
