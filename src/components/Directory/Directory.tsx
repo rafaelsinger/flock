@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { FaUserCircle } from 'react-icons/fa';
@@ -12,15 +12,21 @@ import { motion } from 'framer-motion';
 export const Directory = () => {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
   const userId = session?.user?.id;
   const isOnboarded = session?.user.isOnboarded;
 
-  // Check if onboarding is complete and session isn't loading
-  if (!isOnboarded && status !== 'loading') {
-    router.push('/onboarding/step1');
+  // Handle redirection in useEffect instead of during render
+  useEffect(() => {
+    if (!isOnboarded && status !== 'loading') {
+      setIsRedirecting(true);
+      router.push('/onboarding/step1');
+    }
+  }, [isOnboarded, status, router]);
 
-    // Show loading while redirecting
+  // Show loading while redirecting
+  if (isRedirecting || (!isOnboarded && status !== 'loading')) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-[#FFF9F8]">
         <motion.div

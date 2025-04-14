@@ -59,9 +59,9 @@ const Step1: FC = () => {
         <motion.button
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
-          onClick={() => handleSelection('work')}
+          onClick={() => handleSelection(PostGradType.work)}
           className={`p-8 cursor-pointer border-2 rounded-xl transition-all ${
-            selectedOption === 'work'
+            selectedOption === PostGradType.work
               ? 'border-[#F28B82] bg-[#F28B82]/5 shadow-md'
               : 'border-[#F9C5D1] hover:bg-[#F9C5D1]/5 hover:shadow-sm'
           }`}
@@ -69,7 +69,7 @@ const Step1: FC = () => {
           <div className="flex flex-col items-center">
             <div
               className={`w-16 h-16 rounded-full flex items-center justify-center mb-5 transition-colors ${
-                selectedOption === 'work' ? 'bg-[#F28B82]/20' : 'bg-[#F28B82]/10'
+                selectedOption === PostGradType.work ? 'bg-[#F28B82]/20' : 'bg-[#F28B82]/10'
               }`}
             >
               <BsBriefcase className="text-[#F28B82] text-3xl" />
@@ -84,9 +84,9 @@ const Step1: FC = () => {
         <motion.button
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
-          onClick={() => handleSelection('school')}
+          onClick={() => handleSelection(PostGradType.school)}
           className={`p-8 cursor-pointer border-2 rounded-xl transition-all ${
-            selectedOption === 'school'
+            selectedOption === PostGradType.school
               ? 'border-[#A7D7F9] bg-[#A7D7F9]/5 shadow-md'
               : 'border-[#A7D7F9] hover:bg-[#A7D7F9]/5 hover:shadow-sm'
           }`}
@@ -94,7 +94,7 @@ const Step1: FC = () => {
           <div className="flex flex-col items-center">
             <div
               className={`w-16 h-16 rounded-full flex items-center justify-center mb-5 transition-colors ${
-                selectedOption === 'school' ? 'bg-[#A7D7F9]/20' : 'bg-[#A7D7F9]/10'
+                selectedOption === PostGradType.school ? 'bg-[#A7D7F9]/20' : 'bg-[#A7D7F9]/10'
               }`}
             >
               <LuGraduationCap className="text-[#A7D7F9] text-3xl" />

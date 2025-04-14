@@ -8,6 +8,7 @@ import { UserUpdate } from '@/types/user';
 import { motion } from 'framer-motion';
 import { BsBriefcase, BsBuilding, BsPerson } from 'react-icons/bs';
 import { OnboardingProgress } from '@/components';
+import { PostGradType } from '@prisma/client';
 
 const Step2Work: FC = () => {
   const router = useRouter();
@@ -46,12 +47,12 @@ const Step2Work: FC = () => {
   });
 
   useEffect(() => {
-    if (!previousData || previousData.postGradType !== 'work') {
+    if (!previousData || previousData.postGradType !== PostGradType.work) {
       router.push('/onboarding/step1');
     }
   }, [previousData, router]);
 
-  if (!previousData || previousData.postGradType !== 'work') {
+  if (!previousData || previousData.postGradType !== PostGradType.work) {
     return null;
   }
 
