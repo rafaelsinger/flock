@@ -32,8 +32,8 @@ const Step3: FC = () => {
 
   useEffect(() => {
     setIsFormValid(
-      formData.country.trim() !== '' &&
-        formData.city.trim() !== '' &&
+      Boolean(formData.country?.trim()) &&
+        Boolean(formData.city?.trim()) &&
         formData.lat !== 0 &&
         formData.lng !== 0
     );

@@ -54,9 +54,9 @@ const Step2School: FC = () => {
 
   useEffect(() => {
     setIsFormValid(
-      formData.school.trim() !== '' &&
-        formData.discipline.trim() !== '' &&
-        formData.programType.trim() !== ''
+      Boolean(formData.school?.trim()) &&
+        Boolean(formData.discipline?.trim()) &&
+        Boolean(formData.programType?.trim())
     );
   }, [formData]);
 
