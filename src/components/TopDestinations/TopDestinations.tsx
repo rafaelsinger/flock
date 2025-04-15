@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Briefcase, GraduationCap, MapPin, Users, ChevronDown, ChevronUp } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
+import { useSession } from 'next-auth/react';
 
 // Define types for destination data from API
 interface Destination {
@@ -13,7 +14,13 @@ interface Destination {
   type: 'company' | 'school' | 'city';
 }
 
-export const TopDestinations = () => {
+interface TopDestinationsProps {
+  showAllClassYears?: boolean;
+}
+
+export const TopDestinations: React.FC<TopDestinationsProps> = ({ showAllClassYears = false }) => {
+  const { data: session } = useSession();
+  const userClassYear = session?.user?.classYear;
   const [activeTab, setActiveTab] = useState<'companies' | 'schools' | 'cities'>('companies');
   const [isExpanded, setIsExpanded] = useState(false);
   const [limit, setLimit] = useState(6);
@@ -41,9 +48,19 @@ export const TopDestinations = () => {
     isLoading,
     error,
   } = useQuery<Destination[]>({
-    queryKey: ['topDestinations', activeTab, limit],
+    queryKey: ['topDestinations', activeTab, limit, showAllClassYears, userClassYear],
     queryFn: async () => {
-      const response = await fetch(`/api/stats/top-destinations?type=${activeTab}&limit=${limit}`);
+      const params = new URLSearchParams({
+        type: activeTab,
+        limit: limit.toString(),
+      });
+
+      // Add class year filter if not showing all class years
+      if (!showAllClassYears && userClassYear) {
+        params.append('classYear', userClassYear.toString());
+      }
+
+      const response = await fetch(`/api/stats/top-destinations?${params.toString()}`);
       if (!response.ok) {
         throw new Error('Failed to fetch top destinations');
       }
@@ -119,8 +136,19 @@ export const TopDestinations = () => {
           {/* Header with pink gradient accent */}
           <div className="relative p-6 border-b border-gray-100">
             <div className="absolute top-0 left-0 w-2 h-full bg-gradient-to-b from-[#F9C5D1] to-[#F28B82]"></div>
-            <h2 className="text-2xl font-bold text-[#333333] pl-4">Top Destinations</h2>
-            <p className="text-[#666666] mt-1 pl-4">Where BC Eagles are heading after graduation</p>
+            <div className="flex justify-between items-center">
+              <div>
+                <h2 className="text-2xl font-bold text-[#333333] pl-4">Top Destinations</h2>
+                <p className="text-[#666666] mt-1 pl-4">
+                  Where BC Eagles are heading after graduation
+                </p>
+              </div>
+              {userClassYear && (
+                <div className="bg-gray-100 px-3 py-1 rounded-full text-xs text-gray-700">
+                  {!showAllClassYears ? `Class of ${userClassYear} only` : 'All class years'}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Tabs */}

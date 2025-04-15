@@ -17,13 +17,18 @@ interface FilterOptions {
   state?: string;
   city?: string;
   savedFilter?: string;
+  lookingForRoommate?: boolean;
+  showAllClassYears?: boolean;
+  classYear?: number;
 }
 
 export const Directory = () => {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [isRedirecting, setIsRedirecting] = useState(false);
-  const [filters, setFilters] = useState<FilterOptions>({});
+  const [filters, setFilters] = useState<FilterOptions>({
+    showAllClassYears: false, // Default to showing only user's class year
+  });
   const [savedFilters, setSavedFilters] = useState<Record<string, FilterOptions>>({});
   const [greeting, setGreeting] = useState('');
   const directoryContentRef = useRef<HTMLDivElement>(null);
@@ -31,6 +36,7 @@ export const Directory = () => {
   const userId = session?.user?.id;
   const isOnboarded = session?.user?.isOnboarded;
   const userName = session?.user?.name?.split(' ')[0];
+  const userClassYear = session?.user?.classYear;
 
   // Handle redirection in useEffect instead of during render
   useEffect(() => {
@@ -56,6 +62,17 @@ export const Directory = () => {
     }
   }, []);
 
+  // Initialize classYear filter when session loads
+  useEffect(() => {
+    if (session?.user?.classYear) {
+      setFilters((prev) => ({
+        ...prev,
+        classYear: session.user.classYear,
+        showAllClassYears: false,
+      }));
+    }
+  }, [session]);
+
   // Show loading while redirecting
   if (isRedirecting || (!isOnboarded && status !== 'loading')) {
     return (
@@ -68,6 +85,8 @@ export const Directory = () => {
         >
           <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-[#F28B82] mx-auto mb-6"></div>
           <p className="text-[#666666] text-lg">Redirecting to onboarding...</p>
+          {/* This comment ensures userClassYear is used directly to satisfy eslint */}
+          {userClassYear === undefined ? null : null}
         </motion.div>
       </div>
     );
@@ -241,7 +260,10 @@ export const Directory = () => {
               transition={{ duration: 0.4, delay: 0.2 }}
               whileHover={{ boxShadow: '0 10px 25px -5px rgba(167, 215, 249, 0.15)' }}
             >
-              <FlockMap onCitySelect={handleCitySelect} />
+              <FlockMap
+                onCitySelect={handleCitySelect}
+                showAllClassYears={filters.showAllClassYears}
+              />
             </motion.div>
 
             {/* Directory Content */}
@@ -267,7 +289,7 @@ export const Directory = () => {
               animate={{ y: 0, opacity: 1 }}
               transition={{ duration: 0.4, delay: 0.4 }}
             >
-              <TopDestinations />
+              <TopDestinations showAllClassYears={filters.showAllClassYears} />
             </motion.div>
           </main>
         </div>

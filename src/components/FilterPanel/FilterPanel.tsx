@@ -1,8 +1,9 @@
 'use client';
 import React, { useState, useEffect, useRef } from 'react';
-import { Filter, Check, X, BookmarkPlus, Bookmark, Trash2 } from 'lucide-react';
+import { Filter, Check, X, BookmarkPlus, Bookmark, Trash2, Users } from 'lucide-react';
 import { US_STATES, COUNTRIES } from '@/constants/location';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useSession } from 'next-auth/react';
 
 interface FilterOptions {
   postGradType?: 'work' | 'school' | 'all';
@@ -11,6 +12,8 @@ interface FilterOptions {
   city?: string;
   savedFilter?: string;
   lookingForRoommate?: boolean;
+  showAllClassYears?: boolean;
+  classYear?: number;
 }
 
 interface FilterPanelProps {
@@ -76,6 +79,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
   onDeleteFilter,
   onSelectFilter,
 }) => {
+  const { data: session } = useSession();
   const [isOpen, setIsOpen] = useState(false);
   const [postGradType, setPostGradType] = useState(currentFilters.postGradType || 'all');
   const [country, setCountry] = useState(currentFilters.country || '');
@@ -84,11 +88,17 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
   const [lookingForRoommate, setLookingForRoommate] = useState(
     currentFilters.lookingForRoommate || false
   );
+  const [showAllClassYears, setShowAllClassYears] = useState(
+    currentFilters.showAllClassYears || false
+  );
   const [filterName, setFilterName] = useState('');
   const [showSaveForm, setShowSaveForm] = useState(false);
 
   // Create a ref for the filter panel container
   const filterPanelRef = useRef<HTMLDivElement>(null);
+
+  // Current user's class year
+  const userClassYear = session?.user?.classYear || null;
 
   // Handle click outside
   useEffect(() => {
@@ -116,6 +126,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
     setState(currentFilters.state || '');
     setCity(currentFilters.city || '');
     setLookingForRoommate(currentFilters.lookingForRoommate || false);
+    setShowAllClassYears(currentFilters.showAllClassYears || false);
   }, [currentFilters]);
 
   const handleFilterChange = (newFilters: Partial<FilterOptions>) => {
@@ -125,6 +136,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
     setState(updatedFilters.state || '');
     setCity(updatedFilters.city || '');
     setLookingForRoommate(updatedFilters.lookingForRoommate || false);
+    setShowAllClassYears(updatedFilters.showAllClassYears || false);
     onFilter(updatedFilters);
   };
 
@@ -137,6 +149,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
       state,
       city,
       lookingForRoommate,
+      showAllClassYears,
     });
 
     setFilterName('');
@@ -213,6 +226,34 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
               )}
 
               <div className="space-y-5">
+                {/* Class Year Toggle */}
+                {userClassYear && (
+                  <motion.div variants={itemVariants} className="mb-6">
+                    <h4 className="text-sm font-medium text-[#333333] mb-2 flex items-center">
+                      <Users className="h-4 w-4 mr-2" />
+                      Class Year
+                    </h4>
+                    <div className="flex items-center border border-gray-200 p-3 rounded-lg">
+                      <span className="flex-1 text-sm text-gray-600">
+                        {showAllClassYears
+                          ? 'Show users from all class years'
+                          : `Show only class of ${userClassYear}`}
+                      </span>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={showAllClassYears}
+                          onChange={(e) =>
+                            handleFilterChange({ showAllClassYears: e.target.checked })
+                          }
+                          className="sr-only peer"
+                        />
+                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#F9C5D1]/20 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#F28B82]"></div>
+                      </label>
+                    </div>
+                  </motion.div>
+                )}
+
                 <motion.div variants={itemVariants}>
                   <label className={labelClasses}>Country</label>
                   <select
@@ -351,6 +392,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
                     state,
                     city,
                     lookingForRoommate: currentFilters.lookingForRoommate,
+                    showAllClassYears,
                   });
                   setIsOpen(false);
                 }}

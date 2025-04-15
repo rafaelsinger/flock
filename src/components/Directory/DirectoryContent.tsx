@@ -3,7 +3,13 @@ import { useQuery } from '@tanstack/react-query';
 import { FilterPanel } from '@/components/FilterPanel';
 import { UserGrid } from '@/components/UserGrid';
 import { MdClear, MdSearch, MdRefresh } from 'react-icons/md';
-import { FaGraduationCap, FaBriefcase, FaHome, FaMapMarkerAlt } from 'react-icons/fa';
+import {
+  FaGraduationCap,
+  FaBriefcase,
+  FaHome,
+  FaMapMarkerAlt,
+  FaUserGraduate,
+} from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useSession } from 'next-auth/react';
@@ -16,6 +22,8 @@ interface FilterOptions {
   city?: string;
   savedFilter?: string;
   lookingForRoommate?: boolean;
+  showAllClassYears?: boolean;
+  classYear?: number;
 }
 
 const ITEMS_PER_PAGE = 12;
@@ -60,6 +68,7 @@ export const DirectoryContent: React.FC<DirectoryContentProps> = ({
 
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
   const isSeeking = session?.user.postGradType === PostGradType.seeking;
+  const userClassYear = session?.user?.classYear;
 
   // Helper function to build query parameters
   const buildQueryParams = useCallback(
@@ -81,7 +90,7 @@ export const DirectoryContent: React.FC<DirectoryContentProps> = ({
       if (postGradType && postGradType !== 'all') {
         params.postGradType = postGradType;
       }
-      console.log({ filters });
+
       // Add location filters
       if (filters.country) {
         params.country = filters.country;
@@ -100,9 +109,14 @@ export const DirectoryContent: React.FC<DirectoryContentProps> = ({
         params.lookingForRoommate = 'true';
       }
 
+      // Add class year filter if user is not showing all class years
+      if (!filters.showAllClassYears && userClassYear) {
+        params.classYear = userClassYear.toString();
+      }
+
       return new URLSearchParams(params);
     },
-    [debouncedSearchQuery, filters, activeTypeFilter, showRoommateOnly]
+    [debouncedSearchQuery, filters, activeTypeFilter, showRoommateOnly, userClassYear]
   );
 
   // Reset to page 1 when search or filters change
@@ -124,7 +138,15 @@ export const DirectoryContent: React.FC<DirectoryContentProps> = ({
 
   // Use React Query to fetch users
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ['users', page, debouncedSearchQuery, filters, activeTypeFilter],
+    queryKey: [
+      'users',
+      page,
+      debouncedSearchQuery,
+      filters,
+      activeTypeFilter,
+      showRoommateOnly,
+      userClassYear,
+    ],
     queryFn: async () => {
       const queryParams = buildQueryParams(page);
       const response = await fetch(`/api/users?${queryParams}`);
@@ -139,8 +161,10 @@ export const DirectoryContent: React.FC<DirectoryContentProps> = ({
   const totalUsers = data?.total || 0;
   const totalPages = data ? Math.ceil(data.total / ITEMS_PER_PAGE) : 1;
   const hasFiltersActive =
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    Object.entries(filters).some(([_, value]) => value && value !== 'all') ||
+    Object.entries(filters).some(
+      ([key, value]) =>
+        key !== 'showAllClassYears' && key !== 'classYear' && value && value !== 'all'
+    ) ||
     searchQuery ||
     activeTypeFilter !== 'all' ||
     showRoommateOnly;
@@ -155,7 +179,10 @@ export const DirectoryContent: React.FC<DirectoryContentProps> = ({
 
   const handleClearFilters = () => {
     setSearchQuery('');
-    onFiltersChange({});
+    onFiltersChange({
+      showAllClassYears: filters.showAllClassYears,
+      classYear: filters.classYear,
+    });
     setActiveTypeFilter('all');
     setShowRoommateOnly(false);
   };
@@ -203,6 +230,14 @@ export const DirectoryContent: React.FC<DirectoryContentProps> = ({
         country: 'USA',
       });
     }
+  };
+
+  const handleClassYearFilterChange = () => {
+    // If showing all class years, toggle to just my class year
+    onFiltersChange({
+      ...filters,
+      showAllClassYears: !filters.showAllClassYears,
+    });
   };
 
   // Get user's general location (city & state) if available
@@ -321,6 +356,23 @@ export const DirectoryContent: React.FC<DirectoryContentProps> = ({
                 >
                   <FaMapMarkerAlt className="text-sm" />
                   <span>My City</span>
+                </motion.button>
+              )}
+
+              {/* Class Year Toggle Button */}
+              {userClassYear && (
+                <motion.button
+                  onClick={handleClassYearFilterChange}
+                  className={`px-4 py-2 rounded-full border ${
+                    !filters.showAllClassYears
+                      ? 'bg-[#F9C5D1]/10 border-[#F28B82] text-[#F28B82]'
+                      : 'border-gray-200 text-gray-600 hover:border-[#F9C5D1]'
+                  } transition-all flex items-center gap-2`}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <FaUserGraduate className="text-sm" />
+                  <span>Class of {userClassYear}</span>
                 </motion.button>
               )}
 
@@ -522,6 +574,21 @@ export const DirectoryContent: React.FC<DirectoryContentProps> = ({
                     Clear all
                   </button>
                 </>
+              )}
+
+              {/* Class Year Indicator - always visible */}
+              {userClassYear && (
+                <motion.span
+                  className={`px-2 py-1 ${hasFiltersActive ? '' : 'ml-auto'} bg-gray-100 rounded-md text-xs text-gray-700 flex items-center`}
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.8, opacity: 0 }}
+                  whileHover={{ scale: 1.05 }}
+                >
+                  {!filters.showAllClassYears
+                    ? `Showing only class of ${userClassYear}`
+                    : `Showing all class years`}
+                </motion.span>
               )}
             </div>
           </div>
