@@ -149,13 +149,13 @@ const Step1: FC = () => {
         </motion.div>
 
         <div className="flex flex-col gap-5">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <motion.button
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.98 }}
               disabled={isSubmitting}
               onClick={() => handleSelection(PostGradType.work)}
-              className={`p-6 md:p-8 cursor-pointer border-2 rounded-xl transition-all ${
+              className={`p-6 md:p-8 cursor-pointer border-2 rounded-xl transition-all h-full ${
                 selectedOption === PostGradType.work
                   ? 'border-[#F28B82] bg-gradient-to-br from-[#F28B82]/10 to-[#F9C5D1]/10 shadow-md ring-2 ring-[#F28B82]/20'
                   : 'border-[#F9C5D1]/60 hover:border-[#F9C5D1] hover:bg-[#F9C5D1]/5 hover:shadow-sm'
@@ -181,7 +181,7 @@ const Step1: FC = () => {
               whileTap={{ scale: 0.98 }}
               onClick={() => handleSelection(PostGradType.school)}
               disabled={isSubmitting}
-              className={`p-6 md:p-8 cursor-pointer border-2 rounded-xl transition-all ${
+              className={`p-6 md:p-8 cursor-pointer border-2 rounded-xl transition-all h-full ${
                 selectedOption === PostGradType.school
                   ? 'border-[#A7D7F9] bg-gradient-to-br from-[#A7D7F9]/10 to-[#A7D7F9]/5 shadow-md ring-2 ring-[#A7D7F9]/20'
                   : 'border-[#A7D7F9]/60 hover:border-[#A7D7F9] hover:bg-[#A7D7F9]/5 hover:shadow-sm'
@@ -203,45 +203,45 @@ const Step1: FC = () => {
                 </p>
               </div>
             </motion.button>
-          </div>
 
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => handleSelection(PostGradType.seeking)}
-            disabled={isSubmitting}
-            className={`p-5 md:p-6 cursor-pointer border-2 rounded-xl transition-all max-w-lg mx-auto w-full ${
-              selectedOption === PostGradType.seeking
-                ? 'border-[#9E9E9E] bg-gradient-to-br from-[#9E9E9E]/10 to-[#9E9E9E]/5 shadow-md ring-2 ring-[#9E9E9E]/20'
-                : 'border-[#E0E0E0]/80 hover:border-[#E0E0E0] hover:bg-[#E0E0E0]/5 hover:shadow-sm'
-            }`}
-          >
-            <div className="flex flex-col items-center">
-              <div
-                className={`w-12 h-12 rounded-full flex items-center justify-center mb-3 transition-colors ${
-                  selectedOption === PostGradType.seeking ? 'bg-[#9E9E9E]/20' : 'bg-[#9E9E9E]/10'
-                }`}
-              >
-                <svg
-                  className="w-5 h-5 text-[#9E9E9E]"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => handleSelection(PostGradType.seeking)}
+              disabled={isSubmitting}
+              className={`p-6 md:p-8 cursor-pointer border-2 rounded-xl transition-all h-full ${
+                selectedOption === PostGradType.seeking
+                  ? 'border-[#9E9E9E] bg-gradient-to-br from-[#9E9E9E]/10 to-[#9E9E9E]/5 shadow-md ring-2 ring-[#9E9E9E]/20'
+                  : 'border-[#E0E0E0]/80 hover:border-[#E0E0E0] hover:bg-[#E0E0E0]/5 hover:shadow-sm'
+              }`}
+            >
+              <div className="flex flex-col items-center">
+                <div
+                  className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 transition-colors ${
+                    selectedOption === PostGradType.seeking ? 'bg-[#9E9E9E]/20' : 'bg-[#9E9E9E]/10'
+                  }`}
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                  />
-                </svg>
+                  <svg
+                    className="w-6 h-6 text-[#9E9E9E]"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                    />
+                  </svg>
+                </div>
+                <h2 className="text-xl font-medium text-[#666666] mb-2">I&apos;m still looking</h2>
+                <p className="text-sm text-[#888888] text-center">
+                  I&apos;m exploring opportunities and would like to browse the platform
+                </p>
               </div>
-              <h2 className="text-lg font-medium text-[#666666] mb-1">I&apos;m still looking</h2>
-              <p className="text-sm text-[#888888] text-center">
-                I&apos;m exploring opportunities and would like to browse the platform
-              </p>
-            </div>
-          </motion.button>
+            </motion.button>
+          </div>
 
           {isSubmitting && (
             <div className="text-center pt-4">
