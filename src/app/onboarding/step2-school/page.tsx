@@ -9,6 +9,9 @@ import { FaUniversity } from 'react-icons/fa';
 import { HiOutlineAcademicCap } from 'react-icons/hi';
 import { OnboardingProgress } from '@/components';
 import { PostGradType } from '@prisma/client';
+import { SchoolSelect } from '@/components/Select/SchoolSelect';
+import { ProgramTypeSelect } from '@/components/Select/ProgramTypeSelect';
+import { DisciplineSelect } from '@/components/Select/DisciplineSelect';
 
 const Step2School: FC = () => {
   const router = useRouter();
@@ -18,17 +21,21 @@ const Step2School: FC = () => {
   const [formData, setFormData] = useState({
     school: '',
     program: '',
+    programType: '',
+    discipline: '',
   });
 
   const [isFormValid, setIsFormValid] = useState(false);
   const [activeField, setActiveField] = useState<string | null>(null);
 
   const updateOnboardingData = useMutation({
-    mutationFn: (schoolData: UserUpdate) => {
+    mutationFn: (schoolData: { school: string; programType: string; discipline: string }) => {
+      const program = `${schoolData.programType} in ${schoolData.discipline}`;
+
       const data: UserUpdate = {
         ...previousData,
         school: schoolData.school,
-        program: schoolData.program,
+        program: program,
       };
       return Promise.resolve(data);
     },
@@ -46,7 +53,11 @@ const Step2School: FC = () => {
   }, [previousData, router]);
 
   useEffect(() => {
-    setIsFormValid(formData.school.trim() !== '' && formData.program.trim() !== '');
+    setIsFormValid(
+      formData.school.trim() !== '' &&
+        formData.discipline.trim() !== '' &&
+        formData.programType.trim() !== ''
+    );
   }, [formData]);
 
   useEffect(() => {
@@ -107,42 +118,51 @@ const Step2School: FC = () => {
               variants={inputVariants}
               animate={activeField === 'school' ? 'focus' : 'blur'}
             >
-              <input
-                type="text"
-                id="school"
+              <SchoolSelect
                 value={formData.school}
-                onChange={(e) => setFormData((prev) => ({ ...prev, school: e.target.value }))}
-                onFocus={() => setActiveField('school')}
-                onBlur={() => setActiveField(null)}
-                className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-[#A7D7F9] focus:ring-2 focus:ring-[#A7D7F9]/20 outline-none transition-all text-[#333333]"
-                placeholder="e.g. Stanford University"
-                required
+                onChange={(school) => setFormData((prev) => ({ ...prev, school }))}
               />
             </motion.div>
           </motion.div>
 
           <motion.div variants={itemVariants}>
             <label
-              htmlFor="program"
+              htmlFor="programType"
               className="flex items-center text-sm font-medium text-[#333333] mb-2"
             >
               <HiOutlineAcademicCap className="mr-2 text-[#7BC0F5]" />
-              Program
+              Program Type
             </label>
             <motion.div
               variants={inputVariants}
-              animate={activeField === 'program' ? 'focus' : 'blur'}
+              animate={activeField === 'programType' ? 'focus' : 'blur'}
+              onFocus={() => setActiveField('programType')}
+              onBlur={() => setActiveField(null)}
             >
-              <input
-                type="text"
-                id="program"
-                value={formData.program}
-                onChange={(e) => setFormData((prev) => ({ ...prev, program: e.target.value }))}
-                onFocus={() => setActiveField('program')}
-                onBlur={() => setActiveField(null)}
-                className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-[#A7D7F9] focus:ring-2 focus:ring-[#A7D7F9]/20 outline-none transition-all text-[#333333]"
-                placeholder="e.g. Master's in Computer Science"
-                required
+              <ProgramTypeSelect
+                value={formData.programType}
+                onChange={(programType) => setFormData((prev) => ({ ...prev, programType }))}
+              />
+            </motion.div>
+          </motion.div>
+
+          <motion.div variants={itemVariants}>
+            <label
+              htmlFor="discipline"
+              className="flex items-center text-sm font-medium text-[#333333] mb-2"
+            >
+              <HiOutlineAcademicCap className="mr-2 text-[#7BC0F5]" />
+              Discipline
+            </label>
+            <motion.div
+              variants={inputVariants}
+              animate={activeField === 'discipline' ? 'focus' : 'blur'}
+              onFocus={() => setActiveField('discipline')}
+              onBlur={() => setActiveField(null)}
+            >
+              <DisciplineSelect
+                value={formData.discipline}
+                onChange={(discipline) => setFormData((prev) => ({ ...prev, discipline }))}
               />
             </motion.div>
           </motion.div>

@@ -86,13 +86,13 @@ const Step3: FC = () => {
     blur: { scale: 1, boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)' },
   };
 
-  const containerVariants = {
-    hidden: { opacity: 0, y: 20 },
+  const pageVariants = {
+    hidden: { opacity: 0, x: -20 },
     visible: {
       opacity: 1,
-      y: 0,
+      x: 0,
       transition: {
-        duration: 0.5,
+        duration: 0.4,
         staggerChildren: 0.1,
       },
     },
@@ -103,17 +103,10 @@ const Step3: FC = () => {
     visible: { opacity: 1, y: 0 },
   };
 
-  const inputClasses =
-    'w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-[#F9C5D1] focus:ring-2 focus:ring-[#F9C5D1]/20 outline-none transition-all hover:border-[#F9C5D1]/50 cursor-pointer text-[#333333]';
   const labelClasses = 'flex items-center text-sm font-medium text-[#333333] mb-2';
 
   return (
-    <motion.div
-      className="space-y-8"
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-    >
+    <motion.div className="space-y-8" variants={pageVariants} initial="hidden" animate="visible">
       <OnboardingProgress currentStep={3} totalSteps={5} />
 
       <motion.div className="text-center" variants={itemVariants}>
@@ -133,6 +126,8 @@ const Step3: FC = () => {
             <motion.div
               variants={inputVariants}
               animate={activeField === 'city' ? 'focus' : 'blur'}
+              onFocus={() => setActiveField('city')}
+              onBlur={() => setActiveField(null)}
             >
               <CitySelect
                 value={formData.city}
@@ -169,7 +164,7 @@ const Step3: FC = () => {
                   }
                   onFocus={() => setActiveField('borough')}
                   onBlur={() => setActiveField(null)}
-                  className={inputClasses}
+                  className="w-full text-[#333] border border-gray-200 px-4 py-3 rounded-lg focus:border-[#F9C5D1] focus:ring-2 focus:ring-[#F9C5D1]/20 outline-none transition-all"
                   placeholder="e.g. Brooklyn or Mission District"
                 />
               </motion.div>
@@ -181,7 +176,7 @@ const Step3: FC = () => {
               <IoMdPeople className="mr-2 text-[#F28B82]" />
               Looking for Roommates
             </label>
-            <motion.div className="flex items-center">
+            <motion.div className="flex items-center px-4 py-3 rounded-lg border border-gray-200 hover:border-[#F9C5D1]/50 cursor-pointer">
               <input
                 type="checkbox"
                 id="lookingForRoommate"
@@ -194,7 +189,10 @@ const Step3: FC = () => {
                 }
                 className="w-5 h-5 text-[#F28B82] border-gray-300 rounded focus:ring-[#F9C5D1]"
               />
-              <label htmlFor="lookingForRoommate" className="ml-2 text-sm text-[#666666]">
+              <label
+                htmlFor="lookingForRoommate"
+                className="ml-2 text-sm text-[#333333] cursor-pointer"
+              >
                 I&apos;m looking for roommate(s) in my postgrad destination
               </label>
             </motion.div>

@@ -101,7 +101,6 @@ export const CitySelect: React.FC<CitySelectProps> = ({ value, onChange }) => {
   }, []);
 
   React.useEffect(() => {
-    console.log({ debouncedValue });
     fetchSuggestions(debouncedValue);
   }, [debouncedValue, fetchSuggestions]);
 
@@ -126,17 +125,19 @@ export const CitySelect: React.FC<CitySelectProps> = ({ value, onChange }) => {
         value={inputValue}
         onChange={(e) => setInputValue(e.target.value)}
         placeholder="Enter your city"
-        className="input w-full text-[#333]"
+        className="w-full text-[#333] border border-gray-200 px-4 py-3 rounded-lg focus:border-[#F9C5D1] focus:ring-2 focus:ring-[#F9C5D1]/20 outline-none transition-all"
       />
 
-      {isLoading && <div className="absolute right-3 top-1/2 -translate-y-1/2">Loading...</div>}
+      {isLoading && (
+        <div className="absolute right-3 top-1/2 -translate-y-1/2 text-[#666]">Loading...</div>
+      )}
 
       {suggestions.length > 0 && (
-        <ul className="absolute z-10 w-full mt-1 bg-white border rounded-md shadow-lg max-h-60 overflow-auto">
+        <ul className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-auto">
           {suggestions.map((feature, index) => (
             <li
               key={index}
-              className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-[#333]"
+              className="px-4 py-2 hover:bg-[#F9C5D1]/10 cursor-pointer text-[#333]"
               onClick={() => handleSelect(feature)}
             >
               {feature.formatted}
