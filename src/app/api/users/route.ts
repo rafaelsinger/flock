@@ -21,6 +21,9 @@ export const GET = async (request: NextRequest) => {
     const city = searchParams.get('city') || '';
     const industry = searchParams.get('industry') || '';
     const lookingForRoommate = searchParams.get('lookingForRoommate') === 'true';
+    const isOnboarded = searchParams.has('isOnboarded')
+      ? Boolean(JSON.parse(searchParams.get('isOnboarded')!))
+      : true;
 
     // Calculate skip for pagination
     const skip = (page - 1) * limit;
@@ -56,6 +59,7 @@ export const GET = async (request: NextRequest) => {
           : {},
         // Roommate filter
         lookingForRoommate ? { lookingForRoommate: { equals: true } } : {},
+        { isOnboarded: { equals: isOnboarded } },
       ].filter((condition) => Object.keys(condition).length > 0), // Remove empty conditions
     };
 
