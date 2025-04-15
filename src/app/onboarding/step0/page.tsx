@@ -61,88 +61,106 @@ const Step0: FC = () => {
 
   return (
     <motion.div
-      className="space-y-8"
+      className="min-h-[calc(100vh-100px)] flex flex-col justify-center px-4 py-12 max-w-4xl mx-auto"
       variants={containerVariants}
       initial="hidden"
       animate="visible"
     >
-      <OnboardingProgress currentStep={1} totalSteps={6} />
+      {/* Card container */}
+      <motion.div
+        className="w-full bg-white rounded-2xl shadow-lg p-8 md:p-12 overflow-hidden relative"
+        variants={itemVariants}
+      >
+        {/* Top decoration pattern */}
+        <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-[#F9C5D1] via-[#F28B82] to-[#C06C84]"></div>
 
-      <motion.div className="text-center" variants={itemVariants}>
-        <h1 className="text-3xl font-semibold text-[#333333] mb-3">Welcome to Flock!</h1>
-        <p className="text-lg text-[#666666]">First, let us know your class year</p>
-      </motion.div>
+        <OnboardingProgress currentStep={1} totalSteps={6} />
 
-      <form onSubmit={handleSubmit} className="space-y-8">
-        <motion.div className="space-y-6" variants={itemVariants}>
-          <div className="flex flex-col space-y-3 max-w-sm mx-auto">
-            {classYears.map((year) => (
-              <motion.button
-                key={year}
-                type="button"
-                onClick={() => setSelectedYear(year)}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className={`p-6 cursor-pointer text-center rounded-xl transition-all ${
-                  selectedYear === year
-                    ? 'border-2 border-[#F28B82] bg-[#F28B82]/10 shadow-md ring-2 ring-[#F28B82]/20'
-                    : 'border-2 border-[#F9C5D1] hover:bg-[#F9C5D1]/5 hover:shadow-sm'
-                }`}
-              >
-                <span
-                  className={`text-xl font-medium ${
-                    selectedYear === year ? 'text-[#E67C73]' : 'text-[#333333]'
+        <motion.div className="text-center mb-10 mt-4" variants={itemVariants}>
+          <h1 className="text-3xl md:text-4xl font-bold text-[#333333] mb-4">Welcome to Flock!</h1>
+          <p className="text-lg md:text-xl text-[#666666]">Let&apos;s start with your class year</p>
+        </motion.div>
+
+        <form onSubmit={handleSubmit} className="space-y-10">
+          {/* Year selection grid */}
+          <motion.div className="space-y-0" variants={itemVariants}>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 md:gap-4 max-w-3xl mx-auto">
+              {classYears.map((year) => (
+                <motion.button
+                  key={year}
+                  type="button"
+                  onClick={() => setSelectedYear(year)}
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.98 }}
+                  className={`py-6 px-4 cursor-pointer text-center rounded-xl transition-all flex flex-col items-center justify-center ${
+                    selectedYear === year
+                      ? 'border-2 border-[#F28B82] bg-gradient-to-br from-[#F28B82]/10 to-[#F9C5D1]/10 shadow-md ring-2 ring-[#F28B82]/20'
+                      : 'border-2 border-[#F9C5D1]/60 hover:border-[#F9C5D1] hover:bg-[#F9C5D1]/5 hover:shadow-sm'
                   }`}
                 >
-                  {year}
-                </span>
-              </motion.button>
-            ))}
-          </div>
-        </motion.div>
+                  <span
+                    className={`text-2xl md:text-3xl font-semibold mb-1 ${
+                      selectedYear === year ? 'text-[#E67C73]' : 'text-[#333333]'
+                    }`}
+                  >
+                    {year}
+                  </span>
+                  <span
+                    className={`text-xs md:text-sm ${
+                      selectedYear === year ? 'text-[#E67C73]/80' : 'text-[#666666]'
+                    }`}
+                  >
+                    Class of {year}
+                  </span>
+                </motion.button>
+              ))}
+            </div>
+          </motion.div>
 
-        <motion.div variants={itemVariants} className="flex justify-center">
-          <motion.button
-            type="submit"
-            disabled={!selectedYear || isSubmitting}
-            whileHover={selectedYear ? { scale: 1.02 } : {}}
-            whileTap={selectedYear ? { scale: 0.98 } : {}}
-            className={`px-6 py-2.5 rounded-lg transition-all cursor-pointer ${
-              selectedYear && !isSubmitting
-                ? 'bg-[#F28B82] hover:bg-[#E67C73] text-white shadow-sm hover:shadow'
-                : 'bg-[#F9C5D1]/50 cursor-not-allowed text-white/70'
-            }`}
-          >
-            {isSubmitting ? (
-              <span className="flex items-center">
-                <svg
-                  className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  ></circle>
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  ></path>
-                </svg>
-                Processing...
-              </span>
-            ) : (
-              'Continue'
-            )}
-          </motion.button>
-        </motion.div>
-      </form>
+          {/* Continue button */}
+          <motion.div variants={itemVariants} className="flex justify-center pt-4">
+            <motion.button
+              type="submit"
+              disabled={!selectedYear || isSubmitting}
+              whileHover={selectedYear && !isSubmitting ? { scale: 1.03 } : {}}
+              whileTap={selectedYear && !isSubmitting ? { scale: 0.98 } : {}}
+              className={`px-8 py-3 rounded-xl transition-all text-base md:text-lg font-medium w-full sm:w-auto sm:min-w-[180px] ${
+                selectedYear && !isSubmitting
+                  ? 'bg-gradient-to-r from-[#F28B82] to-[#E67C73] text-white shadow-md hover:shadow-lg'
+                  : 'bg-[#F9C5D1]/50 cursor-not-allowed text-white/70'
+              }`}
+            >
+              {isSubmitting ? (
+                <span className="flex items-center justify-center">
+                  <svg
+                    className="animate-spin -ml-1 mr-2 h-5 w-5 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                  Processing...
+                </span>
+              ) : (
+                'Continue'
+              )}
+            </motion.button>
+          </motion.div>
+        </form>
+      </motion.div>
     </motion.div>
   );
 };
