@@ -16,12 +16,13 @@ import { useUserData } from '@/hooks/useUserData';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  UserWithLocation,
   getDisplayRole,
   getDisplayCompany,
   isRoleVisible,
   isCompanyVisible,
+  UpdateUser,
 } from '@/types/user';
+import { CitySelect } from '@/components/Select/CitySelect';
 
 // Common input classes for consistency with onboarding flow
 const inputClasses =
@@ -56,7 +57,7 @@ const ProfilePage: FC = () => {
   const queryClient = useQueryClient();
 
   const [isEditing, setIsEditing] = useState(false);
-  const [editedUserData, setEditedUserData] = useState<UserWithLocation | null>(null);
+  const [editedUserData, setEditedUserData] = useState<UpdateUser | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const profileCardRef = useRef<HTMLDivElement>(null);
 
@@ -80,7 +81,7 @@ const ProfilePage: FC = () => {
 
   // Mutation for updating user data
   const updateUserMutation = useMutation({
-    mutationFn: async (updatedData: UserWithLocation) => {
+    mutationFn: async (updatedData: UpdateUser) => {
       setIsSubmitting(true);
       const response = await fetch(`/api/users/${userId}`, {
         method: 'PUT',
@@ -217,7 +218,7 @@ const ProfilePage: FC = () => {
 };
 
 interface ViewModeProps {
-  userData: UserWithLocation;
+  userData: UpdateUser;
   isOwnProfile: boolean;
   onEdit: () => void;
 }
@@ -315,11 +316,11 @@ const ViewMode = ({ userData, isOwnProfile, onEdit }: ViewModeProps) => {
             <BsGeoAlt className="text-[#F28B82] text-xl mt-1" />
             <div>
               <p className="text-lg text-[#333333]">
-                {userData.location.city}
-                {userData.location.state && `, ${userData.location.state}`}
-                {userData.location.country &&
-                  userData.location.country !== 'USA' &&
-                  `, ${userData.location.country}`}
+                {userData.location?.city}
+                {userData.location?.state && `, ${userData.location?.state}`}
+                {userData.location?.country &&
+                  userData.location?.country !== 'USA' &&
+                  `, ${userData.location?.country}`}
               </p>
             </div>
           </motion.div>
@@ -416,8 +417,8 @@ const ViewMode = ({ userData, isOwnProfile, onEdit }: ViewModeProps) => {
 };
 
 interface EditFormProps {
-  userData: UserWithLocation;
-  setUserData: (userData: UserWithLocation) => void;
+  userData: UpdateUser;
+  setUserData: (userData: UpdateUser) => void;
   onSave: () => void;
   onCancel: () => void;
   isSubmitting: boolean;
@@ -643,19 +644,27 @@ const EditForm = ({ userData, setUserData, onSave, onCancel, isSubmitting }: Edi
       <motion.div variants={itemVariants}>
         <label htmlFor="location" className={labelClasses}>
           <BsGeoAlt className="mr-2 text-[#F28B82]" />
-          City
+          Location
         </label>
         <motion.div variants={inputVariants} animate={activeField === 'city' ? 'focus' : 'blur'}>
-          <input
-            id="city"
-            type="text"
-            value={userData.location.city || ''}
-            onChange={(e) =>
-              setUserData({ ...userData, location: { ...userData.location, city: e.target.value } })
-            }
-            onFocus={() => setActiveField('city')}
-            onBlur={() => setActiveField(null)}
-            className={inputClasses}
+          <CitySelect
+            value={`${userData.location?.city}${userData.location?.state ? `, ${userData.location?.state}` : ''}${
+              userData.location?.country && userData.location?.country !== 'USA'
+                ? `, ${userData.location?.country}`
+                : ''
+            }`}
+            onChange={(location) => {
+              setUserData({
+                ...userData,
+                location: {
+                  city: location.city,
+                  state: location.state,
+                  country: location.country,
+                  lat: location.lat,
+                  lon: location.lon,
+                },
+              });
+            }}
           />
         </motion.div>
       </motion.div>
@@ -673,7 +682,9 @@ const EditForm = ({ userData, setUserData, onSave, onCancel, isSubmitting }: Edi
             />
             <label htmlFor="looking-for-roommate" className="flex items-center cursor-pointer">
               <FaHome className="text-[#8FC9A9] mr-2" />
-              <span>I&apos;m looking for roommates in my post-grad destination</span>
+              <span className="text-[#333]">
+                I&apos;m looking for roommates in my post-grad destination
+              </span>
             </label>
           </div>
           <p className="text-xs text-gray-500 pl-7">

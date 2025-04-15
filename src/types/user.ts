@@ -15,7 +15,7 @@ export type CreateUser = {
   school?: string | null;
   classYear: number;
   industry?: string | null;
-  location?: Location | null;
+  location?: CreateLocation | null;
   lookingForRoommate?: boolean | null;
   visibilityOptions: {
     title?: boolean;
@@ -24,6 +24,7 @@ export type CreateUser = {
     program?: boolean;
   };
 };
+export type UpdateUser = CreateUser;
 
 export type User = CreateUser & { id: string; createdAt: Date; updatedAt: Date };
 
@@ -43,21 +44,21 @@ export type IncompleteUserOnboarding = Partial<CreateUser & CreateLocation>;
 export type UserOnboarding = CreateUser & CreateLocation;
 
 // Helper functions for common transformations
-export const getDisplayRole = (user: User): string => {
+export const getDisplayRole = (user: User | CreateUser): string => {
   return user.postGradType === PostGradType.work ? user.title || '' : user.program || '';
 };
 
-export const getDisplayCompany = (user: User): string => {
+export const getDisplayCompany = (user: User | CreateUser): string => {
   return user.postGradType === PostGradType.work ? user.company || '' : user.school || '';
 };
 
-export const getLocation = (user: User): string => {
+export const getLocation = (user: User | CreateUser): string => {
   if (!user.location) return '';
   const { city, state, country } = user.location;
   return [city, state, country].filter(Boolean).join(', ');
 };
 
-export const isRoleVisible = (user: User, isOwnProfile: boolean): boolean => {
+export const isRoleVisible = (user: User | CreateUser, isOwnProfile: boolean): boolean => {
   return (
     isOwnProfile ||
     (user.postGradType === PostGradType.work
@@ -66,7 +67,7 @@ export const isRoleVisible = (user: User, isOwnProfile: boolean): boolean => {
   );
 };
 
-export const isCompanyVisible = (user: User, isOwnProfile: boolean): boolean => {
+export const isCompanyVisible = (user: User | CreateUser, isOwnProfile: boolean): boolean => {
   return (
     isOwnProfile ||
     (user.postGradType === PostGradType.work

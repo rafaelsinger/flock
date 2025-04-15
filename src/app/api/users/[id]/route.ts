@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/auth';
-import { UserOnboarding } from '@/types/user';
+import { UpdateUser } from '@/types/user';
 
 export const GET = auth(async function GET(request: NextRequest) {
   const id = request.url.split('/users/')[1];
@@ -47,32 +47,35 @@ export async function PUT(request: Request, context: { params: { id: string } })
       return new NextResponse('Unauthorized - User ID mismatch', { status: 401 });
     }
 
-    const userData: UserOnboarding = await request.json();
+    const userData: UpdateUser = await request.json();
 
-    // check if location exists
-    const location = await prisma.location.findFirst({
-      where: {
-        country: userData.country,
-        state: userData.state,
-        city: userData.city,
-      },
-    });
-
-    // if not, then create a new location
-    let locationId: string;
-    if (!location) {
-      const createdLocation = await prisma.location.create({
-        data: {
-          country: userData.country,
-          state: userData.state,
-          city: userData.city,
-          latitude: userData.lat,
-          longitude: userData.lon,
+    let locationId: string | null = null;
+    // if user wants to update their location
+    if (userData.location) {
+      // check if location exists
+      const location = await prisma.location.findFirst({
+        where: {
+          country: userData.location?.country,
+          state: userData.location?.state,
+          city: userData.location?.city,
         },
       });
-      locationId = createdLocation.id;
-    } else {
-      locationId = location.id;
+
+      // if not, then create a new location
+      if (!location) {
+        const createdLocation = await prisma.location.create({
+          data: {
+            country: userData.location.country,
+            state: userData.location.state,
+            city: userData.location.city,
+            latitude: userData.location.lat,
+            longitude: userData.location.lon,
+          },
+        });
+        locationId = createdLocation.id;
+      } else {
+        locationId = location.id;
+      }
     }
 
     const updatedUser = await prisma.user.update({
@@ -91,6 +94,9 @@ export async function PUT(request: Request, context: { params: { id: string } })
         locationId: locationId,
         lookingForRoommate: userData.lookingForRoommate,
         visibilityOptions: userData.visibilityOptions,
+      },
+      include: {
+        location: true,
       },
     });
 

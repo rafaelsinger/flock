@@ -9,7 +9,7 @@ import { FaBuilding, FaUniversity } from 'react-icons/fa';
 import { MdOutlineLocationCity, MdWork } from 'react-icons/md';
 import { HiOutlineAcademicCap } from 'react-icons/hi';
 import { useSession } from 'next-auth/react';
-import { CreateLocation, CreateUser, UserOnboarding } from '@/types/user';
+import { UserOnboarding, UserWithLocation } from '@/types/user';
 import { motion } from 'framer-motion';
 import { OnboardingProgress } from '@/components';
 
@@ -46,29 +46,8 @@ const ReviewPage: FC = () => {
 
       return response.json();
     },
-    onSuccess: async (onboardingData: UserOnboarding) => {
-      const userData: Omit<CreateUser, 'location' | 'name' | 'email'> & {
-        location: CreateLocation;
-      } = {
-        postGradType: onboardingData.postGradType,
-        title: onboardingData.title,
-        program: onboardingData.program,
-        location: {
-          country: onboardingData.country,
-          state: onboardingData.state,
-          city: onboardingData.city,
-          lat: onboardingData.lat,
-          lon: onboardingData.lon,
-        },
-        company: onboardingData.company,
-        school: onboardingData.school,
-        industry: onboardingData.industry,
-        visibilityOptions: onboardingData.visibilityOptions,
-        classYear: 2025,
-        isOnboarded: true,
-      };
-
-      await update({ user: userData });
+    onSuccess: async (user: UserWithLocation) => {
+      await update({ user });
 
       queryClient.removeQueries({ queryKey: ['onboardingData'] });
       router.push('/');
