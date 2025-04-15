@@ -32,12 +32,29 @@ const ReviewPage: FC = () => {
         throw new Error('No user ID found in session');
       }
 
+      // Restructure the data to match the API expectations
+      const apiData = {
+        ...finalData,
+        // Create a proper location object from the flat location fields
+        location: finalData.city
+          ? {
+              city: finalData.city,
+              state: finalData.state,
+              country: finalData.country,
+              lat: finalData.lat,
+              lon: finalData.lon,
+            }
+          : undefined,
+      };
+
+      console.log('Sending onboarding data to API:', apiData);
+
       const response = await fetch(`/api/users/${sessionStorage.user.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(finalData),
+        body: JSON.stringify(apiData),
       });
 
       if (!response.ok) {
