@@ -269,7 +269,30 @@ const ViewMode = ({ userData, isOwnProfile, onEdit }: ViewModeProps) => {
   const isSeeking = userData.postGradType === PostGradType.seeking;
 
   const renderProfileIcon = () => {
-    if (isSeeking) return null;
+    if (isSeeking) {
+      return (
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ delay: 0.2 }}
+          className="w-16 h-16 rounded-full bg-[#9E9E9E]/10 flex items-center justify-center"
+        >
+          <svg
+            className="h-8 w-8 text-[#9E9E9E]"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+            />
+          </svg>
+        </motion.div>
+      );
+    }
     return userData.postGradType === 'work' ? (
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
@@ -352,7 +375,29 @@ const ViewMode = ({ userData, isOwnProfile, onEdit }: ViewModeProps) => {
             </motion.div>
           )}
 
-          {!isSeeking && (
+          {isSeeking && (
+            <motion.div className="flex items-start space-x-2 mb-4" variants={itemVariants}>
+              <svg
+                className="text-[#9E9E9E] text-xl mt-1"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+              >
+                <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <div>
+                <p className="text-lg text-[#555555]">Just looking</p>
+                <p className="text-sm text-[#777777]">Exploring the platform for opportunities</p>
+              </div>
+            </motion.div>
+          )}
+
+          {userData.location && (
             <motion.div className="flex items-start space-x-2 mb-4" variants={itemVariants}>
               <BsGeoAlt className="text-[#F28B82] text-xl mt-1" />
               <div>
@@ -514,29 +559,22 @@ const EditForm = ({ userData, setUserData, onSave, onCancel, isSubmitting }: Edi
   };
 
   // Handle type change
-  const handleTypeChange = (type: 'work' | 'school') => {
-    // When changing type, we need to swap role/program and company/school
-    const newUserData = { ...userData, postGradType: type };
-
-    if (type === 'work') {
-      // Moving from school to work
-      if (userData.postGradType === 'school') {
-        newUserData.title = userData.program;
-        newUserData.program = null;
-        newUserData.company = userData.school;
-        newUserData.school = null;
-      }
+  const handleTypeChange = (type: PostGradType) => {
+    // When switching to 'seeking', clear work/school specific fields
+    if (type === 'seeking') {
+      setUserData({
+        ...userData,
+        postGradType: type,
+        title: null,
+        program: null,
+        company: null,
+        school: null,
+        discipline: null,
+        industry: null,
+      });
     } else {
-      // Moving from work to school
-      if (userData.postGradType === 'work') {
-        newUserData.program = userData.title;
-        newUserData.title = null;
-        newUserData.school = userData.company;
-        newUserData.company = null;
-      }
+      setUserData({ ...userData, postGradType: type });
     }
-
-    setUserData(newUserData);
   };
 
   // Scroll to the confirmation dialog when it appears
@@ -614,8 +652,22 @@ const EditForm = ({ userData, setUserData, onSave, onCancel, isSubmitting }: Edi
         <label htmlFor="type" className={labelClasses}>
           {userData.postGradType === 'work' ? (
             <BsBriefcase className="mr-2 text-[#F28B82]" />
-          ) : (
+          ) : userData.postGradType === 'school' ? (
             <LuGraduationCap className="mr-2 text-[#A7D7F9]" />
+          ) : (
+            <svg
+              className="mr-2 h-4 w-4 text-[#9E9E9E]"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
+            </svg>
           )}
           Type
         </label>
@@ -623,74 +675,87 @@ const EditForm = ({ userData, setUserData, onSave, onCancel, isSubmitting }: Edi
           <select
             id="type"
             value={userData.postGradType}
-            onChange={(e) => handleTypeChange(e.target.value as 'work' | 'school')}
+            onChange={(e) => handleTypeChange(e.target.value as PostGradType)}
             onFocus={() => setActiveField('type')}
             onBlur={() => setActiveField(null)}
             className={inputClasses.replace('cursor-text', 'cursor-pointer')}
           >
             <option value="work">Working</option>
             <option value="school">Studying</option>
+            <option value="seeking">Just looking</option>
           </select>
         </motion.div>
       </motion.div>
 
-      <motion.div variants={itemVariants}>
-        <label htmlFor="role" className={labelClasses}>
-          {userData.postGradType === 'work' ? (
-            <MdWork className="mr-2 text-[#F28B82]" />
-          ) : (
-            <HiOutlineAcademicCap className="mr-2 text-[#A7D7F9]" />
-          )}
-          {roleLabel}
-        </label>
-        <motion.div variants={inputVariants} animate={activeField === 'role' ? 'focus' : 'blur'}>
-          <input
-            id="role"
-            type="text"
-            value={userData.postGradType === 'work' ? userData.title || '' : userData.program || ''}
-            onChange={(e) => {
-              if (userData.postGradType === 'work') {
-                setUserData({ ...userData, title: e.target.value });
-              } else {
-                setUserData({ ...userData, program: e.target.value });
-              }
-            }}
-            onFocus={() => setActiveField('role')}
-            onBlur={() => setActiveField(null)}
-            className={inputClasses}
-          />
-        </motion.div>
-      </motion.div>
+      {userData.postGradType !== 'seeking' && (
+        <>
+          <motion.div variants={itemVariants}>
+            <label htmlFor="role" className={labelClasses}>
+              {userData.postGradType === 'work' ? (
+                <MdWork className="mr-2 text-[#F28B82]" />
+              ) : (
+                <HiOutlineAcademicCap className="mr-2 text-[#A7D7F9]" />
+              )}
+              {roleLabel}
+            </label>
+            <motion.div
+              variants={inputVariants}
+              animate={activeField === 'role' ? 'focus' : 'blur'}
+            >
+              <input
+                id="role"
+                type="text"
+                value={
+                  userData.postGradType === 'work' ? userData.title || '' : userData.program || ''
+                }
+                onChange={(e) => {
+                  if (userData.postGradType === 'work') {
+                    setUserData({ ...userData, title: e.target.value });
+                  } else {
+                    setUserData({ ...userData, program: e.target.value });
+                  }
+                }}
+                onFocus={() => setActiveField('role')}
+                onBlur={() => setActiveField(null)}
+                className={inputClasses}
+              />
+            </motion.div>
+          </motion.div>
 
-      <motion.div variants={itemVariants}>
-        <label htmlFor="company" className={labelClasses}>
-          {userData.postGradType === 'work' ? (
-            <FaBuilding className="mr-2 text-[#F28B82]" />
-          ) : (
-            <FaUniversity className="mr-2 text-[#A7D7F9]" />
-          )}
-          {companyLabel}
-        </label>
-        <motion.div variants={inputVariants} animate={activeField === 'company' ? 'focus' : 'blur'}>
-          <input
-            id="company"
-            type="text"
-            value={
-              userData.postGradType === 'work' ? userData.company || '' : userData.school || ''
-            }
-            onChange={(e) => {
-              if (userData.postGradType === 'work') {
-                setUserData({ ...userData, company: e.target.value });
-              } else {
-                setUserData({ ...userData, school: e.target.value });
-              }
-            }}
-            onFocus={() => setActiveField('company')}
-            onBlur={() => setActiveField(null)}
-            className={inputClasses}
-          />
-        </motion.div>
-      </motion.div>
+          <motion.div variants={itemVariants}>
+            <label htmlFor="company" className={labelClasses}>
+              {userData.postGradType === 'work' ? (
+                <FaBuilding className="mr-2 text-[#F28B82]" />
+              ) : (
+                <FaUniversity className="mr-2 text-[#A7D7F9]" />
+              )}
+              {companyLabel}
+            </label>
+            <motion.div
+              variants={inputVariants}
+              animate={activeField === 'company' ? 'focus' : 'blur'}
+            >
+              <input
+                id="company"
+                type="text"
+                value={
+                  userData.postGradType === 'work' ? userData.company || '' : userData.school || ''
+                }
+                onChange={(e) => {
+                  if (userData.postGradType === 'work') {
+                    setUserData({ ...userData, company: e.target.value });
+                  } else {
+                    setUserData({ ...userData, school: e.target.value });
+                  }
+                }}
+                onFocus={() => setActiveField('company')}
+                onBlur={() => setActiveField(null)}
+                className={inputClasses}
+              />
+            </motion.div>
+          </motion.div>
+        </>
+      )}
 
       <motion.div variants={itemVariants}>
         <label htmlFor="location" className={labelClasses}>
@@ -745,55 +810,57 @@ const EditForm = ({ userData, setUserData, onSave, onCancel, isSubmitting }: Edi
       </motion.div>
 
       {/* Update visibility section */}
-      <motion.div
-        className="p-4 rounded-xl bg-[#FFF9F8] border border-[#F9C5D1]/10 space-y-3 mt-4"
-        variants={itemVariants}
-      >
-        <div className="flex items-center space-x-2">
-          <BsEyeFill className="text-[#F28B82]" />
-          <h3 className="text-sm font-medium text-[#333333]">Privacy Settings</h3>
-        </div>
-
-        <motion.label
-          className="flex items-center justify-between p-2 hover:bg-white/50 rounded-lg transition-all cursor-pointer"
-          whileHover={{ scale: 1.01, backgroundColor: 'rgba(249, 197, 209, 0.05)' }}
-          whileTap={{ scale: 0.99 }}
+      {userData.postGradType !== 'seeking' && (
+        <motion.div
+          className="p-4 rounded-xl bg-[#FFF9F8] border border-[#F9C5D1]/10 space-y-3 mt-4"
+          variants={itemVariants}
         >
-          <span className="text-sm text-[#666666]">Show {roleLabel.toLowerCase()}</span>
-          <motion.div whileTap={{ scale: 0.9 }}>
-            <input
-              type="checkbox"
-              checked={
-                userData.postGradType === 'work'
-                  ? (userData.visibilityOptions?.title ?? true)
-                  : (userData.visibilityOptions?.program ?? true)
-              }
-              onChange={(e) => handleVisibilityChange('role', e.target.checked)}
-              className="h-5 w-5 rounded-md border-gray-300 text-[#F28B82] focus:ring-[#F28B82]"
-            />
-          </motion.div>
-        </motion.label>
+          <div className="flex items-center space-x-2">
+            <BsEyeFill className="text-[#F28B82]" />
+            <h3 className="text-sm font-medium text-[#333333]">Privacy Settings</h3>
+          </div>
 
-        <motion.label
-          className="flex items-center justify-between p-2 hover:bg-white/50 rounded-lg transition-all cursor-pointer"
-          whileHover={{ scale: 1.01, backgroundColor: 'rgba(249, 197, 209, 0.05)' }}
-          whileTap={{ scale: 0.99 }}
-        >
-          <span className="text-sm text-[#666666]">Show {companyLabel.toLowerCase()}</span>
-          <motion.div whileTap={{ scale: 0.9 }}>
-            <input
-              type="checkbox"
-              checked={
-                userData.postGradType === 'work'
-                  ? (userData.visibilityOptions?.company ?? true)
-                  : (userData.visibilityOptions?.school ?? true)
-              }
-              onChange={(e) => handleVisibilityChange('company', e.target.checked)}
-              className="h-5 w-5 rounded-md border-gray-300 text-[#F28B82] focus:ring-[#F28B82]"
-            />
-          </motion.div>
-        </motion.label>
-      </motion.div>
+          <motion.label
+            className="flex items-center justify-between p-2 hover:bg-white/50 rounded-lg transition-all cursor-pointer"
+            whileHover={{ scale: 1.01, backgroundColor: 'rgba(249, 197, 209, 0.05)' }}
+            whileTap={{ scale: 0.99 }}
+          >
+            <span className="text-sm text-[#666666]">Show {roleLabel.toLowerCase()}</span>
+            <motion.div whileTap={{ scale: 0.9 }}>
+              <input
+                type="checkbox"
+                checked={
+                  userData.postGradType === 'work'
+                    ? (userData.visibilityOptions?.title ?? true)
+                    : (userData.visibilityOptions?.program ?? true)
+                }
+                onChange={(e) => handleVisibilityChange('role', e.target.checked)}
+                className="h-5 w-5 rounded-md border-gray-300 text-[#F28B82] focus:ring-[#F28B82]"
+              />
+            </motion.div>
+          </motion.label>
+
+          <motion.label
+            className="flex items-center justify-between p-2 hover:bg-white/50 rounded-lg transition-all cursor-pointer"
+            whileHover={{ scale: 1.01, backgroundColor: 'rgba(249, 197, 209, 0.05)' }}
+            whileTap={{ scale: 0.99 }}
+          >
+            <span className="text-sm text-[#666666]">Show {companyLabel.toLowerCase()}</span>
+            <motion.div whileTap={{ scale: 0.9 }}>
+              <input
+                type="checkbox"
+                checked={
+                  userData.postGradType === 'work'
+                    ? (userData.visibilityOptions?.company ?? true)
+                    : (userData.visibilityOptions?.school ?? true)
+                }
+                onChange={(e) => handleVisibilityChange('company', e.target.checked)}
+                className="h-5 w-5 rounded-md border-gray-300 text-[#F28B82] focus:ring-[#F28B82]"
+              />
+            </motion.div>
+          </motion.label>
+        </motion.div>
+      )}
 
       <motion.div variants={itemVariants} className="flex justify-end space-x-4 pt-4">
         <motion.button

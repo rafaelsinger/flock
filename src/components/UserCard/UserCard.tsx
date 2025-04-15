@@ -18,8 +18,17 @@ export const UserCard: React.FC<UserCardProps> = ({ user, prefetch = false }) =>
   const location = user.location
     ? `${user.location.city}${user.location.state ? `, ${user.location.state}` : ''}`
     : 'Location unknown';
-  const company = user.visibilityOptions?.company !== false ? getDisplayCompany(user) : undefined;
-  const role = user.visibilityOptions?.title !== false ? getDisplayRole(user) : undefined;
+
+  // Only show company/role if user is not in "seeking" mode
+  const company =
+    user.postGradType !== 'seeking' && user.visibilityOptions?.company !== false
+      ? getDisplayCompany(user)
+      : undefined;
+
+  const role =
+    user.postGradType !== 'seeking' && user.visibilityOptions?.title !== false
+      ? getDisplayRole(user)
+      : undefined;
 
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -58,8 +67,37 @@ export const UserCard: React.FC<UserCardProps> = ({ user, prefetch = false }) =>
   };
 
   // Determine icon based on post-grad type
-  const PostGradIcon = user.postGradType === 'work' ? Briefcase : GraduationCap;
-  const iconColor = user.postGradType === 'work' ? '#F28B82' : '#A7D7F9';
+  const getPostGradIcon = () => {
+    switch (user.postGradType) {
+      case 'work':
+        return { Icon: Briefcase, color: '#F28B82', bgColor: 'bg-[#F9C5D1]/10' };
+      case 'school':
+        return { Icon: GraduationCap, color: '#A7D7F9', bgColor: 'bg-[#A7D7F9]/10' };
+      case 'seeking':
+      default:
+        return {
+          Icon: () => (
+            <svg
+              className="h-5 w-5 text-[#9E9E9E]"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
+            </svg>
+          ),
+          color: '#9E9E9E',
+          bgColor: 'bg-[#9E9E9E]/10',
+        };
+    }
+  };
+
+  const { Icon, color, bgColor } = getPostGradIcon();
 
   return (
     <motion.div
@@ -73,10 +111,8 @@ export const UserCard: React.FC<UserCardProps> = ({ user, prefetch = false }) =>
           {/* User Icon */}
           <div className="flex items-center gap-3">
             <div className="flex">
-              <div
-                className={`w-10 h-10 rounded-full flex items-center justify-center ${user.postGradType === 'work' ? 'bg-[#F9C5D1]/10' : 'bg-[#A7D7F9]/10'}`}
-              >
-                <PostGradIcon className={`h-5 w-5 text-[${iconColor}]`} />
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center ${bgColor}`}>
+                <Icon className={typeof Icon !== 'function' ? `h-5 w-5 text-[${color}]` : ''} />
               </div>
               {user.lookingForRoommate && (
                 <div className="w-5 h-5 rounded-full bg-[#8FC9A9]/10 flex items-center justify-center -ml-2 mt-6 border border-white">
@@ -112,6 +148,24 @@ export const UserCard: React.FC<UserCardProps> = ({ user, prefetch = false }) =>
             <div className="flex items-center gap-2 text-sm text-gray-600">
               <Building className="h-4 w-4 text-[#F28B82]" />
               <span>{company}</span>
+            </div>
+          )}
+          {user.postGradType === 'seeking' && (
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+              <svg
+                className="h-4 w-4 text-[#9E9E9E]"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
+              </svg>
+              <span>Just looking</span>
             </div>
           )}
         </div>
