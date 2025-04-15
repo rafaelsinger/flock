@@ -7,6 +7,7 @@ import { scaleQuantize } from 'd3-scale';
 import { Plus, Minus } from 'lucide-react';
 import center from '@turf/center';
 import { STATE_NAME_TO_ABBREV } from '@/constants/location';
+import type { PropertyValueSpecification } from 'maplibre-gl';
 
 // Types
 interface LocationData {
@@ -36,8 +37,7 @@ function isLocationResponse(data: unknown): data is LocationResponse {
 const stateGeoUrl =
   'https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/geojson/us-states.json';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const layerStyle = (colorExpression: any): LayerProps => ({
+const layerStyle = (colorExpression: PropertyValueSpecification<string>): LayerProps => ({
   id: 'states-fill',
   type: 'fill',
   paint: {
@@ -94,13 +94,11 @@ export const FlockMap: React.FC<FlockMapProps> = ({ onCitySelect }) => {
     queryKey: ['locationData', selectedState],
     queryFn: async () => {
       if (!selectedState) {
-        const response = await fetch('/api/users/locations');
+        const response = await fetch('/api/locations');
         if (!response.ok) throw new Error('Failed to fetch location data');
         return response.json();
       } else {
-        const response = await fetch(
-          `/api/users/locations?state=${STATE_NAME_TO_ABBREV[selectedState]}`
-        );
+        const response = await fetch(`/api/locations?state=${selectedState}`);
         if (!response.ok) throw new Error('Failed to fetch city data');
         return response.json();
       }
@@ -142,14 +140,22 @@ export const FlockMap: React.FC<FlockMapProps> = ({ onCitySelect }) => {
     .domain([0, maxValue])
     .range(['#fef0d9', '#fdcc8a', '#fc8d59', '#e34a33', '#b30000']);
 
-  const fillColorExpression = [
-    'match',
-    ['get', 'name'],
-    ...(locationData && !selectedState
-      ? Object.entries(locationData).flatMap(([state, value]) => [state, colorScale(value)])
-      : []),
-    '#EEE',
-  ];
+  const fillColorExpression = React.useMemo(() => {
+    if (!locationData || selectedState) {
+      return ['match', ['get', 'name'], '#EEE'] as unknown as PropertyValueSpecification<string>;
+    }
+
+    const pairs = Object.entries(locationData)
+      .map(([state, value]) => [state, colorScale(value)])
+      .flat();
+
+    return [
+      'match',
+      ['get', 'name'],
+      ...pairs,
+      '#EEE', // default color
+    ] as unknown as PropertyValueSpecification<string>;
+  }, [locationData, selectedState, colorScale]);
 
   const getLegendData = () => {
     // If all values are 0, show a simplified legend
