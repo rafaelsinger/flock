@@ -38,8 +38,13 @@ export async function GET(request: NextRequest) {
       const cityCountMap: Record<string, number> = {};
       const cityCoordinates: Record<string, [number, number]> = {};
 
+      // TODO: jank, fix
       cityData.forEach((location) => {
-        cityCountMap[location.city] = location._count.users;
+        if (location.city in cityCountMap) {
+          cityCountMap[location.city] += location._count.users;
+        } else {
+          cityCountMap[location.city] = location._count.users;
+        }
         cityCoordinates[location.city] = [location.longitude, location.latitude];
       });
 

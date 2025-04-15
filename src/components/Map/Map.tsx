@@ -8,6 +8,7 @@ import { Plus, Minus } from 'lucide-react';
 import center from '@turf/center';
 import { STATE_NAME_TO_ABBREV } from '@/constants/location';
 import type { PropertyValueSpecification } from 'maplibre-gl';
+import { Legend } from './Legend';
 
 // Types
 interface LocationData {
@@ -157,71 +158,6 @@ export const FlockMap: React.FC<FlockMapProps> = ({ onCitySelect }) => {
     ] as unknown as PropertyValueSpecification<string>;
   }, [locationData, selectedState, colorScale]);
 
-  const getLegendData = () => {
-    // If all values are 0, show a simplified legend
-    if (maxValue === 0) {
-      return [{ range: 'No data', color: '#EEE' }];
-    }
-
-    const colorRange = colorScale.range();
-
-    // For state view, use 5 evenly distributed ranges
-    if (!selectedState) {
-      const step = Math.ceil(maxValue / 5);
-      return [
-        { range: `0-${step}`, color: colorRange[0] },
-        { range: `${step + 1}-${2 * step}`, color: colorRange[1] },
-        { range: `${2 * step + 1}-${3 * step}`, color: colorRange[2] },
-        { range: `${3 * step + 1}-${4 * step}`, color: colorRange[3] },
-        { range: `${4 * step + 1}+`, color: colorRange[4] },
-      ];
-    }
-
-    // For city view, use quantile based ranges but filter out empty ones
-    const thresholds = colorScale.thresholds();
-
-    // Get unique values and sort them
-    const uniqueValues = [...new Set(Object.values(locationData))].sort((a, b) => a - b);
-
-    // If there are very few unique values, create a simplified legend
-    if (uniqueValues.length <= 3) {
-      return uniqueValues.map((value) => ({
-        range: `${value}`,
-        color: colorScale(value),
-      }));
-    }
-
-    // Create ranges based on thresholds
-    const ranges = [];
-    for (let i = 0; i < colorRange.length; i++) {
-      // Get the range values
-      const min = i === 0 ? 0 : Math.floor(thresholds[i - 1]);
-      const max =
-        i === colorRange.length - 1
-          ? `${Math.floor(thresholds[i - 1])}+`
-          : Math.floor(thresholds[i]);
-
-      // Check if this range has any values in it
-      const hasValuesInRange = Object.values(locationData).some((value) => {
-        if (i === 0) return value < thresholds[0];
-        if (i === colorRange.length - 1) return value >= thresholds[i - 1];
-        return value >= thresholds[i - 1] && value < thresholds[i];
-      });
-
-      // Only add non-empty ranges
-      if (hasValuesInRange) {
-        ranges.push({
-          range: i === colorRange.length - 1 ? `${min}+` : `${min}-${max}`,
-          color: colorRange[i],
-        });
-      }
-    }
-
-    return ranges.length > 0 ? ranges : [{ range: `0-${maxValue}`, color: colorRange[2] }];
-  };
-
-  const legendData = getLegendData();
-
   const renderLegendSkeleton = () => (
     <div className="space-y-2.5">
       {Array(5)
@@ -292,6 +228,19 @@ export const FlockMap: React.FC<FlockMapProps> = ({ onCitySelect }) => {
     },
     [locationData]
   );
+
+  console.log({ locationData });
+
+  // Calculate thresholds for state legend
+  const thresholds = React.useMemo(() => {
+    if (!maxValue) return [0, 0, 0, 0];
+    return [
+      Math.ceil(maxValue * 0.25),
+      Math.ceil(maxValue * 0.5),
+      Math.ceil(maxValue * 0.75),
+      maxValue,
+    ];
+  }, [maxValue]);
 
   return (
     <div className={`w-full h-full relative ${zoomedIn ? 'bg-gray-50' : 'bg-[#F9F9F9]'}`}>
@@ -432,19 +381,11 @@ export const FlockMap: React.FC<FlockMapProps> = ({ onCitySelect }) => {
         <div className="text-sm font-semibold text-[#111111] mb-3">
           {selectedState ? `${selectedState} City Graduates` : 'State Graduates'}
         </div>
-        <div className="space-y-2.5">
-          {showSkeleton
-            ? renderLegendSkeleton()
-            : legendData.map(({ range, color }) => (
-                <div key={range} className="flex items-center gap-2.5">
-                  <div
-                    className="w-4 h-4 rounded border border-gray-100"
-                    style={{ backgroundColor: color }}
-                  />
-                  <span className="text-sm text-[#333333]">{range}</span>
-                </div>
-              ))}
-        </div>
+        {showSkeleton ? (
+          renderLegendSkeleton()
+        ) : (
+          <Legend thresholds={thresholds} colorScale={colorScale} max={maxValue} />
+        )}
       </div>
 
       {/* Back Button */}
