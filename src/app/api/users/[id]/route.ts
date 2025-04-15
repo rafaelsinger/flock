@@ -85,6 +85,7 @@ export const PUT = async (request: NextRequest, context: { params: Promise<{ id:
       data: {
         name: userData.name,
         postGradType: userData.postGradType,
+        userType: userData.userType,
         title: userData.title,
         program: userData.program,
         discipline: userData.discipline,
@@ -95,6 +96,10 @@ export const PUT = async (request: NextRequest, context: { params: Promise<{ id:
         lookingForRoommate: userData.lookingForRoommate,
         visibilityOptions: userData.visibilityOptions,
         classYear: userData.classYear,
+        internshipSeason: userData.internshipSeason,
+        internshipYear: userData.internshipYear,
+        internshipCompany: userData.internshipCompany,
+        internshipTitle: userData.internshipTitle,
       },
       include: {
         location: true,

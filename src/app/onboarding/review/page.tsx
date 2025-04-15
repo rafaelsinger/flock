@@ -3,7 +3,7 @@
 import { FC, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { BsBriefcase, BsGeoAlt, BsEyeFill } from 'react-icons/bs';
+import { BsBriefcase, BsGeoAlt, BsEyeFill, BsCalendar } from 'react-icons/bs';
 import { LuGraduationCap } from 'react-icons/lu';
 import { FaBuilding, FaUniversity } from 'react-icons/fa';
 import { MdOutlineLocationCity, MdWork } from 'react-icons/md';
@@ -12,6 +12,7 @@ import { useSession } from 'next-auth/react';
 import { UserOnboarding, UserWithLocation } from '@/types/user';
 import { motion } from 'framer-motion';
 import { OnboardingProgress } from '@/components';
+import { UserType, PostGradType } from '@prisma/client';
 
 const ReviewPage: FC = () => {
   const router = useRouter();
@@ -20,6 +21,7 @@ const ReviewPage: FC = () => {
   const isFinalizingRef = useRef(false);
   const { data: sessionStorage, update } = useSession();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const isIntern = data?.userType === UserType.intern;
 
   const finalizeOnboarding = useMutation({
     mutationFn: async (finalData: UserOnboarding) => {
@@ -107,6 +109,22 @@ const ReviewPage: FC = () => {
     visible: { opacity: 1, y: 0 },
   };
 
+  // Helper to get section title
+  const getSectionTitle = () => {
+    if (isIntern) return 'Internship Information';
+    return data.postGradType === PostGradType.work ? 'Work Information' : 'Education Information';
+  };
+
+  // Helper to get section icon
+  const getSectionIcon = () => {
+    if (isIntern) return <BsCalendar className="text-[#F28B82] text-xl" />;
+    return data.postGradType === PostGradType.work ? (
+      <BsBriefcase className="text-[#F28B82] text-xl" />
+    ) : (
+      <LuGraduationCap className="text-[#A7D7F9] text-xl" />
+    );
+  };
+
   return (
     <motion.div
       className="min-h-[calc(100vh-100px)] flex flex-col justify-center px-4 py-12 max-w-4xl mx-auto"
@@ -135,30 +153,72 @@ const ReviewPage: FC = () => {
 
         <motion.form onSubmit={handleSubmit} className="space-y-10 max-w-2xl mx-auto">
           <motion.div className="space-y-6" variants={itemVariants}>
-            {/* Post-grad Details Card */}
+            {/* Post-grad/Internship Details Card */}
             <motion.div
               className="bg-[#FAFAFA] rounded-xl p-6 space-y-6 border-2 border-gray-100"
               whileHover={{ boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)' }}
             >
-              {/* Post-grad Status */}
+              {/* Status Section Header */}
               <motion.div
                 className="flex items-center space-x-3 pb-4 border-b border-gray-200"
                 variants={itemVariants}
               >
                 <div className="p-3 rounded-full bg-gradient-to-br from-[#F9C5D1]/20 to-[#F28B82]/10">
-                  {data.postGradType === 'work' ? (
-                    <BsBriefcase className="text-[#F28B82] text-xl" />
-                  ) : (
-                    <LuGraduationCap className="text-[#A7D7F9] text-xl" />
-                  )}
+                  {getSectionIcon()}
                 </div>
                 <h2 className="text-xl md:text-2xl font-medium text-[#333333]">
-                  {data.postGradType === 'work' ? 'Work Information' : 'Education Information'}
+                  {getSectionTitle()}
                 </h2>
               </motion.div>
 
               {/* Details */}
-              {data.postGradType === 'work' && (
+              {isIntern && (
+                <motion.div className="space-y-4 pl-2" variants={itemVariants}>
+                  <motion.div className="flex items-center space-x-3" variants={itemVariants}>
+                    <div className="w-8 h-8 rounded-full bg-[#F9C5D1]/10 flex items-center justify-center">
+                      <FaBuilding className="text-[#F28B82]" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-[#666666]">Company</p>
+                      <p className="text-lg text-[#333333]">{data.internshipCompany}</p>
+                    </div>
+                  </motion.div>
+
+                  <motion.div className="flex items-center space-x-3" variants={itemVariants}>
+                    <div className="w-8 h-8 rounded-full bg-[#F9C5D1]/10 flex items-center justify-center">
+                      <MdWork className="text-[#F28B82]" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-[#666666]">Role</p>
+                      <p className="text-lg text-[#333333]">{data.internshipTitle}</p>
+                    </div>
+                  </motion.div>
+
+                  <motion.div className="flex items-center space-x-3" variants={itemVariants}>
+                    <div className="w-8 h-8 rounded-full bg-[#F9C5D1]/10 flex items-center justify-center">
+                      <BsCalendar className="text-[#F28B82]" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-[#666666]">Timeframe</p>
+                      <p className="text-lg text-[#333333]">
+                        {data.internshipSeason} {data.internshipYear}
+                      </p>
+                    </div>
+                  </motion.div>
+
+                  <motion.div className="flex items-center space-x-3" variants={itemVariants}>
+                    <div className="w-8 h-8 rounded-full bg-[#F9C5D1]/10 flex items-center justify-center">
+                      <BsBriefcase className="text-[#F28B82]" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-[#666666]">Industry</p>
+                      <p className="text-lg text-[#333333]">{data.industry}</p>
+                    </div>
+                  </motion.div>
+                </motion.div>
+              )}
+
+              {!isIntern && data.postGradType === PostGradType.work && (
                 <motion.div className="space-y-4 pl-2" variants={itemVariants}>
                   <motion.div className="flex items-center space-x-3" variants={itemVariants}>
                     <div className="w-8 h-8 rounded-full bg-[#F9C5D1]/10 flex items-center justify-center">
@@ -192,7 +252,7 @@ const ReviewPage: FC = () => {
                 </motion.div>
               )}
 
-              {data.postGradType === 'school' && data.school && (
+              {!isIntern && data.postGradType === PostGradType.school && data.school && (
                 <motion.div className="space-y-4 pl-2" variants={itemVariants}>
                   <motion.div className="flex items-center space-x-3" variants={itemVariants}>
                     <div className="w-8 h-8 rounded-full bg-[#A7D7F9]/10 flex items-center justify-center">
@@ -282,7 +342,21 @@ const ReviewPage: FC = () => {
               </motion.div>
 
               <motion.ul className="space-y-3 text-[#666666] pl-2 pt-2" variants={itemVariants}>
-                {data.postGradType === 'work' ? (
+                {isIntern ? (
+                  <motion.li className="flex items-center space-x-3" variants={itemVariants}>
+                    <div className="w-6 h-6 rounded-full flex items-center justify-center">
+                      {data.visibilityOptions?.internship ? (
+                        <span className="text-[#F28B82] text-lg">✓</span>
+                      ) : (
+                        <span className="text-gray-300 text-lg">✕</span>
+                      )}
+                    </div>
+                    <span className="text-base">
+                      Internship details {data.visibilityOptions?.internship ? 'visible' : 'hidden'}{' '}
+                      to classmates
+                    </span>
+                  </motion.li>
+                ) : data.postGradType === PostGradType.work ? (
                   <>
                     <motion.li className="flex items-center space-x-3" variants={itemVariants}>
                       <div className="w-6 h-6 rounded-full flex items-center justify-center">

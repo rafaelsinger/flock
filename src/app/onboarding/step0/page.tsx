@@ -6,6 +6,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { IncompleteUserOnboarding } from '@/types/user';
 import { motion } from 'framer-motion';
 import { OnboardingProgress } from '@/components';
+import { UserType } from '@prisma/client';
 
 const Step0: FC = () => {
   const router = useRouter();
@@ -21,7 +22,16 @@ const Step0: FC = () => {
 
   const updateOnboardingData = useMutation({
     mutationFn: (year: string) => {
-      const data: IncompleteUserOnboarding = { classYear: parseInt(year) };
+      // Determine if user is an intern or grad based on class year
+      // If the selected year is 2025, they're a graduating senior (grad)
+      // Otherwise, they're an intern
+      const selectedYearNum = parseInt(year);
+      const userType = selectedYearNum === 2025 ? UserType.grad : UserType.intern;
+
+      const data: IncompleteUserOnboarding = {
+        classYear: selectedYearNum,
+        userType: userType,
+      };
       return Promise.resolve(data);
     },
     onSuccess: (data) => {
@@ -40,6 +50,12 @@ const Step0: FC = () => {
       setIsSubmitting(true);
       updateOnboardingData.mutate(selectedYear);
     }
+  };
+
+  // Helper to display a user type indicator for each year option
+  const getUserTypeIndicator = (year: string) => {
+    const yearNum = parseInt(year);
+    return yearNum === 2025 ? 'New Grad' : 'Intern';
   };
 
   const containerVariants = {
@@ -111,6 +127,15 @@ const Step0: FC = () => {
                     }`}
                   >
                     Class of {year}
+                  </span>
+                  <span
+                    className={`text-xs mt-1 px-2 py-0.5 rounded-full ${
+                      year === '2025'
+                        ? 'bg-[#A7D7F9]/20 text-[#4A90E2]'
+                        : 'bg-[#F9C5D1]/20 text-[#E67C73]'
+                    }`}
+                  >
+                    {getUserTypeIndicator(year)}
                   </span>
                 </motion.button>
               ))}

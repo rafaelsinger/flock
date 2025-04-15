@@ -8,7 +8,8 @@ import { motion } from 'framer-motion';
 import { OnboardingProgress } from '@/components';
 import { HiOutlineEye, HiOutlineEyeOff } from 'react-icons/hi';
 import { FaBuilding, FaUniversity } from 'react-icons/fa';
-import { BsBriefcase, BsBookHalf } from 'react-icons/bs';
+import { BsBriefcase, BsBookHalf, BsCalendar } from 'react-icons/bs';
+import { UserType, PostGradType } from '@prisma/client';
 
 type WorkFormData = {
   visibilityOptions: {
@@ -24,13 +25,21 @@ type SchoolFormData = {
   };
 };
 
-type FormData = WorkFormData | SchoolFormData;
+type InternFormData = {
+  visibilityOptions: {
+    internship: boolean;
+  };
+};
+
+type FormData = WorkFormData | SchoolFormData | InternFormData;
 
 const Step4: FC = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
   const previousData = queryClient.getQueryData(['onboardingData']) as IncompleteUserOnboarding;
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const isIntern = previousData?.userType === UserType.intern;
+  const postGradType = previousData?.postGradType || '';
 
   const updateOnboardingData = useMutation({
     mutationFn: (visibilityData: IncompleteUserOnboarding) => {
@@ -41,6 +50,7 @@ const Step4: FC = () => {
           title: visibilityData.visibilityOptions?.title,
           school: visibilityData.visibilityOptions?.school,
           program: visibilityData.visibilityOptions?.program,
+          internship: visibilityData.visibilityOptions?.internship,
         },
       };
       return Promise.resolve(data);
@@ -50,21 +60,33 @@ const Step4: FC = () => {
       router.push('/onboarding/review');
     },
   });
-  const [formData, setFormData] = useState<FormData>(
-    previousData?.postGradType === 'work'
-      ? {
-          visibilityOptions: {
-            company: true,
-            title: true,
-          },
-        }
-      : {
-          visibilityOptions: {
-            school: true,
-            program: true,
-          },
-        }
-  );
+
+  // Initialize form data based on user type and post grad type
+  const getInitialFormData = () => {
+    if (isIntern) {
+      return {
+        visibilityOptions: {
+          internship: true,
+        },
+      } as InternFormData;
+    } else if (postGradType === PostGradType.work) {
+      return {
+        visibilityOptions: {
+          company: true,
+          title: true,
+        },
+      } as WorkFormData;
+    } else {
+      return {
+        visibilityOptions: {
+          school: true,
+          program: true,
+        },
+      } as SchoolFormData;
+    }
+  };
+
+  const [formData, setFormData] = useState<FormData>(getInitialFormData());
 
   useEffect(() => {
     if (!previousData || !previousData.postGradType) {
@@ -86,9 +108,20 @@ const Step4: FC = () => {
     updateOnboardingData.mutate(formData);
   };
 
-  // Replace the onChange handlers with these type-safe versions
+  // Handle changes to visibility options
   const handleCompanySchoolChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (previousData.postGradType === 'work') {
+    if (isIntern) {
+      setFormData(
+        (prev) =>
+          ({
+            ...prev,
+            visibilityOptions: {
+              ...(prev as InternFormData).visibilityOptions,
+              internship: e.target.checked,
+            },
+          }) as InternFormData
+      );
+    } else if (postGradType === PostGradType.work) {
       setFormData(
         (prev) =>
           ({
@@ -114,7 +147,10 @@ const Step4: FC = () => {
   };
 
   const handleTitleProgramChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (previousData.postGradType === 'work') {
+    if (isIntern) {
+      // Nothing to do here for interns, since they only have one visibility option
+      return;
+    } else if (postGradType === PostGradType.work) {
       setFormData(
         (prev) =>
           ({
@@ -137,6 +173,37 @@ const Step4: FC = () => {
           }) as SchoolFormData
       );
     }
+  };
+
+  // Determine labels based on user type
+  const getCompanySchoolLabel = () => {
+    if (isIntern) return 'Internship';
+    if (postGradType === PostGradType.work) return 'Company';
+    return 'School';
+  };
+
+  const getCompanySchoolDescription = () => {
+    if (isIntern) return 'Display your internship details to classmates';
+    if (postGradType === PostGradType.work) return 'Display your company name to classmates';
+    return 'Display your school to classmates';
+  };
+
+  const getTitleProgramLabel = () => {
+    if (postGradType === PostGradType.work) return 'Role';
+    return 'Program';
+  };
+
+  const getTitleProgramDescription = () => {
+    if (postGradType === PostGradType.work) return 'Display your role to classmates';
+    return 'Display your program to classmates';
+  };
+
+  // Check value
+  const getCompanySchoolChecked = () => {
+    if (isIntern) return (formData as InternFormData).visibilityOptions.internship;
+    if (postGradType === PostGradType.work)
+      return (formData as WorkFormData).visibilityOptions.company;
+    return (formData as SchoolFormData).visibilityOptions.school;
   };
 
   const containerVariants = {
@@ -199,42 +266,30 @@ const Step4: FC = () => {
                 initial="initial"
               >
                 <div className="flex items-start space-x-3">
-                  {previousData.postGradType === 'work' ? (
+                  {isIntern ? (
+                    <BsCalendar className="text-[#F28B82] text-xl mt-1" />
+                  ) : postGradType === PostGradType.work ? (
                     <FaBuilding className="text-[#F28B82] text-xl mt-1" />
                   ) : (
                     <FaUniversity className="text-[#A7D7F9] text-xl mt-1" />
                   )}
                   <div>
                     <span className="font-medium text-[#333333] block text-lg">
-                      Show {previousData.postGradType === 'work' ? 'Company' : 'School'}
+                      Show {getCompanySchoolLabel()}
                     </span>
-                    <p className="text-sm text-[#666666] mt-1">
-                      Display your{' '}
-                      {previousData.postGradType === 'work' ? 'company name' : 'school'} to
-                      classmates
-                    </p>
+                    <p className="text-sm text-[#666666] mt-1">{getCompanySchoolDescription()}</p>
                   </div>
                 </div>
                 <div className="flex items-center space-x-3">
-                  {previousData.postGradType === 'work' ? (
-                    (formData as WorkFormData).visibilityOptions.company ? (
-                      <HiOutlineEye className="text-[#F28B82] text-lg" />
-                    ) : (
-                      <HiOutlineEyeOff className="text-gray-400 text-lg" />
-                    )
-                  ) : (formData as SchoolFormData).visibilityOptions.school ? (
-                    <HiOutlineEye className="text-[#A7D7F9] text-lg" />
+                  {getCompanySchoolChecked() ? (
+                    <HiOutlineEye className="text-[#F28B82] text-lg" />
                   ) : (
                     <HiOutlineEyeOff className="text-gray-400 text-lg" />
                   )}
                   <div className="h-7 w-12 relative flex items-center">
                     <input
                       type="checkbox"
-                      checked={
-                        previousData.postGradType === 'work'
-                          ? (formData as WorkFormData).visibilityOptions.company
-                          : (formData as SchoolFormData).visibilityOptions.school
-                      }
+                      checked={getCompanySchoolChecked()}
                       onChange={handleCompanySchoolChange}
                       className="h-6 w-6 rounded-md border-gray-300 text-[#F28B82] focus:ring-[#F9C5D1] transition-colors cursor-pointer"
                     />
@@ -242,55 +297,54 @@ const Step4: FC = () => {
                 </div>
               </motion.label>
 
-              <motion.label
-                className="flex items-center justify-between p-5 rounded-xl border-2 border-gray-200 hover:border-gray-300 transition-all cursor-pointer"
-                variants={cardVariants}
-                whileHover="hover"
-                whileTap="tap"
-                initial="initial"
-              >
-                <div className="flex items-start space-x-3">
-                  {previousData.postGradType === 'work' ? (
-                    <BsBriefcase className="text-[#F28B82] text-xl mt-1" />
-                  ) : (
-                    <BsBookHalf className="text-[#A7D7F9] text-xl mt-1" />
-                  )}
-                  <div>
-                    <span className="font-medium text-[#333333] block text-lg">
-                      Show {previousData.postGradType === 'work' ? 'Role' : 'Program'}
-                    </span>
-                    <p className="text-sm text-[#666666] mt-1">
-                      Display your {previousData.postGradType === 'work' ? 'role' : 'program'} to
-                      classmates
-                    </p>
+              {!isIntern && (
+                <motion.label
+                  className="flex items-center justify-between p-5 rounded-xl border-2 border-gray-200 hover:border-gray-300 transition-all cursor-pointer"
+                  variants={cardVariants}
+                  whileHover="hover"
+                  whileTap="tap"
+                  initial="initial"
+                >
+                  <div className="flex items-start space-x-3">
+                    {postGradType === PostGradType.work ? (
+                      <BsBriefcase className="text-[#F28B82] text-xl mt-1" />
+                    ) : (
+                      <BsBookHalf className="text-[#A7D7F9] text-xl mt-1" />
+                    )}
+                    <div>
+                      <span className="font-medium text-[#333333] block text-lg">
+                        Show {getTitleProgramLabel()}
+                      </span>
+                      <p className="text-sm text-[#666666] mt-1">{getTitleProgramDescription()}</p>
+                    </div>
                   </div>
-                </div>
-                <div className="flex items-center space-x-3">
-                  {previousData.postGradType === 'work' ? (
-                    (formData as WorkFormData).visibilityOptions.title ? (
-                      <HiOutlineEye className="text-[#F28B82] text-lg" />
+                  <div className="flex items-center space-x-3">
+                    {postGradType === PostGradType.work ? (
+                      (formData as WorkFormData).visibilityOptions.title ? (
+                        <HiOutlineEye className="text-[#F28B82] text-lg" />
+                      ) : (
+                        <HiOutlineEyeOff className="text-gray-400 text-lg" />
+                      )
+                    ) : (formData as SchoolFormData).visibilityOptions.program ? (
+                      <HiOutlineEye className="text-[#A7D7F9] text-lg" />
                     ) : (
                       <HiOutlineEyeOff className="text-gray-400 text-lg" />
-                    )
-                  ) : (formData as SchoolFormData).visibilityOptions.program ? (
-                    <HiOutlineEye className="text-[#A7D7F9] text-lg" />
-                  ) : (
-                    <HiOutlineEyeOff className="text-gray-400 text-lg" />
-                  )}
-                  <div className="h-7 w-12 relative flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={
-                        previousData.postGradType === 'work'
-                          ? (formData as WorkFormData).visibilityOptions.title
-                          : (formData as SchoolFormData).visibilityOptions.program
-                      }
-                      onChange={handleTitleProgramChange}
-                      className="h-6 w-6 rounded-md border-gray-300 text-[#F28B82] focus:ring-[#F9C5D1] transition-colors cursor-pointer"
-                    />
+                    )}
+                    <div className="h-7 w-12 relative flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={
+                          postGradType === PostGradType.work
+                            ? (formData as WorkFormData).visibilityOptions.title
+                            : (formData as SchoolFormData).visibilityOptions.program
+                        }
+                        onChange={handleTitleProgramChange}
+                        className="h-6 w-6 rounded-md border-gray-300 text-[#F28B82] focus:ring-[#F9C5D1] transition-colors cursor-pointer"
+                      />
+                    </div>
                   </div>
-                </div>
-              </motion.label>
+                </motion.label>
+              )}
             </div>
 
             <div className="mt-8 bg-[#F9FAFB] p-4 rounded-xl border border-gray-100">

@@ -14,10 +14,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   session: { strategy: 'jwt' },
   callbacks: {
     authorized: async ({ request, auth }) => {
-      // Forward users who aren't onboarded to step0
+      // Forward users who aren't onboarded to onboarding step0
       if (auth?.user && auth.user.isOnboarded === false) {
         const path = request.nextUrl.pathname;
-        // If they're trying to access any route except onboarding/step0, redirect them
         if (path !== '/onboarding/step0' && !path.startsWith('/api/')) {
           return Response.redirect(new URL('/onboarding/step0', request.nextUrl));
         }

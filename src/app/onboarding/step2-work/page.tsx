@@ -6,38 +6,60 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { INDUSTRIES } from '@/constants/industries';
 import { IncompleteUserOnboarding } from '@/types/user';
 import { motion } from 'framer-motion';
-import { BsBriefcase, BsBuilding, BsPerson } from 'react-icons/bs';
+import { BsBriefcase, BsBuilding, BsPerson, BsCalendar } from 'react-icons/bs';
 import { OnboardingProgress } from '@/components';
-import { PostGradType } from '@prisma/client';
+import { PostGradType, UserType } from '@prisma/client';
 
 const Step2Work: FC = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
   const previousData = queryClient.getQueryData(['onboardingData']) as IncompleteUserOnboarding;
+  const isIntern = previousData?.userType === UserType.intern;
 
-  const [formData, setFormData] = useState({
-    company: '',
-    title: '',
-    industry: '',
-  });
+  // Adjust form fields based on user type
+  const [formData, setFormData] = useState(
+    isIntern
+      ? {
+          internshipCompany: '',
+          internshipTitle: '',
+          industry: '',
+          internshipSeason: 'Summer', // Default to summer
+          internshipYear: new Date().getFullYear(), // Default to current year
+        }
+      : {
+          company: '',
+          title: '',
+          industry: '',
+        }
+  );
 
   const [isFormValid, setIsFormValid] = useState(false);
   const [activeField, setActiveField] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Different validation based on user type
   useEffect(() => {
-    setIsFormValid(
-      formData.company.trim() !== '' && formData.title.trim() !== '' && formData.industry !== ''
-    );
-  }, [formData]);
+    if (isIntern) {
+      setIsFormValid(
+        formData.internshipCompany?.trim() !== '' &&
+          formData.internshipTitle?.trim() !== '' &&
+          formData.industry !== '' &&
+          formData.internshipSeason?.trim() !== '' &&
+          formData.internshipYear !== null
+      );
+    } else {
+      setIsFormValid(
+        formData.company?.trim() !== '' && formData.title?.trim() !== '' && formData.industry !== ''
+      );
+    }
+  }, [formData, isIntern]);
 
   const updateOnboardingData = useMutation({
     mutationFn: (workData: IncompleteUserOnboarding) => {
+      // Prepare data differently based on user type
       const data: IncompleteUserOnboarding = {
         ...previousData,
-        company: workData.company,
-        title: workData.title,
-        industry: workData.industry,
+        ...workData,
       };
       return Promise.resolve(data);
     },
@@ -48,16 +70,18 @@ const Step2Work: FC = () => {
   });
 
   useEffect(() => {
-    if (!previousData || previousData.postGradType !== PostGradType.work) {
+    const validPostGradType = isIntern ? PostGradType.internship : PostGradType.work;
+    if (!previousData || previousData.postGradType !== validPostGradType) {
       router.push('/onboarding/step1');
     }
-  }, [previousData, router]);
+  }, [previousData, router, isIntern]);
 
   useEffect(() => {
     router.prefetch('/onboarding/step3');
   }, [router]);
 
-  if (!previousData || previousData.postGradType !== PostGradType.work) {
+  const validPostGradType = isIntern ? PostGradType.internship : PostGradType.work;
+  if (!previousData || previousData.postGradType !== validPostGradType) {
     return null;
   }
 
@@ -108,10 +132,12 @@ const Step2Work: FC = () => {
 
         <motion.div className="text-center mb-10 mt-4" variants={itemVariants}>
           <h1 className="text-3xl md:text-4xl font-bold text-[#333333] mb-4">
-            Tell us about your job
+            {isIntern ? 'Tell us about your internship' : 'Tell us about your job'}
           </h1>
           <p className="text-lg md:text-xl text-[#666666]">
-            Share details about your upcoming role
+            {isIntern
+              ? 'Share details about your upcoming summer experience'
+              : 'Share details about your upcoming role'}
           </p>
         </motion.div>
 
@@ -119,25 +145,32 @@ const Step2Work: FC = () => {
           <div className="space-y-6">
             <motion.div variants={itemVariants}>
               <label
-                htmlFor="company"
+                htmlFor={isIntern ? 'internshipCompany' : 'company'}
                 className="flex items-center text-sm font-medium text-[#333333] mb-2"
               >
                 <BsBuilding className="mr-2 text-[#F28B82]" />
-                Company
+                {isIntern ? 'Internship Company' : 'Company'}
               </label>
               <motion.div
                 variants={inputVariants}
-                animate={activeField === 'company' ? 'focus' : 'blur'}
+                animate={
+                  activeField === (isIntern ? 'internshipCompany' : 'company') ? 'focus' : 'blur'
+                }
               >
                 <input
                   type="text"
-                  id="company"
-                  value={formData.company}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, company: e.target.value }))}
-                  onFocus={() => setActiveField('company')}
+                  id={isIntern ? 'internshipCompany' : 'company'}
+                  value={isIntern ? formData.internshipCompany : formData.company}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      [isIntern ? 'internshipCompany' : 'company']: e.target.value,
+                    }))
+                  }
+                  onFocus={() => setActiveField(isIntern ? 'internshipCompany' : 'company')}
                   onBlur={() => setActiveField(null)}
                   className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-[#F9C5D1] focus:ring-2 focus:ring-[#F9C5D1]/20 outline-none transition-all text-[#333333]"
-                  placeholder="e.g. Stripe"
+                  placeholder={isIntern ? 'e.g. Google' : 'e.g. Stripe'}
                   required
                 />
               </motion.div>
@@ -145,25 +178,32 @@ const Step2Work: FC = () => {
 
             <motion.div variants={itemVariants}>
               <label
-                htmlFor="role"
+                htmlFor={isIntern ? 'internshipTitle' : 'role'}
                 className="flex items-center text-sm font-medium text-[#333333] mb-2"
               >
                 <BsPerson className="mr-2 text-[#F28B82]" />
-                Role
+                {isIntern ? 'Internship Title' : 'Role'}
               </label>
               <motion.div
                 variants={inputVariants}
-                animate={activeField === 'role' ? 'focus' : 'blur'}
+                animate={activeField === (isIntern ? 'internshipTitle' : 'role') ? 'focus' : 'blur'}
               >
                 <input
                   type="text"
-                  id="role"
-                  value={formData.title}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, title: e.target.value }))}
-                  onFocus={() => setActiveField('role')}
+                  id={isIntern ? 'internshipTitle' : 'role'}
+                  value={isIntern ? formData.internshipTitle : formData.title}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      [isIntern ? 'internshipTitle' : 'title']: e.target.value,
+                    }))
+                  }
+                  onFocus={() => setActiveField(isIntern ? 'internshipTitle' : 'role')}
                   onBlur={() => setActiveField(null)}
                   className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-[#F9C5D1] focus:ring-2 focus:ring-[#F9C5D1]/20 outline-none transition-all text-[#333333]"
-                  placeholder="e.g. Software Engineer"
+                  placeholder={
+                    isIntern ? 'e.g. Software Engineering Intern' : 'e.g. Software Engineer'
+                  }
                   required
                 />
               </motion.div>
@@ -199,6 +239,79 @@ const Step2Work: FC = () => {
                 </select>
               </motion.div>
             </motion.div>
+
+            {isIntern && (
+              <>
+                <motion.div variants={itemVariants}>
+                  <label
+                    htmlFor="internshipSeason"
+                    className="flex items-center text-sm font-medium text-[#333333] mb-2"
+                  >
+                    <BsCalendar className="mr-2 text-[#F28B82]" />
+                    Season
+                  </label>
+                  <motion.div
+                    variants={inputVariants}
+                    animate={activeField === 'internshipSeason' ? 'focus' : 'blur'}
+                  >
+                    <select
+                      id="internshipSeason"
+                      value={formData.internshipSeason}
+                      onChange={(e) =>
+                        setFormData((prev) => ({ ...prev, internshipSeason: e.target.value }))
+                      }
+                      onFocus={() => setActiveField('internshipSeason')}
+                      onBlur={() => setActiveField(null)}
+                      className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-[#F9C5D1] focus:ring-2 focus:ring-[#F9C5D1]/20 outline-none transition-all cursor-pointer hover:border-[#F9C5D1]/50 text-[#333333]"
+                      required
+                    >
+                      <option value="Summer">Summer</option>
+                      <option value="Fall">Fall</option>
+                      <option value="Winter">Winter</option>
+                      <option value="Spring">Spring</option>
+                    </select>
+                  </motion.div>
+                </motion.div>
+
+                <motion.div variants={itemVariants}>
+                  <label
+                    htmlFor="internshipYear"
+                    className="flex items-center text-sm font-medium text-[#333333] mb-2"
+                  >
+                    <BsCalendar className="mr-2 text-[#F28B82]" />
+                    Year
+                  </label>
+                  <motion.div
+                    variants={inputVariants}
+                    animate={activeField === 'internshipYear' ? 'focus' : 'blur'}
+                  >
+                    <select
+                      id="internshipYear"
+                      value={formData.internshipYear}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          internshipYear: parseInt(e.target.value),
+                        }))
+                      }
+                      onFocus={() => setActiveField('internshipYear')}
+                      onBlur={() => setActiveField(null)}
+                      className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-[#F9C5D1] focus:ring-2 focus:ring-[#F9C5D1]/20 outline-none transition-all cursor-pointer hover:border-[#F9C5D1]/50 text-[#333333]"
+                      required
+                    >
+                      {[...Array(3)].map((_, i) => {
+                        const year = new Date().getFullYear() + i;
+                        return (
+                          <option key={year} value={year}>
+                            {year}
+                          </option>
+                        );
+                      })}
+                    </select>
+                  </motion.div>
+                </motion.div>
+              </>
+            )}
           </div>
 
           <motion.div className="flex justify-between items-center pt-4" variants={itemVariants}>

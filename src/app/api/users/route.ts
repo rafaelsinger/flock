@@ -20,11 +20,16 @@ export const GET = async (request: NextRequest) => {
       | 'school'
       | 'all'
       | 'seeking'
-      | undefined; //TODO: should be PostGradType
+      | 'internship'
+      | undefined;
+    const userType = searchParams.get('userType') as 'grad' | 'intern' | undefined;
     const country = searchParams.get('country') || '';
     const state = searchParams.get('state') || '';
     const city = searchParams.get('city') || '';
     const industry = searchParams.get('industry') || '';
+    const classYear = searchParams.get('classYear') || '';
+    const internshipYear = searchParams.get('internshipYear') || '';
+    const internshipSeason = searchParams.get('internshipSeason') || '';
     const lookingForRoommate = searchParams.get('lookingForRoommate') === 'true';
     const isOnboarded = searchParams.has('isOnboarded')
       ? Boolean(JSON.parse(searchParams.get('isOnboarded')!))
@@ -32,6 +37,13 @@ export const GET = async (request: NextRequest) => {
 
     // Calculate skip for pagination
     const skip = (page - 1) * limit;
+
+    // Filter users based on the requesting user's profile
+    // Interns can only see other interns from their class year
+    let classYearFilter = {};
+    if (session.user && session.user.userType === 'intern' && session.user.classYear) {
+      classYearFilter = { classYear: { equals: session.user.classYear } };
+    }
 
     // Start building where clause with basic visibility requirements
     const where: Prisma.UserWhereInput = {
@@ -45,13 +57,21 @@ export const GET = async (request: NextRequest) => {
                 { location: { state: { contains: search, mode: 'insensitive' as const } } },
                 { company: { contains: search, mode: 'insensitive' as const } },
                 { school: { contains: search, mode: 'insensitive' as const } },
+                { internshipCompany: { contains: search, mode: 'insensitive' as const } },
               ],
             }
           : {},
+        // User type filter
+        userType ? { userType } : {},
         // Post grad type filter
-        postGradType === 'work' || postGradType === 'school'
+        postGradType === 'work' || postGradType === 'school' || postGradType === 'internship'
           ? { postGradType }
           : { postGradType: { not: PostGradType.seeking } },
+        // Class year filter - when explicitly requested or for intern restrictions
+        classYear ? { classYear: { equals: parseInt(classYear) } } : classYearFilter,
+        // Internship specific filters
+        internshipYear ? { internshipYear: { equals: parseInt(internshipYear) } } : {},
+        internshipSeason ? { internshipSeason: { equals: internshipSeason } } : {},
         // Location filters
         country ? { location: { country } } : {},
         state ? { location: { state } } : {},
@@ -79,6 +99,7 @@ export const GET = async (request: NextRequest) => {
       select: {
         id: true,
         name: true,
+        userType: true,
         location: {
           select: {
             city: true,
@@ -89,6 +110,11 @@ export const GET = async (request: NextRequest) => {
         company: true,
         school: true,
         postGradType: true,
+        classYear: true,
+        internshipCompany: true,
+        internshipTitle: true,
+        internshipSeason: true,
+        internshipYear: true,
         lookingForRoommate: true,
         visibilityOptions: true,
         industry: {

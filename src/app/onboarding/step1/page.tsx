@@ -4,8 +4,9 @@ import { FC, useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { BsBriefcase } from 'react-icons/bs';
 import { LuGraduationCap } from 'react-icons/lu';
+import { MdOutlineScience } from 'react-icons/md';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { PostGradType } from '@prisma/client';
+import { PostGradType, UserType } from '@prisma/client';
 import { IncompleteUserOnboarding, UserWithLocation } from '@/types/user';
 import { motion } from 'framer-motion';
 import { OnboardingProgress } from '@/components';
@@ -21,6 +22,7 @@ const Step1: FC = () => {
   const previousData = queryClient.getQueryData(['onboardingData']) as IncompleteUserOnboarding;
   const isFinalizingRef = useRef(false);
   const [localClassYear, setLocalClassYear] = useState<number | null>(null);
+  const isIntern = previousData?.userType === UserType.intern;
 
   // Check immediately if classYear exists, before rendering content
   useEffect(() => {
@@ -65,16 +67,25 @@ const Step1: FC = () => {
 
   const updateOnboardingData = useMutation({
     mutationFn: (type: PostGradType) => {
+      // If user is an intern and selects work, set postGradType to internship
+      const finalType = isIntern && type === PostGradType.work ? PostGradType.internship : type;
+
       const data: IncompleteUserOnboarding = {
         ...previousData,
-        postGradType: type,
+        postGradType: finalType,
       };
       return Promise.resolve(data);
     },
     onSuccess: (data) => {
       if (!isFinalizingRef.current) {
         queryClient.setQueryData(['onboardingData'], data);
-        router.push(`/onboarding/step2-${data.postGradType}`);
+
+        // Always direct interns to step2-work regardless of selection
+        if (isIntern && data.postGradType === PostGradType.internship) {
+          router.push('/onboarding/step2-work');
+        } else {
+          router.push(`/onboarding/step2-${data.postGradType}`);
+        }
       }
     },
   });
@@ -136,6 +147,7 @@ const Step1: FC = () => {
 
       // Use either previously stored data or local class year
       const classYear = previousData?.classYear || localClassYear;
+      const userType = previousData?.userType || UserType.grad;
 
       if (!classYear) {
         console.error('Missing classYear data. Redirecting to step0');
@@ -147,6 +159,7 @@ const Step1: FC = () => {
       const dataToSubmit: IncompleteUserOnboarding = {
         ...(previousData || {}),
         classYear,
+        userType,
         postGradType: type,
         isOnboarded: true,
       };
@@ -163,9 +176,11 @@ const Step1: FC = () => {
 
   useEffect(() => {
     router.prefetch('/onboarding/step2-work');
-    router.prefetch('/onboarding/step2-school');
+    if (!isIntern) {
+      router.prefetch('/onboarding/step2-school');
+    }
     router.prefetch('/');
-  }, [router]);
+  }, [router, isIntern]);
 
   // If loading, return either null or a simple loading indicator to prevent flash
   if (isLoading) {
@@ -189,6 +204,17 @@ const Step1: FC = () => {
     visible: { opacity: 1, y: 0 },
   };
 
+  // Update heading and description based on user type
+  const getHeadingText = () => {
+    return isIntern ? 'What will you be doing this summer?' : "What's next for you?";
+  };
+
+  const getDescriptionText = () => {
+    return isIntern
+      ? 'Let us know your plans for the summer'
+      : "Let us know what you'll be doing after graduation";
+  };
+
   return (
     <motion.div
       className="min-h-[calc(100vh-100px)] flex flex-col justify-center px-4 py-12 max-w-4xl mx-auto"
@@ -207,12 +233,8 @@ const Step1: FC = () => {
         <OnboardingProgress currentStep={2} totalSteps={6} />
 
         <motion.div className="text-center mb-10 mt-4" variants={itemVariants}>
-          <h1 className="text-3xl md:text-4xl font-bold text-[#333333] mb-4">
-            What&apos;s next for you?
-          </h1>
-          <p className="text-lg md:text-xl text-[#666666]">
-            Let us know what you&apos;ll be doing after graduation
-          </p>
+          <h1 className="text-3xl md:text-4xl font-bold text-[#333333] mb-4">{getHeadingText()}</h1>
+          <p className="text-lg md:text-xl text-[#666666]">{getDescriptionText()}</p>
         </motion.div>
 
         <div className="flex flex-col gap-5">
@@ -236,40 +258,74 @@ const Step1: FC = () => {
                 >
                   <BsBriefcase className="text-[#F28B82] text-2xl" />
                 </div>
-                <h2 className="text-xl font-medium text-[#333333] mb-2">I&apos;m starting work</h2>
+                <h2 className="text-xl font-medium text-[#333333] mb-2">
+                  {isIntern ? 'Summer internship or job' : "I'm starting work"}
+                </h2>
                 <p className="text-sm text-[#666666] text-center">
-                  I&apos;ll be joining a company or starting my own venture
+                  {isIntern
+                    ? "I'll be interning or working at a company this summer"
+                    : "I'll be joining a company or starting my own venture"}
                 </p>
               </div>
             </motion.button>
 
-            <motion.button
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => handleSelection(PostGradType.school)}
-              disabled={isSubmitting}
-              className={`p-6 md:p-8 cursor-pointer border-2 rounded-xl transition-all h-full ${
-                selectedOption === PostGradType.school
-                  ? 'border-[#A7D7F9] bg-gradient-to-br from-[#A7D7F9]/10 to-[#A7D7F9]/5 shadow-md ring-2 ring-[#A7D7F9]/20'
-                  : 'border-[#A7D7F9]/60 hover:border-[#A7D7F9] hover:bg-[#A7D7F9]/5 hover:shadow-sm'
-              }`}
-            >
-              <div className="flex flex-col items-center">
-                <div
-                  className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 transition-colors ${
-                    selectedOption === PostGradType.school ? 'bg-[#A7D7F9]/20' : 'bg-[#A7D7F9]/10'
-                  }`}
-                >
-                  <LuGraduationCap className="text-[#A7D7F9] text-2xl" />
+            {!isIntern ? (
+              <motion.button
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => handleSelection(PostGradType.school)}
+                disabled={isSubmitting}
+                className={`p-6 md:p-8 cursor-pointer border-2 rounded-xl transition-all h-full ${
+                  selectedOption === PostGradType.school
+                    ? 'border-[#A7D7F9] bg-gradient-to-br from-[#A7D7F9]/10 to-[#A7D7F9]/5 shadow-md ring-2 ring-[#A7D7F9]/20'
+                    : 'border-[#A7D7F9]/60 hover:border-[#A7D7F9] hover:bg-[#A7D7F9]/5 hover:shadow-sm'
+                }`}
+              >
+                <div className="flex flex-col items-center">
+                  <div
+                    className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 transition-colors ${
+                      selectedOption === PostGradType.school ? 'bg-[#A7D7F9]/20' : 'bg-[#A7D7F9]/10'
+                    }`}
+                  >
+                    <LuGraduationCap className="text-[#A7D7F9] text-2xl" />
+                  </div>
+                  <h2 className="text-xl font-medium text-[#333333] mb-2">
+                    I&apos;m continuing school
+                  </h2>
+                  <p className="text-sm text-[#666666] text-center">
+                    I&apos;ll be pursuing further education or research
+                  </p>
                 </div>
-                <h2 className="text-xl font-medium text-[#333333] mb-2">
-                  I&apos;m continuing school
-                </h2>
-                <p className="text-sm text-[#666666] text-center">
-                  I&apos;ll be pursuing further education or research
-                </p>
-              </div>
-            </motion.button>
+              </motion.button>
+            ) : (
+              <motion.button
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => handleSelection(PostGradType.work)}
+                disabled={isSubmitting}
+                className={`p-6 md:p-8 cursor-pointer border-2 rounded-xl transition-all h-full ${
+                  selectedOption === PostGradType.work && selectedOption === 'research'
+                    ? 'border-[#A7D7F9] bg-gradient-to-br from-[#A7D7F9]/10 to-[#A7D7F9]/5 shadow-md ring-2 ring-[#A7D7F9]/20'
+                    : 'border-[#A7D7F9]/60 hover:border-[#A7D7F9] hover:bg-[#A7D7F9]/5 hover:shadow-sm'
+                }`}
+              >
+                <div className="flex flex-col items-center">
+                  <div
+                    className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 transition-colors ${
+                      selectedOption === PostGradType.work && selectedOption === 'research'
+                        ? 'bg-[#A7D7F9]/20'
+                        : 'bg-[#A7D7F9]/10'
+                    }`}
+                  >
+                    <MdOutlineScience className="text-[#A7D7F9] text-2xl" />
+                  </div>
+                  <h2 className="text-xl font-medium text-[#333333] mb-2">Summer research</h2>
+                  <p className="text-sm text-[#666666] text-center">
+                    I&apos;ll be conducting research with a professor or at a lab
+                  </p>
+                </div>
+              </motion.button>
+            )}
 
             <motion.button
               whileHover={{ scale: 1.02 }}
