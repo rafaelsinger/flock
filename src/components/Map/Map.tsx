@@ -3,12 +3,13 @@ import * as React from 'react';
 import { Map as MapGL, Source, Layer, Marker, LayerProps, MapRef } from 'react-map-gl/maplibre';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { useQuery } from '@tanstack/react-query';
-import { scaleQuantize } from 'd3-scale';
 import { Plus, Minus } from 'lucide-react';
 import center from '@turf/center';
 import { STATE_NAME_TO_ABBREV } from '@/constants/location';
 import type { PropertyValueSpecification } from 'maplibre-gl';
 import { Legend } from './Legend';
+import * as d3 from 'd3';
+import { getCustomBuckets } from '@/lib/utils';
 
 // Types
 interface LocationData {
@@ -135,15 +136,28 @@ export const FlockMap: React.FC<FlockMapProps> = ({ onCitySelect }) => {
   }, []);
 
   const maxValue =
-    Object.values(locationData || {}).reduce((max, value) => Math.max(max, value), 0) || 45;
+    Object.values(locationData || {}).reduce((max, value) => Math.max(max, value), 0) || 1;
 
-  const colorScale = scaleQuantize<string>()
-    .domain([0, maxValue])
-    .range(['#fef0d9', '#fdcc8a', '#fc8d59', '#e34a33', '#b30000']);
+  const thresholds = getCustomBuckets(maxValue);
+
+  // Match colors to number of bins
+  const colorSchemes: { [key: number]: string[] } = {
+    2: ['#fb6a4a', '#de2d26'],
+    3: ['#fc9272', '#fb6a4a', '#de2d26'],
+    4: ['#fc9272', '#fb6a4a', '#de2d26', '#a50f15'],
+    5: ['#fee0d2', '#fc9272', '#fb6a4a', '#de2d26', '#a50f15'],
+  };
+
+  const colorRange = colorSchemes[thresholds.length] || colorSchemes[5];
+
+  const colorScale = d3
+    .scaleThreshold<number, string>()
+    .domain(thresholds.slice(0, -1))
+    .range(colorRange);
 
   const fillColorExpression = React.useMemo(() => {
     if (!locationData || selectedState) {
-      return ['match', ['get', 'name'], '#EEE'] as unknown as PropertyValueSpecification<string>;
+      return ['match', ['get', 'name'], '#cccccc'] as unknown as PropertyValueSpecification<string>;
     }
 
     const pairs = Object.entries(locationData)
@@ -154,7 +168,7 @@ export const FlockMap: React.FC<FlockMapProps> = ({ onCitySelect }) => {
       'match',
       ['get', 'name'],
       ...pairs,
-      '#EEE', // default color
+      '#cccccc', // fallback for "no data"
     ] as unknown as PropertyValueSpecification<string>;
   }, [locationData, selectedState, colorScale]);
 
@@ -228,19 +242,6 @@ export const FlockMap: React.FC<FlockMapProps> = ({ onCitySelect }) => {
     },
     [locationData]
   );
-
-  console.log({ locationData });
-
-  // Calculate thresholds for state legend
-  const thresholds = React.useMemo(() => {
-    if (!maxValue) return [0, 0, 0, 0];
-    return [
-      Math.ceil(maxValue * 0.25),
-      Math.ceil(maxValue * 0.5),
-      Math.ceil(maxValue * 0.75),
-      maxValue,
-    ];
-  }, [maxValue]);
 
   return (
     <div className={`w-full h-full relative ${zoomedIn ? 'bg-gray-50' : 'bg-[#F9F9F9]'}`}>
@@ -381,11 +382,7 @@ export const FlockMap: React.FC<FlockMapProps> = ({ onCitySelect }) => {
         <div className="text-sm font-semibold text-[#111111] mb-3">
           {selectedState ? `${selectedState} City Graduates` : 'State Graduates'}
         </div>
-        {showSkeleton ? (
-          renderLegendSkeleton()
-        ) : (
-          <Legend thresholds={thresholds} colorScale={colorScale} max={maxValue} />
-        )}
+        {showSkeleton ? renderLegendSkeleton() : <Legend colorScale={colorScale} />}
       </div>
 
       {/* Back Button */}

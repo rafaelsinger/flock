@@ -79,7 +79,7 @@ export const DirectoryContent: React.FC<DirectoryContentProps> = ({
       if (postGradType && postGradType !== 'all') {
         params.postGradType = postGradType;
       }
-
+      console.log({ filters });
       // Add location filters
       if (filters.country) {
         params.country = filters.country;

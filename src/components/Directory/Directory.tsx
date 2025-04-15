@@ -82,7 +82,7 @@ export const Directory = () => {
       ...prev,
       city,
       state,
-      country: 'USA',
+      country: 'United States',
     }));
     if (city) {
       setTimeout(() => {

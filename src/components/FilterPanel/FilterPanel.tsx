@@ -227,7 +227,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
                   >
                     <option value="">All Countries</option>
                     {COUNTRIES.map(({ value, label }) => (
-                      <option key={value} value={value}>
+                      <option key={value} value={label}>
                         {label}
                       </option>
                     ))}

@@ -1,28 +1,32 @@
-import React from 'react';
+import * as d3 from 'd3';
 
 interface LegendProps {
-  thresholds: number[];
-  colorScale: (value: number) => string;
-  max: number;
+  colorScale: d3.ScaleThreshold<number, string>;
 }
 
-export const Legend: React.FC<LegendProps> = ({ thresholds, colorScale, max }) => {
-  const bins = [0, ...thresholds, max];
+export const Legend: React.FC<LegendProps> = ({ colorScale }) => {
+  const thresholds = colorScale.domain();
+  const range = colorScale.range();
+
+  const bins = range.map((color, i) => {
+    const from = i === 0 ? 0 : thresholds[i - 1];
+    const to = thresholds[i];
+    const label = to === undefined ? `${from}+` : from === to - 1 ? `${from}` : `${from}–${to - 1}`;
+    return { color, label };
+  });
 
   return (
-    <div className="legend-section">
+    <div className="legend-section bg-gray-50 p-2 rounded border text-xs shadow-sm">
       <div className="flex flex-col gap-1">
-        {bins.slice(0, -1).map((start, i) => {
-          const end = bins[i + 1];
-          const label = start === end ? `${start}` : `${start + 1}–${end}`;
-          const color = colorScale(start + 1);
-          return (
-            <div key={i} className="flex items-center gap-2 text-[#333]">
-              <div className="w-4 h-4 rounded-sm" style={{ backgroundColor: color }} />
-              <span>{label}</span>
-            </div>
-          );
-        })}
+        {bins.map(({ color, label }, i) => (
+          <div key={i} className="flex items-center gap-2 text-[#333]">
+            <div
+              className="w-4 h-4 rounded-sm border border-gray-300"
+              style={{ backgroundColor: color }}
+            />
+            <span>{label}</span>
+          </div>
+        ))}
       </div>
     </div>
   );

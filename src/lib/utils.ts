@@ -68,3 +68,12 @@ export const stateAbbreviationToName: Record<string, string> = {
 export const getStateFullName = (abbreviation: string): string => {
   return stateAbbreviationToName[abbreviation.toUpperCase()] || abbreviation;
 };
+
+export function getCustomBuckets(max: number): number[] {
+  if (max <= 2) return [1, 2, 3]; // 3 bins: 0, 1, 2+
+  if (max <= 5) return [1, 3, 5]; // 3 bins: 0, 1–2, 3–4, 5+
+  if (max <= 10) return [1, 3, 6, 10]; // 4 bins
+  if (max <= 25) return [5, 10, 15, 25]; // 4 bins
+  if (max <= 100) return [10, 25, 50, 100]; // 4 bins
+  return [10, 50, 100, 250, max]; // 5 bins
+}
