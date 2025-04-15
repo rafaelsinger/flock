@@ -69,7 +69,7 @@ export const Header = ({ transparent = false }: HeaderProps) => {
           >
             {/* Background animation */}
             <div className="absolute inset-0 w-full h-full bg-white/20 -translate-x-full hover:translate-x-full transition-transform duration-1000 ease-in-out transform skew-x-12 z-0"></div>
-            <span className="relative z-10">Sign in with BC Email</span>
+            <span className="relative z-10">Continue with BC Email</span>
             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform relative z-10" />
           </Button>
         </div>

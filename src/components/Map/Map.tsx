@@ -274,7 +274,7 @@ export const FlockMap: React.FC<FlockMapProps> = ({ onCitySelect }) => {
         {...viewState}
         ref={mapRef}
         style={{ width: '100%', height: '100%' }}
-        mapStyle={`https://api.maptiler.com/maps/streets/style.json?key=OSNs9Q0u9qOO5KUhz2WB`}
+        mapStyle={`https://api.maptiler.com/maps/streets/style.json?key=${process.env.NEXT_PUBLIC_MAPTILER_KEY}`}
         cursor={hoveredStateId !== null ? 'pointer' : 'grab'}
         onMove={(evt) => {
           setViewState((prev) => ({
@@ -430,7 +430,7 @@ export const FlockMap: React.FC<FlockMapProps> = ({ onCitySelect }) => {
               });
             }
           }}
-          className="absolute top-4 right-4 p-2 bg-white rounded-lg shadow-md border hover:bg-gray-50 transition z-10 text-[#333]"
+          className={`absolute top-4 right-16 p-2 bg-white rounded-lg shadow-md border hover:bg-gray-50 transition z-10 text-[#333]`}
         >
           Back to USA
         </button>
@@ -438,7 +438,7 @@ export const FlockMap: React.FC<FlockMapProps> = ({ onCitySelect }) => {
 
       <button
         onClick={toggleFullscreen}
-        className="absolute top-4 right-16 p-2 bg-white rounded-lg shadow-md border hover:bg-gray-50 transition z-10 text-[#333]"
+        className={`absolute top-4 p-2 bg-white rounded-lg shadow-md border hover:bg-gray-50 transition z-10 text-[#333] right-4`}
       >
         {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
       </button>

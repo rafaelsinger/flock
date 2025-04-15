@@ -196,7 +196,7 @@ export const LandingPage = () => {
                     size="large"
                     className="w-full sm:w-auto bg-[#F28B82] hover:bg-[#F28B82]/90 hover:translate-y-[-2px] text-white shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2 group py-4 px-8 text-lg"
                   >
-                    <span>Start with BC Email</span>
+                    <span>Continue with BC Email</span>
                     <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                   </Button>
                 </div>
