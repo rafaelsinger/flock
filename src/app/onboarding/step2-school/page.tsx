@@ -21,7 +21,6 @@ const Step2School: FC = () => {
   const [formData, setFormData] = useState({
     school: '',
     program: '',
-    programType: '',
     discipline: '',
   });
 
@@ -33,7 +32,8 @@ const Step2School: FC = () => {
       const data: IncompleteUserOnboarding = {
         ...previousData,
         school: schoolData.school,
-        program: program,
+        program: schoolData.program,
+        discipline: schoolData.discipline,
       };
       return Promise.resolve(data);
     },
@@ -54,7 +54,7 @@ const Step2School: FC = () => {
     setIsFormValid(
       Boolean(formData.school?.trim()) &&
         Boolean(formData.discipline?.trim()) &&
-        Boolean(formData.programType?.trim())
+        Boolean(formData.program?.trim())
     );
   }, [formData]);
 
@@ -125,7 +125,7 @@ const Step2School: FC = () => {
 
           <motion.div variants={itemVariants}>
             <label
-              htmlFor="programType"
+              htmlFor="program"
               className="flex items-center text-sm font-medium text-[#333333] mb-2"
             >
               <HiOutlineAcademicCap className="mr-2 text-[#7BC0F5]" />
@@ -133,13 +133,13 @@ const Step2School: FC = () => {
             </label>
             <motion.div
               variants={inputVariants}
-              animate={activeField === 'programType' ? 'focus' : 'blur'}
-              onFocus={() => setActiveField('programType')}
+              animate={activeField === 'program' ? 'focus' : 'blur'}
+              onFocus={() => setActiveField('program')}
               onBlur={() => setActiveField(null)}
             >
               <ProgramTypeSelect
-                value={formData.programType}
-                onChange={(programType) => setFormData((prev) => ({ ...prev, programType }))}
+                value={formData.program}
+                onChange={(program) => setFormData((prev) => ({ ...prev, program }))}
               />
             </motion.div>
           </motion.div>

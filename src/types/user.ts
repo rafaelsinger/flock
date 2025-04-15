@@ -10,6 +10,7 @@ export type CreateUser = {
   isOnboarded: boolean;
   title?: string | null;
   program?: string | null;
+  discipline?: string | null;
   company?: string | null;
   school?: string | null;
   classYear: number;

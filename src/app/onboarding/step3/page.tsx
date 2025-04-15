@@ -25,6 +25,7 @@ const Step3: FC = () => {
   });
 
   const [isFormValid, setIsFormValid] = useState(false);
+  const [activeField, setActiveField] = useState<string | null>(null);
 
   useEffect(() => {
     setIsFormValid(

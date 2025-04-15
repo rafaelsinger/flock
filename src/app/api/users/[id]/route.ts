@@ -81,6 +81,7 @@ export async function PUT(request: Request, context: { params: { id: string } })
         postGradType: userData.postGradType,
         title: userData.title,
         program: userData.program,
+        discipline: userData.discipline,
         company: userData.company,
         school: userData.school,
         isOnboarded: userData.isOnboarded,
