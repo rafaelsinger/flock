@@ -13,18 +13,28 @@ interface LocationData {
   [location: string]: number; // states or cities
 }
 
+interface CityCoordinates {
+  [city: string]: [number, number];
+}
+
+interface LocationResponse {
+  locations: LocationData;
+  coordinates: CityCoordinates;
+}
+
+// Type guard
+function isLocationResponse(data: unknown): data is LocationResponse {
+  return (
+    data !== null &&
+    typeof data === 'object' &&
+    data !== null &&
+    'locations' in data &&
+    'coordinates' in data
+  );
+}
+
 const stateGeoUrl =
   'https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/geojson/us-states.json';
-
-// Mock city coordinates for demo
-const CITY_COORDINATES: { [city: string]: [number, number] } = {
-  'Los Angeles': [-118.2437, 34.0522],
-  'San Francisco': [-122.4194, 37.7749],
-  'San Diego': [-117.1611, 32.7157],
-  Sacramento: [-121.4944, 38.5816],
-  Fresno: [-119.7871, 36.7378],
-  Oakland: [-122.2712, 37.8044],
-};
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const layerStyle = (colorExpression: any): LayerProps => ({
@@ -78,7 +88,9 @@ export const FlockMap: React.FC<FlockMapProps> = ({ onCitySelect }) => {
   const [zoomedIn, setZoomedIn] = React.useState(false);
   const [mapLoaded, setMapLoaded] = React.useState(false);
 
-  const { data: locationData, isLoading } = useQuery<LocationData>({
+  const [cityCoordinates, setCityCoordinates] = React.useState<CityCoordinates>({});
+
+  const { data: apiResponse, isLoading } = useQuery({
     queryKey: ['locationData', selectedState],
     queryFn: async () => {
       if (!selectedState) {
@@ -86,23 +98,33 @@ export const FlockMap: React.FC<FlockMapProps> = ({ onCitySelect }) => {
         if (!response.ok) throw new Error('Failed to fetch location data');
         return response.json();
       } else {
-        // TODO: replace with actual API call
-        // Fetch city-level data (mocked here)
-        // const response = await fetch(`/api/users/locations?state=${selectedState}`);
-        // if (!response.ok) throw new Error('Failed to fetch city data');
-        // return response.json();
-        return {
-          'Los Angeles': 400,
-          'San Francisco': 320,
-          'San Diego': 250,
-          Sacramento: 150,
-          Fresno: 100,
-          Oakland: 90,
-        };
+        const response = await fetch(
+          `/api/users/locations?state=${STATE_NAME_TO_ABBREV[selectedState]}`
+        );
+        if (!response.ok) throw new Error('Failed to fetch city data');
+        return response.json();
       }
     },
     enabled: true,
   });
+
+  // Process the API response data
+  React.useEffect(() => {
+    if (apiResponse) {
+      if (isLocationResponse(apiResponse)) {
+        setCityCoordinates(apiResponse.coordinates);
+      }
+    }
+  }, [apiResponse]);
+
+  // Extract the location data from the response
+  const locationData: LocationData = React.useMemo(() => {
+    if (!apiResponse) return {};
+    if (isLocationResponse(apiResponse)) {
+      return apiResponse.locations;
+    }
+    return apiResponse as LocationData;
+  }, [apiResponse]);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [geoJson, setGeoJson] = React.useState<any>(null);
@@ -130,18 +152,66 @@ export const FlockMap: React.FC<FlockMapProps> = ({ onCitySelect }) => {
   ];
 
   const getLegendData = () => {
-    const step = Math.ceil(maxValue / 5);
-    const buildRange = (start: number, end: number) => {
-      return start === end ? `${start}` : `${start}-${end}`;
-    };
+    // If all values are 0, show a simplified legend
+    if (maxValue === 0) {
+      return [{ range: 'No data', color: '#EEE' }];
+    }
 
-    return [
-      { range: buildRange(0, step), color: '#fef0d9' },
-      { range: buildRange(step + 1, 2 * step), color: '#fdcc8a' },
-      { range: buildRange(2 * step + 1, 3 * step), color: '#fc8d59' },
-      { range: buildRange(3 * step + 1, 4 * step), color: '#e34a33' },
-      { range: `${4 * step + 1}+`, color: '#b30000' }, // 5th bucket is always open-ended
-    ];
+    const colorRange = colorScale.range();
+
+    // For state view, use 5 evenly distributed ranges
+    if (!selectedState) {
+      const step = Math.ceil(maxValue / 5);
+      return [
+        { range: `0-${step}`, color: colorRange[0] },
+        { range: `${step + 1}-${2 * step}`, color: colorRange[1] },
+        { range: `${2 * step + 1}-${3 * step}`, color: colorRange[2] },
+        { range: `${3 * step + 1}-${4 * step}`, color: colorRange[3] },
+        { range: `${4 * step + 1}+`, color: colorRange[4] },
+      ];
+    }
+
+    // For city view, use quantile based ranges but filter out empty ones
+    const thresholds = colorScale.thresholds();
+
+    // Get unique values and sort them
+    const uniqueValues = [...new Set(Object.values(locationData))].sort((a, b) => a - b);
+
+    // If there are very few unique values, create a simplified legend
+    if (uniqueValues.length <= 3) {
+      return uniqueValues.map((value) => ({
+        range: `${value}`,
+        color: colorScale(value),
+      }));
+    }
+
+    // Create ranges based on thresholds
+    const ranges = [];
+    for (let i = 0; i < colorRange.length; i++) {
+      // Get the range values
+      const min = i === 0 ? 0 : Math.floor(thresholds[i - 1]);
+      const max =
+        i === colorRange.length - 1
+          ? `${Math.floor(thresholds[i - 1])}+`
+          : Math.floor(thresholds[i]);
+
+      // Check if this range has any values in it
+      const hasValuesInRange = Object.values(locationData).some((value) => {
+        if (i === 0) return value < thresholds[0];
+        if (i === colorRange.length - 1) return value >= thresholds[i - 1];
+        return value >= thresholds[i - 1] && value < thresholds[i];
+      });
+
+      // Only add non-empty ranges
+      if (hasValuesInRange) {
+        ranges.push({
+          range: i === colorRange.length - 1 ? `${min}+` : `${min}-${max}`,
+          color: colorRange[i],
+        });
+      }
+    }
+
+    return ranges.length > 0 ? ranges : [{ range: `0-${maxValue}`, color: colorRange[2] }];
   };
 
   const legendData = getLegendData();
@@ -257,11 +327,11 @@ export const FlockMap: React.FC<FlockMapProps> = ({ onCitySelect }) => {
         {selectedState &&
           locationData &&
           Object.entries(locationData).map(([city, value]) => {
-            const coords = CITY_COORDINATES[city];
+            const coords = cityCoordinates[city];
             if (!coords) return null;
 
             const normalizedValue = Math.sqrt(value) / Math.sqrt(maxValue);
-            const bubbleSize = Math.min(50, 10 + normalizedValue * 40);
+            const bubbleSize = Math.min(50, 20 + normalizedValue * 40); // Increased minimum size
 
             return (
               <Marker key={city} longitude={coords[0]} latitude={coords[1]}>
@@ -290,11 +360,16 @@ export const FlockMap: React.FC<FlockMapProps> = ({ onCitySelect }) => {
                     height: `${bubbleSize}px`,
                     backgroundColor: colorScale(value),
                     borderRadius: '50%',
-                    opacity: 0.8,
-                    border: '1px solid #333',
-                    transform: 'translate(-50%, -50%) scale(1)',
-                    transition: 'transform 0.2s ease',
+                    opacity: hoveredCity?.city === city ? 0.9 : 0.7, // Highlight when hovered
+                    border: hoveredCity?.city === city ? '2px solid #111' : '1px solid #333',
+                    transform:
+                      hoveredCity?.city === city
+                        ? 'translate(-50%, -50%) scale(1.1)'
+                        : 'translate(-50%, -50%) scale(1)',
+                    transition: 'all 0.2s ease',
                     cursor: 'pointer',
+                    zIndex: hoveredCity?.city === city ? 200 : 100,
+                    boxShadow: hoveredCity?.city === city ? '0 0 8px rgba(0,0,0,0.3)' : 'none',
                   }}
                 />
               </Marker>
@@ -349,7 +424,7 @@ export const FlockMap: React.FC<FlockMapProps> = ({ onCitySelect }) => {
       {/* Legend */}
       <div className="absolute top-4 left-4 bg-white rounded-lg shadow-md border border-gray-100 p-3 z-10">
         <div className="text-sm font-semibold text-[#111111] mb-3">
-          {selectedState ? 'City Graduates' : 'State Graduates'}
+          {selectedState ? `${selectedState} City Graduates` : 'State Graduates'}
         </div>
         <div className="space-y-2.5">
           {showSkeleton
