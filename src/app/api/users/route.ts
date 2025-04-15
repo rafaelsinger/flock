@@ -33,8 +33,8 @@ export const GET = auth(async function GET(request: NextRequest) {
           ? {
               OR: [
                 { name: { contains: search, mode: 'insensitive' as const } },
-                { city: { contains: search, mode: 'insensitive' as const } },
-                { state: { contains: search, mode: 'insensitive' as const } },
+                { location: { city: { contains: search, mode: 'insensitive' as const } } },
+                { location: { state: { contains: search, mode: 'insensitive' as const } } },
                 { company: { contains: search, mode: 'insensitive' as const } },
                 { school: { contains: search, mode: 'insensitive' as const } },
               ],
@@ -42,12 +42,12 @@ export const GET = auth(async function GET(request: NextRequest) {
           : { OR: [] },
         // Post grad type filter
         postGradType && postGradType !== 'all' ? { postGradType } : { OR: [] },
-        // Country filter
-        country ? { country } : { OR: [] },
-        // State filter
-        state ? { state } : { OR: [] },
-        // City filter
-        city ? { city: { contains: city, mode: 'insensitive' as const } } : { OR: [] },
+        // Location filters
+        country ? { location: { country } } : { OR: [] },
+        state ? { location: { state } } : { OR: [] },
+        city
+          ? { location: { city: { contains: city, mode: 'insensitive' as const } } }
+          : { OR: [] },
         // Industry filter
         industry
           ? {
@@ -70,9 +70,13 @@ export const GET = auth(async function GET(request: NextRequest) {
       select: {
         id: true,
         name: true,
-        city: true,
-        state: true,
-        country: true,
+        location: {
+          select: {
+            city: true,
+            state: true,
+            country: true,
+          },
+        },
         company: true,
         school: true,
         postGradType: true,
@@ -103,63 +107,70 @@ export const GET = auth(async function GET(request: NextRequest) {
   }
 });
 
-export const POST = auth(async function POST(request: NextRequest) {
-  try {
-    const session = await auth();
+// think we never use this route
+// export const POST = auth(async function POST(request: NextRequest) {
+//   try {
+//     const session = await auth();
 
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+//     if (!session?.user?.id) {
+//       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+//     }
 
-    // Parse the request body
-    const userData = await request.json();
+//     // Parse the request body
+//     const userData = await request.json();
 
-    let industryId = null;
-    if (userData.postGradType === 'work') {
-      const industry = await prisma.industry.findUnique({
-        where: {
-          name: userData.work.industry,
-        },
-      });
-      industryId = industry?.id;
-    }
+//     let industryId = null;
+//     if (userData.postGradType === 'work') {
+//       const industry = await prisma.industry.findUnique({
+//         where: {
+//           name: userData.work.industry,
+//         },
+//       });
+//       industryId = industry?.id;
+//     }
 
-    // Update the existing user record instead of creating a new one
-    const updatedUser = await prisma.user.update({
-      where: {
-        id: session.user.id,
-      },
-      data: {
-        // Map onboarding data to user fields
-        name: userData.name || session.user.name,
-        city: userData.location?.city,
-        state: userData.location?.state,
-        country: userData.location?.country || 'United States',
-        postGradType: userData.postGradType,
-        // Work-specific fields
-        company: userData.postGradType === 'work' ? userData.work?.company : null,
-        title: userData.postGradType === 'work' ? userData.work?.role : null,
-        industryId: industryId,
-        // School-specific fields
-        school: userData.postGradType === 'school' ? userData.school?.name : null,
-        program: userData.postGradType === 'school' ? userData.school?.program : null,
-        // Roommate preference
-        lookingForRoommate: userData.lookingForRoommate ?? false,
-        // Visibility settings
-        visibilityOptions: {
-          showRole: userData.visibility?.showRole ?? true,
-          showProgram: userData.visibility?.showProgram ?? true,
-          showCompany: userData.visibility?.showCompany ?? true,
-          showSchool: userData.visibility?.showSchool ?? true,
-        },
-        // Mark as onboarded
-        isOnboarded: true,
-      },
-    });
+//     // Update the existing user record instead of creating a new one
+//     const updatedUser = await prisma.user.update({
+//       where: {
+//         id: session.user.id,
+//       },
+//       data: {
+//         // Map onboarding data to user fields
+//         name: userData.name || session.user.name,
+//         location: {
+//           create: {
+//             city: userData.location?.city,
+//             state: userData.location?.state,
+//             country: userData.location?.country || 'United States',
+//             latitude: userData.location?.latitude || 0,
+//             longitude: userData.location?.longitude || 0,
+//           },
+//         },
+//         postGradType: userData.postGradType,
+//         // Work-specific fields
+//         company: userData.postGradType === 'work' ? userData.work?.company : null,
+//         title: userData.postGradType === 'work' ? userData.work?.role : null,
+//         industryId: industryId,
+//         // School-specific fields
+//         school: userData.postGradType === 'school' ? userData.school?.name : null,
+//         program: userData.postGradType === 'school' ? userData.school?.program : null,
+//         // Roommate preference
+//         lookingForRoommate: userData.lookingForRoommate ?? false,
+//         // Visibility settings
+//         visibilityOptions: {
+//           showRole: userData.visibility?.showRole ?? true,
+//           showProgram: userData.visibility?.showProgram ?? true,
+//           showCompany: userData.visibility?.showCompany ?? true,
+//           showSchool: userData.visibility?.showSchool ?? true,
+//         },
+//         // Mark as onboarded
+//         isOnboarded: true,
+//       },
+//     });
 
-    return NextResponse.json(updatedUser);
-  } catch (error) {
-    console.error('Error updating user:', error);
-    return NextResponse.json({ error: 'Failed to update user' }, { status: 500 });
-  }
-});
+//     return NextResponse.json(updatedUser);
+//   } catch (error) {
+//     console.error('Error updating user:', error);
+//     return NextResponse.json({ error: 'Failed to update user' }, { status: 500 });
+//   }
+// });

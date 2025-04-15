@@ -37,6 +37,8 @@ export type CreateLocation = {
 
 export type Location = CreateLocation & { id: string; createdAt: Date; updatedAt: Date };
 
+export type UserWithLocation = User & Location;
+
 export type IncompleteUserOnboarding = Partial<CreateUser & CreateLocation>;
 export type UserOnboarding = CreateUser & CreateLocation;
 

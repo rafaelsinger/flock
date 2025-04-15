@@ -1,20 +1,26 @@
 import { useQuery } from '@tanstack/react-query';
-import { User } from '@/types/user';
+import { UserWithLocation } from '@/types/user';
 import { useSession } from 'next-auth/react';
 
-export function useUserData(userId: string) {
+type UserDataResponse = {
+  data: UserWithLocation | null;
+  isLoading: boolean;
+  error: Error | null;
+};
+
+export function useUserData(userId: string): UserDataResponse {
   const { data: session } = useSession();
   const user = session?.user;
   const shouldFetch = user?.id !== userId;
 
-  const query = useQuery({
+  const query = useQuery<UserWithLocation, Error>({
     queryKey: ['user', userId],
     queryFn: async () => {
       const response = await fetch(`/api/users/${userId}`);
       if (!response.ok) {
         throw new Error('Failed to fetch user data');
       }
-      const data: User = await response.json();
+      const data: UserWithLocation = await response.json();
       return data;
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
@@ -29,5 +35,17 @@ export function useUserData(userId: string) {
       error: null,
     };
   }
-  return query;
+
+  if (query instanceof Error) {
+    return {
+      data: null,
+      isLoading: false,
+      error: query,
+    };
+  }
+  return {
+    data: query.data as UserWithLocation,
+    isLoading: query.isLoading,
+    error: null,
+  };
 }

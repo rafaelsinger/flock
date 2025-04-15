@@ -16,7 +16,7 @@ import { useUserData } from '@/hooks/useUserData';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  User,
+  UserWithLocation,
   getDisplayRole,
   getDisplayCompany,
   isRoleVisible,
@@ -56,7 +56,7 @@ const ProfilePage: FC = () => {
   const queryClient = useQueryClient();
 
   const [isEditing, setIsEditing] = useState(false);
-  const [editedUserData, setEditedUserData] = useState<User | null>(null);
+  const [editedUserData, setEditedUserData] = useState<UserWithLocation | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const profileCardRef = useRef<HTMLDivElement>(null);
 
@@ -80,7 +80,7 @@ const ProfilePage: FC = () => {
 
   // Mutation for updating user data
   const updateUserMutation = useMutation({
-    mutationFn: async (updatedData: User) => {
+    mutationFn: async (updatedData: UserWithLocation) => {
       setIsSubmitting(true);
       const response = await fetch(`/api/users/${userId}`, {
         method: 'PUT',
@@ -217,7 +217,7 @@ const ProfilePage: FC = () => {
 };
 
 interface ViewModeProps {
-  userData: User;
+  userData: UserWithLocation;
   isOwnProfile: boolean;
   onEdit: () => void;
 }
@@ -317,7 +317,6 @@ const ViewMode = ({ userData, isOwnProfile, onEdit }: ViewModeProps) => {
               <p className="text-lg text-[#333333]">
                 {userData.city}
                 {userData.state && `, ${userData.state}`}
-                {userData.boroughDistrict && `, ${userData.boroughDistrict}`}
                 {userData.country && userData.country !== 'USA' && `, ${userData.country}`}
               </p>
             </div>
@@ -415,8 +414,8 @@ const ViewMode = ({ userData, isOwnProfile, onEdit }: ViewModeProps) => {
 };
 
 interface EditFormProps {
-  userData: User;
-  setUserData: (userData: User) => void;
+  userData: UserWithLocation;
+  setUserData: (userData: UserWithLocation) => void;
   onSave: () => void;
   onCancel: () => void;
   isSubmitting: boolean;
