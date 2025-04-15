@@ -169,8 +169,8 @@ export const DirectoryContent: React.FC<DirectoryContentProps> = ({
   };
 
   // Get user's general location (city & state) if available
-  const userCity = session?.user?.city;
-  const userState = session?.user?.state;
+  const userCity = session?.user?.location.city;
+  const userState = session?.user?.location.state;
   const hasUserLocation = !!(userCity && userState);
 
   // Determine content to render based on fullscreen state

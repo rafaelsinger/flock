@@ -315,9 +315,11 @@ const ViewMode = ({ userData, isOwnProfile, onEdit }: ViewModeProps) => {
             <BsGeoAlt className="text-[#F28B82] text-xl mt-1" />
             <div>
               <p className="text-lg text-[#333333]">
-                {userData.city}
-                {userData.state && `, ${userData.state}`}
-                {userData.country && userData.country !== 'USA' && `, ${userData.country}`}
+                {userData.location.city}
+                {userData.location.state && `, ${userData.location.state}`}
+                {userData.location.country &&
+                  userData.location.country !== 'USA' &&
+                  `, ${userData.location.country}`}
               </p>
             </div>
           </motion.div>
@@ -647,8 +649,10 @@ const EditForm = ({ userData, setUserData, onSave, onCancel, isSubmitting }: Edi
           <input
             id="city"
             type="text"
-            value={userData.city || ''}
-            onChange={(e) => setUserData({ ...userData, city: e.target.value })}
+            value={userData.location.city || ''}
+            onChange={(e) =>
+              setUserData({ ...userData, location: { ...userData.location, city: e.target.value } })
+            }
             onFocus={() => setActiveField('city')}
             onBlur={() => setActiveField(null)}
             className={inputClasses}

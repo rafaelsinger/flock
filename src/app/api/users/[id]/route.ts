@@ -13,6 +13,9 @@ export const GET = auth(async function GET(request: NextRequest) {
       where: {
         id: id,
       },
+      include: {
+        location: true,
+      },
     });
 
     if (!user) {
