@@ -20,12 +20,45 @@ const Step1: FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const previousData = queryClient.getQueryData(['onboardingData']) as IncompleteUserOnboarding;
   const isFinalizingRef = useRef(false);
+  const [localClassYear, setLocalClassYear] = useState<number | null>(null);
 
   // Check immediately if classYear exists, before rendering content
   useEffect(() => {
+    console.log('Checking onboarding data:', previousData);
+
+    // Try to get classYear from session storage if not in query client
+    const loadClassYearFromStorage = () => {
+      try {
+        const savedData = localStorage.getItem('onboardingClassYear');
+        if (savedData) {
+          const classYear = parseInt(savedData, 10);
+          console.log('Retrieved classYear from localStorage:', classYear);
+          setLocalClassYear(classYear);
+          return true;
+        }
+      } catch (e) {
+        console.error('Error accessing localStorage:', e);
+      }
+      return false;
+    };
+
     if (!previousData || !previousData.classYear) {
-      router.replace('/onboarding/step0');
+      // Try to recover from localStorage
+      if (loadClassYearFromStorage()) {
+        setIsLoading(false);
+      } else {
+        console.error('Missing required classYear data:', previousData);
+        router.replace('/onboarding/step0');
+      }
     } else {
+      console.log('Valid onboarding data found:', previousData);
+      // Save to localStorage as backup
+      try {
+        localStorage.setItem('onboardingClassYear', previousData.classYear.toString());
+      } catch (e) {
+        console.error('Error saving to localStorage:', e);
+      }
+      setLocalClassYear(previousData.classYear);
       setIsLoading(false);
     }
   }, [previousData, router]);
@@ -66,29 +99,63 @@ const Step1: FC = () => {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to save user data');
+        const errorText = await response.text();
+        console.error('API response error:', errorText);
+        throw new Error(`Failed to save user data: ${errorText}`);
       }
 
       return response.json();
     },
     onSuccess: async (user: UserWithLocation) => {
-      await update({ user });
-      queryClient.removeQueries({ queryKey: ['onboardingData'] });
-      router.push('/');
+      console.log('Successfully finalized onboarding:', user);
+      try {
+        await update({ user });
+        queryClient.removeQueries({ queryKey: ['onboardingData'] });
+        router.push('/');
+      } catch (err) {
+        console.error('Error updating session after successful onboarding:', err);
+        // Even if session update fails, try to redirect to home
+        router.push('/');
+      }
     },
-    onError: async () => {
+    onError: async (error) => {
+      console.error('Error finalizing onboarding with seeking option:', error);
       isFinalizingRef.current = false;
       setIsSubmitting(false);
-      console.error('Error creating user with postGradType: seeking');
+      setSelectedOption(null);
+      // Don't redirect back to step0 on error, just stay on the current page
     },
   });
 
   const handleSelection = (type: PostGradType) => {
     setSelectedOption(type);
+    console.log(`Selected option: ${type}`);
+
     if (type === PostGradType.seeking) {
-      finalizeOnboarding.mutate({ ...previousData, postGradType: type, isOnboarded: true });
+      console.log('Processing "just looking" option...');
+
+      // Use either previously stored data or local class year
+      const classYear = previousData?.classYear || localClassYear;
+
+      if (!classYear) {
+        console.error('Missing classYear data. Redirecting to step0');
+        router.replace('/onboarding/step0');
+        return;
+      }
+
+      // Create data object with classYear from either source
+      const dataToSubmit: IncompleteUserOnboarding = {
+        ...(previousData || {}),
+        classYear,
+        postGradType: type,
+        isOnboarded: true,
+      };
+
+      console.log('Finalizing onboarding with seeking option', dataToSubmit);
+      finalizeOnboarding.mutate(dataToSubmit);
       return;
     }
+
     setTimeout(() => {
       updateOnboardingData.mutate(type);
     }, 400); // Slight delay for animation

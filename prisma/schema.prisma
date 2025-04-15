@@ -40,12 +40,15 @@ model User {
   accounts          Account[]
   sessions          Session[]
   postGradType      PostGradType @default(work) @map("postgrad_type")
+  userType          UserType     @default(grad) @map("user_type")
   company           String?
   title             String?      @map("title")
   school            String?
   program           String?
-  discipline         String?
+  discipline        String?
   classYear         Int          @map("class_year")
+  internshipSeason  String?      @map("internship_season")
+  internshipYear    Int?         @map("internship_year")
   lookingForRoommate Boolean?     @default(false) @map("looking_for_roommate")
   industryId        String?      @map("industry_id") @db.Uuid
   locationId        String?      @map("location_id") @db.Uuid
@@ -102,4 +105,10 @@ enum PostGradType {
   work
   school
   seeking
+  internship
+}
+
+enum UserType {
+  grad
+  intern
 }
