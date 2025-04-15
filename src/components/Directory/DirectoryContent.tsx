@@ -72,13 +72,15 @@ export const DirectoryContent: React.FC<DirectoryContentProps> = ({
         params.search = debouncedSearchQuery;
       }
 
-      // Add filters if present
-      if (filters.postGradType && filters.postGradType !== 'all') {
-        params.postGradType = filters.postGradType;
-      } else if (activeTypeFilter !== 'all') {
-        params.postGradType = activeTypeFilter;
+      // Add post grad type filter - from filters object or active filter button
+      const postGradType =
+        filters.postGradType || (activeTypeFilter !== 'all' ? activeTypeFilter : undefined);
+
+      if (postGradType && postGradType !== 'all') {
+        params.postGradType = postGradType;
       }
 
+      // Add location filters
       if (filters.country) {
         params.country = filters.country;
       }
@@ -91,7 +93,7 @@ export const DirectoryContent: React.FC<DirectoryContentProps> = ({
         params.city = filters.city;
       }
 
-      // Add roommate filter
+      // Add roommate filter - from filters object or roommate button
       if (filters.lookingForRoommate || showRoommateOnly) {
         params.lookingForRoommate = 'true';
       }
@@ -157,15 +159,27 @@ export const DirectoryContent: React.FC<DirectoryContentProps> = ({
   };
 
   const handleTypeFilterChange = (type: 'all' | 'work' | 'school') => {
-    setActiveTypeFilter(type);
+    // If already active, toggle off by setting back to 'all'
+    if (activeTypeFilter === type && type !== 'all') {
+      setActiveTypeFilter('all');
+      // Also update the filters object to ensure consistency
+      onFiltersChange({ ...filters, postGradType: undefined });
+    } else {
+      setActiveTypeFilter(type);
+      // Also update the filters object to ensure consistency
+      onFiltersChange({ ...filters, postGradType: type === 'all' ? undefined : type });
+    }
   };
 
   const handleRoommateFilterChange = () => {
-    setShowRoommateOnly(!showRoommateOnly);
-    // If we're showing in the main filter buttons, clear it from the filters object if it exists
-    if (filters.lookingForRoommate) {
-      onFiltersChange({ ...filters, lookingForRoommate: undefined });
-    }
+    const newValue = !showRoommateOnly;
+    setShowRoommateOnly(newValue);
+
+    // Update the filters object to match the UI state
+    onFiltersChange({
+      ...filters,
+      lookingForRoommate: newValue ? true : undefined,
+    });
   };
 
   // Get user's general location (city & state) if available

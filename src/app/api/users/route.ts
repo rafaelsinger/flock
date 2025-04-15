@@ -39,15 +39,13 @@ export const GET = auth(async function GET(request: NextRequest) {
                 { school: { contains: search, mode: 'insensitive' as const } },
               ],
             }
-          : { OR: [] },
+          : {},
         // Post grad type filter
-        postGradType && postGradType !== 'all' ? { postGradType } : { OR: [] },
+        postGradType && postGradType !== 'all' ? { postGradType } : {},
         // Location filters
-        country ? { location: { country } } : { OR: [] },
-        state ? { location: { state } } : { OR: [] },
-        city
-          ? { location: { city: { contains: city, mode: 'insensitive' as const } } }
-          : { OR: [] },
+        country ? { location: { country } } : {},
+        state ? { location: { state } } : {},
+        city ? { location: { city: { contains: city, mode: 'insensitive' as const } } } : {},
         // Industry filter
         industry
           ? {
@@ -55,10 +53,10 @@ export const GET = auth(async function GET(request: NextRequest) {
                 name: { equals: industry },
               },
             }
-          : { OR: [] },
+          : {},
         // Roommate filter
-        lookingForRoommate ? { lookingForRoommate: true } : { OR: [] },
-      ],
+        lookingForRoommate ? { lookingForRoommate: { equals: true } } : {},
+      ].filter((condition) => Object.keys(condition).length > 0), // Remove empty conditions
     };
 
     // Get total count for pagination
