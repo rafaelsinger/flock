@@ -79,26 +79,30 @@ export const CitySelect: React.FC<CitySelectProps> = ({ value, onChange }) => {
   const [suggestions, setSuggestions] = useState<GeoapifyResult[]>([]);
   const debouncedValue = useDebounce(inputValue, 250);
   const [isLoading, setIsLoading] = useState(false);
+  const [isLocationSelected, setIsLocationSelected] = useState(Boolean(value));
 
-  const fetchSuggestions = useCallback(async (text: string) => {
-    if (!text) {
-      setSuggestions([]);
-      return;
-    }
+  const fetchSuggestions = useCallback(
+    async (text: string) => {
+      if (!text || isLocationSelected) {
+        setSuggestions([]);
+        return;
+      }
 
-    setIsLoading(true);
-    try {
-      const response = await fetch(
-        `https://api.geoapify.com/v1/geocode/autocomplete?text=${encodeURIComponent(text)}&type=city&format=json&apiKey=${process.env.NEXT_PUBLIC_GEOAPIFY_KEY}`
-      );
-      const data = (await response.json()) as GeoapifyResponse;
-      setSuggestions(data.results || []);
-    } catch (error) {
-      console.error('Error fetching suggestions:', error);
-      setSuggestions([]);
-    }
-    setIsLoading(false);
-  }, []);
+      setIsLoading(true);
+      try {
+        const response = await fetch(
+          `https://api.geoapify.com/v1/geocode/autocomplete?text=${encodeURIComponent(text)}&type=city&format=json&apiKey=${process.env.NEXT_PUBLIC_GEOAPIFY_KEY}`
+        );
+        const data = (await response.json()) as GeoapifyResponse;
+        setSuggestions(data.results || []);
+      } catch (error) {
+        console.error('Error fetching suggestions:', error);
+        setSuggestions([]);
+      }
+      setIsLoading(false);
+    },
+    [isLocationSelected]
+  );
 
   React.useEffect(() => {
     fetchSuggestions(debouncedValue);
@@ -115,7 +119,19 @@ export const CitySelect: React.FC<CitySelectProps> = ({ value, onChange }) => {
 
     setInputValue(feature.formatted);
     setSuggestions([]);
+    setIsLocationSelected(true);
     onChange(location);
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.value;
+    setInputValue(newValue);
+
+    // If the user changes the input after selecting a location,
+    // we need to reset the selected state to allow new searches
+    if (isLocationSelected && newValue !== inputValue) {
+      setIsLocationSelected(false);
+    }
   };
 
   return (
@@ -123,7 +139,7 @@ export const CitySelect: React.FC<CitySelectProps> = ({ value, onChange }) => {
       <input
         type="text"
         value={inputValue}
-        onChange={(e) => setInputValue(e.target.value)}
+        onChange={handleInputChange}
         placeholder="Enter your city"
         className="w-full text-[#333] border border-gray-200 px-4 py-3 rounded-lg focus:border-[#F9C5D1] focus:ring-2 focus:ring-[#F9C5D1]/20 outline-none transition-all"
       />
@@ -132,7 +148,7 @@ export const CitySelect: React.FC<CitySelectProps> = ({ value, onChange }) => {
         <div className="absolute right-3 top-1/2 -translate-y-1/2 text-[#666]">Loading...</div>
       )}
 
-      {suggestions.length > 0 && (
+      {suggestions.length > 0 && !isLocationSelected && (
         <ul className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-auto">
           {suggestions.map((feature, index) => (
             <li
