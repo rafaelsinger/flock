@@ -111,7 +111,7 @@ export const CitySelect: React.FC<CitySelectProps> = ({ value, onChange }) => {
   const handleSelect = (feature: GeoapifyResult) => {
     const location: Location = {
       city: feature.city || '',
-      state: feature.state || '',
+      state: feature.state_code || '',
       country: feature.country || '',
       lat: feature.lat,
       lon: feature.lon,

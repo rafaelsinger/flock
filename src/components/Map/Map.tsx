@@ -98,7 +98,7 @@ export const FlockMap: React.FC<FlockMapProps> = ({ onCitySelect }) => {
         if (!response.ok) throw new Error('Failed to fetch location data');
         return response.json();
       } else {
-        const response = await fetch(`/api/locations?state=${selectedState}`);
+        const response = await fetch(`/api/locations?state=${STATE_NAME_TO_ABBREV[selectedState]}`);
         if (!response.ok) throw new Error('Failed to fetch city data');
         return response.json();
       }
