@@ -18,35 +18,54 @@ export async function GET(request: NextRequest) {
 
     switch (type) {
       case 'companies':
-        // Get top companies
-        destinations = await prisma.user.groupBy({
-          by: ['company'],
+        // Get all companies (without groupBy to handle case insensitivity manually)
+        const companyUsers = await prisma.user.findMany({
           where: {
             company: {
               not: null,
             },
             postGradType: 'work',
           },
-          _count: {
-            id: true,
+          select: {
+            company: true,
           },
-          orderBy: {
-            _count: {
-              id: 'desc',
-            },
-          },
-          take: limit,
         });
 
-        // Format company results
-        destinations = destinations
-          .filter((item) => item.company) // Filter out null companies
-          .map((item) => ({
+        // Case-insensitive aggregation
+        const companyMap = new Map<string, number>();
+
+        companyUsers.forEach((user) => {
+          if (!user.company) return;
+
+          const normalizedCompany = user.company.toLowerCase();
+          const count = companyMap.get(normalizedCompany) || 0;
+          companyMap.set(normalizedCompany, count + 1);
+        });
+
+        // Convert to array, sort by count, and format
+        const topCompanies = Array.from(companyMap.entries())
+          .map(([company, count]) => ({
+            company,
+            count,
+          }))
+          .sort((a, b) => b.count - a.count)
+          .slice(0, limit);
+
+        // Format company results with proper capitalization
+        destinations = topCompanies.map((item) => {
+          // Capitalize first letter of each word
+          const formattedName = item.company
+            .split(' ')
+            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ');
+
+          return {
             id: item.company,
-            name: item.company,
-            count: item._count.id,
+            name: formattedName,
+            count: item.count,
             type: 'company',
-          }));
+          };
+        });
         break;
 
       case 'schools':
@@ -82,20 +101,21 @@ export async function GET(request: NextRequest) {
         break;
 
       case 'cities':
-        // Get top cities
-        destinations = await prisma.user.groupBy({
-          by: ['city', 'state'],
-          where: {
-            city: {
-              not: null,
+        // Get top cities from the locations table
+        destinations = await prisma.location.findMany({
+          select: {
+            id: true,
+            city: true,
+            state: true,
+            _count: {
+              select: {
+                users: true,
+              },
             },
           },
-          _count: {
-            id: true,
-          },
           orderBy: {
-            _count: {
-              id: 'desc',
+            users: {
+              _count: 'desc',
             },
           },
           take: limit,
@@ -103,12 +123,12 @@ export async function GET(request: NextRequest) {
 
         // Format city results
         destinations = destinations
-          .filter((item) => item.city) // Filter out null cities
+          .filter((item) => item._count.users > 0) // Only include locations with users
           .map((item) => ({
-            id: `${item.city}-${item.state || ''}`,
+            id: item.id,
             name: item.city,
-            location: item.state ? `${item.state}` : undefined,
-            count: item._count.id,
+            location: item.state,
+            count: item._count.users,
             type: 'city',
           }));
         break;
