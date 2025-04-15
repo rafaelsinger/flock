@@ -45,7 +45,7 @@ model User {
   school            String?
   program           String?
   discipline         String?
-  classYear         Int          @default(2025) @map("class_year")
+  classYear         Int          @map("class_year")
   lookingForRoommate Boolean?     @default(false) @map("looking_for_roommate")
   industryId        String?      @map("industry_id") @db.Uuid
   locationId        String?      @map("location_id") @db.Uuid

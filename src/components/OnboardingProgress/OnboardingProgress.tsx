@@ -8,11 +8,11 @@ interface OnboardingProgressProps {
 
 export const OnboardingProgress: React.FC<OnboardingProgressProps> = ({
   currentStep,
-  totalSteps = 5,
+  totalSteps = 6,
 }) => {
   const steps = Array.from({ length: totalSteps }, (_, i) => i + 1);
 
-  const stepLabels = ['About You', 'Details', 'Location', 'Privacy', 'Review'];
+  const stepLabels = ['Class Year', 'About You', 'Details', 'Location', 'Privacy', 'Review'];
 
   return (
     <div className="w-full my-8">

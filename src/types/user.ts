@@ -40,7 +40,30 @@ export type Location = CreateLocation & { id: string; createdAt: Date; updatedAt
 
 export type UserWithLocation = User & { location: Location };
 
-export type IncompleteUserOnboarding = Partial<CreateUser & CreateLocation>;
+export interface IncompleteUserOnboarding {
+  classYear?: number;
+  postGradType?: PostGradType;
+  company?: string;
+  title?: string;
+  industry?: string;
+  school?: string;
+  program?: string;
+  discipline?: string;
+  country?: string;
+  state?: string;
+  city?: string;
+  lat?: number;
+  lon?: number;
+  lookingForRoommate?: boolean;
+  visibilityOptions?: {
+    company?: boolean;
+    title?: boolean;
+    school?: boolean;
+    program?: boolean;
+  };
+  isOnboarded?: boolean;
+}
+
 export type UserOnboarding = CreateUser & CreateLocation;
 
 // Helper functions for common transformations

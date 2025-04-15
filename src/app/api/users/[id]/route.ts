@@ -94,6 +94,7 @@ export const PUT = async (request: NextRequest, context: { params: Promise<{ id:
         locationId: locationId,
         lookingForRoommate: userData.lookingForRoommate,
         visibilityOptions: userData.visibilityOptions,
+        classYear: userData.classYear,
       },
       include: {
         location: true,

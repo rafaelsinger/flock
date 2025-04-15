@@ -1,6 +1,6 @@
 'use client';
 
-import { FC, useState, useEffect } from 'react';
+import { FC, useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { BsBriefcase } from 'react-icons/bs';
 import { LuGraduationCap } from 'react-icons/lu';
@@ -17,20 +17,28 @@ const Step1: FC = () => {
   const [selectedOption, setSelectedOption] = useState<PostGradType | null>(null);
   const { data: sessionStorage, update } = useSession();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const previousData = queryClient.getQueryData(['onboardingData']) as IncompleteUserOnboarding;
+  const isFinalizingRef = useRef(false);
 
   const updateOnboardingData = useMutation({
     mutationFn: (type: PostGradType) => {
-      const data: IncompleteUserOnboarding = { postGradType: type };
+      const data: IncompleteUserOnboarding = {
+        ...previousData,
+        postGradType: type,
+      };
       return Promise.resolve(data);
     },
     onSuccess: (data) => {
-      queryClient.setQueryData(['onboardingData'], data);
-      router.push(`/onboarding/step2-${data.postGradType}`);
+      if (!isFinalizingRef.current) {
+        queryClient.setQueryData(['onboardingData'], data);
+        router.push(`/onboarding/step2-${data.postGradType}`);
+      }
     },
   });
 
   const finalizeOnboarding = useMutation({
     mutationFn: async (finalData: IncompleteUserOnboarding) => {
+      isFinalizingRef.current = true;
       setIsSubmitting(true);
       // Check if we have a valid session with user ID
       if (!sessionStorage?.user?.id) {
@@ -55,11 +63,11 @@ const Step1: FC = () => {
     },
     onSuccess: async (user: UserWithLocation) => {
       await update({ user });
-
       queryClient.removeQueries({ queryKey: ['onboardingData'] });
       router.push('/');
     },
     onError: async () => {
+      isFinalizingRef.current = false;
       setIsSubmitting(false);
       console.error('Error creating user with postGradType: seeking');
     },
@@ -68,7 +76,7 @@ const Step1: FC = () => {
   const handleSelection = (type: PostGradType) => {
     setSelectedOption(type);
     if (type === PostGradType.seeking) {
-      finalizeOnboarding.mutate({ postGradType: type, isOnboarded: true });
+      finalizeOnboarding.mutate({ ...previousData, postGradType: type, isOnboarded: true });
       return;
     }
     setTimeout(() => {
@@ -82,6 +90,13 @@ const Step1: FC = () => {
     router.prefetch('/');
   }, [router]);
 
+  useEffect(() => {
+    // Add check for classYear
+    if (!previousData || !previousData.classYear) {
+      router.push('/onboarding/step0');
+    }
+  }, [previousData, router]);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -89,7 +104,7 @@ const Step1: FC = () => {
       transition={{ duration: 0.4 }}
       className="space-y-6"
     >
-      <OnboardingProgress currentStep={1} totalSteps={5} />
+      <OnboardingProgress currentStep={2} totalSteps={6} />
 
       <div className="text-center">
         <motion.div
