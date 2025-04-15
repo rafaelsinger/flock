@@ -15,7 +15,9 @@ export const UserCard: React.FC<UserCardProps> = ({ user, prefetch = false }) =>
   const queryClient = useQueryClient();
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const location = `${user.location.city}${user.location.state ? `, ${user.location.state}` : ''}`;
+  const location = user.location
+    ? `${user.location.city}${user.location.state ? `, ${user.location.state}` : ''}`
+    : 'Location unknown';
   const company = user.visibilityOptions?.company !== false ? getDisplayCompany(user) : undefined;
   const role = user.visibilityOptions?.title !== false ? getDisplayRole(user) : undefined;
 
