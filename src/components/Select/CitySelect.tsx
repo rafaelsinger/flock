@@ -6,7 +6,7 @@ interface Location {
   state: string;
   country: string;
   lat: number;
-  lng: number;
+  lon: number;
 }
 
 interface CitySelectProps {
@@ -110,7 +110,7 @@ export const CitySelect: React.FC<CitySelectProps> = ({ value, onChange }) => {
       state: feature.state || '',
       country: feature.country || '',
       lat: feature.lat,
-      lng: feature.lon,
+      lon: feature.lon,
     };
 
     setInputValue(feature.formatted);

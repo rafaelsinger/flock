@@ -18,11 +18,11 @@ model Industry {
 
 model Location {
   id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  country         String?
-  state           String?
-  city            String?
-  latitude        Float?   @map("lat")
-  longitude       Float?   @map("lon")
+  country         String
+  state           String
+  city            String
+  latitude        Float   @map("lat")
+  longitude       Float   @map("lon")
   users           User[]
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @default(now()) @updatedAt @map("updated_at")

@@ -3,11 +3,9 @@
 import { FC, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { STATES_WITH_BOROUGHS } from '@/constants/location';
-import { UserUpdate } from '@/types/user';
+import { IncompleteUserOnboarding } from '@/types/user';
 import { motion } from 'framer-motion';
 import { OnboardingProgress } from '@/components';
-import { IoLocationOutline } from 'react-icons/io5';
 import { MdOutlineLocationCity } from 'react-icons/md';
 import { IoMdPeople } from 'react-icons/io';
 import { CitySelect } from '@/components/Select/CitySelect';
@@ -15,41 +13,38 @@ import { CitySelect } from '@/components/Select/CitySelect';
 const Step3: FC = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const previousData = queryClient.getQueryData(['onboardingData']) as UserUpdate;
+  const previousData = queryClient.getQueryData(['onboardingData']) as IncompleteUserOnboarding;
 
   const [formData, setFormData] = useState({
     country: '',
     state: '',
     city: '',
-    boroughDistrict: '',
     lookingForRoommate: false,
     lat: 0,
-    lng: 0,
+    lon: 0,
   });
 
   const [isFormValid, setIsFormValid] = useState(false);
-  const [activeField, setActiveField] = useState<string | null>(null);
 
   useEffect(() => {
     setIsFormValid(
       Boolean(formData.country?.trim()) &&
         Boolean(formData.city?.trim()) &&
         formData.lat !== 0 &&
-        formData.lng !== 0
+        formData.lon !== 0
     );
   }, [formData]);
 
   const updateOnboardingData = useMutation({
-    mutationFn: (locationData: UserUpdate) => {
-      const data: UserUpdate = {
+    mutationFn: (locationData: IncompleteUserOnboarding) => {
+      const data: IncompleteUserOnboarding = {
         ...previousData,
         country: locationData.country,
         state: locationData.state,
         city: locationData.city,
-        boroughDistrict: locationData.boroughDistrict,
         lookingForRoommate: locationData.lookingForRoommate,
-        // lat: locationData.lat,
-        // lng: locationData.lng,
+        lat: locationData.lat,
+        lon: locationData.lon,
       };
       return Promise.resolve(data);
     },
@@ -72,9 +67,6 @@ const Step3: FC = () => {
   if (!previousData || !previousData.postGradType) {
     return null;
   }
-
-  const showBoroughField =
-    formData.country === 'USA' && STATES_WITH_BOROUGHS.includes(formData.state);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -138,38 +130,12 @@ const Step3: FC = () => {
                     state: location.state,
                     country: location.country,
                     lat: location.lat,
-                    lng: location.lng,
+                    lon: location.lon,
                   }));
                 }}
               />
             </motion.div>
           </motion.div>
-
-          {showBoroughField && (
-            <motion.div variants={itemVariants}>
-              <label htmlFor="borough" className={labelClasses}>
-                <IoLocationOutline className="mr-2 text-[#F28B82]" />
-                Borough/Neighborhood <span className="text-[#666666] text-sm ml-1">(optional)</span>
-              </label>
-              <motion.div
-                variants={inputVariants}
-                animate={activeField === 'borough' ? 'focus' : 'blur'}
-              >
-                <input
-                  type="text"
-                  id="borough"
-                  value={formData.boroughDistrict}
-                  onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, boroughDistrict: e.target.value }))
-                  }
-                  onFocus={() => setActiveField('borough')}
-                  onBlur={() => setActiveField(null)}
-                  className="w-full text-[#333] border border-gray-200 px-4 py-3 rounded-lg focus:border-[#F9C5D1] focus:ring-2 focus:ring-[#F9C5D1]/20 outline-none transition-all"
-                  placeholder="e.g. Brooklyn or Mission District"
-                />
-              </motion.div>
-            </motion.div>
-          )}
 
           <motion.div variants={itemVariants}>
             <label className={`${labelClasses} mb-3`}>

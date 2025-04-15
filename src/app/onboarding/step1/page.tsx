@@ -6,7 +6,7 @@ import { BsBriefcase } from 'react-icons/bs';
 import { LuGraduationCap } from 'react-icons/lu';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { PostGradType } from '@prisma/client';
-import { UserUpdate } from '@/types/user';
+import { IncompleteUserOnboarding } from '@/types/user';
 import { motion } from 'framer-motion';
 import { OnboardingProgress } from '@/components';
 
@@ -17,7 +17,7 @@ const Step1: FC = () => {
 
   const updateOnboardingData = useMutation({
     mutationFn: (type: PostGradType) => {
-      const data: UserUpdate = { postGradType: type };
+      const data: IncompleteUserOnboarding = { postGradType: type };
       return Promise.resolve(data);
     },
     onSuccess: (data) => {

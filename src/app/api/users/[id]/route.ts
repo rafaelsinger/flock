@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/auth';
-import { UserUpdate } from '@/types/user';
+import { UserOnboarding } from '@/types/user';
 
 export const GET = auth(async function GET(request: NextRequest) {
   const id = request.url.split('/users/')[1];
@@ -44,7 +44,33 @@ export async function PUT(request: Request, context: { params: { id: string } })
       return new NextResponse('Unauthorized - User ID mismatch', { status: 401 });
     }
 
-    const userData: UserUpdate = await request.json();
+    const userData: UserOnboarding = await request.json();
+
+    // check if location exists
+    const location = await prisma.location.findFirst({
+      where: {
+        country: userData.country,
+        state: userData.state,
+        city: userData.city,
+      },
+    });
+
+    // if not, then create a new location
+    let locationId: string;
+    if (!location) {
+      const createdLocation = await prisma.location.create({
+        data: {
+          country: userData.country,
+          state: userData.state,
+          city: userData.city,
+          latitude: userData.lat,
+          longitude: userData.lon,
+        },
+      });
+      locationId = createdLocation.id;
+    } else {
+      locationId = location.id;
+    }
 
     const updatedUser = await prisma.user.update({
       where: {
@@ -58,9 +84,7 @@ export async function PUT(request: Request, context: { params: { id: string } })
         company: userData.company,
         school: userData.school,
         isOnboarded: userData.isOnboarded,
-        city: userData.city,
-        state: userData.state,
-        country: userData.country,
+        locationId: locationId,
         lookingForRoommate: userData.lookingForRoommate,
         visibilityOptions: userData.visibilityOptions,
       },

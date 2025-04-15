@@ -3,8 +3,7 @@
 import { PostGradType } from '@prisma/client';
 
 // Single User model for the entire application
-export interface User {
-  id: string;
+export type CreateUser = {
   name: string;
   email: string;
   postGradType: PostGradType;
@@ -13,11 +12,9 @@ export interface User {
   program?: string | null;
   company?: string | null;
   school?: string | null;
-  city: string;
-  state: string;
-  country: string;
+  classYear: number;
   industry?: string | null;
-  boroughDistrict?: string | null;
+  location?: Location | null;
   lookingForRoommate?: boolean | null;
   visibilityOptions: {
     title?: boolean;
@@ -25,9 +22,22 @@ export interface User {
     school?: boolean;
     program?: boolean;
   };
-}
+};
 
-export type UserUpdate = Partial<User>;
+export type User = CreateUser & { id: string; createdAt: Date; updatedAt: Date };
+
+export type CreateLocation = {
+  country: string;
+  state: string;
+  city: string;
+  lat: number;
+  lon: number;
+};
+
+export type Location = CreateLocation & { id: string; createdAt: Date; updatedAt: Date };
+
+export type IncompleteUserOnboarding = Partial<CreateUser & CreateLocation>;
+export type UserOnboarding = CreateUser & CreateLocation;
 
 // Helper functions for common transformations
 export const getDisplayRole = (user: User): string => {
@@ -39,7 +49,9 @@ export const getDisplayCompany = (user: User): string => {
 };
 
 export const getLocation = (user: User): string => {
-  return `${user.city}, ${user.state}, ${user.country}`;
+  if (!user.location) return '';
+  const { city, state, country } = user.location;
+  return [city, state, country].filter(Boolean).join(', ');
 };
 
 export const isRoleVisible = (user: User, isOwnProfile: boolean): boolean => {

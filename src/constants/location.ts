@@ -66,9 +66,6 @@ export const COUNTRIES = [
   { value: 'BRA', label: 'Brazil' },
 ].sort((a, b) => a.label.localeCompare(b.label));
 
-// States that support borough/neighborhood selection
-export const STATES_WITH_BOROUGHS = ['NY', 'CA', 'TX', 'FL', 'IL', 'MA'];
-
 // Add this map for state name to abbreviation conversion
 export const STATE_NAME_TO_ABBREV: Record<string, string> = {
   Alabama: 'AL',

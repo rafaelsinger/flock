@@ -3,7 +3,7 @@
 import { FC, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { UserUpdate } from '@/types/user';
+import { IncompleteUserOnboarding } from '@/types/user';
 import { motion } from 'framer-motion';
 import { OnboardingProgress } from '@/components';
 import { HiOutlineEye, HiOutlineEyeOff } from 'react-icons/hi';
@@ -29,11 +29,11 @@ type FormData = WorkFormData | SchoolFormData;
 const Step4: FC = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const previousData = queryClient.getQueryData(['onboardingData']) as UserUpdate;
+  const previousData = queryClient.getQueryData(['onboardingData']) as IncompleteUserOnboarding;
 
   const updateOnboardingData = useMutation({
-    mutationFn: (visibilityData: UserUpdate) => {
-      const data: UserUpdate = {
+    mutationFn: (visibilityData: IncompleteUserOnboarding) => {
+      const data: IncompleteUserOnboarding = {
         ...previousData,
         visibilityOptions: {
           company: visibilityData.visibilityOptions?.company,

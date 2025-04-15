@@ -4,7 +4,7 @@ import { FC, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { INDUSTRIES } from '@/constants/industries';
-import { UserUpdate } from '@/types/user';
+import { IncompleteUserOnboarding } from '@/types/user';
 import { motion } from 'framer-motion';
 import { BsBriefcase, BsBuilding, BsPerson } from 'react-icons/bs';
 import { OnboardingProgress } from '@/components';
@@ -13,7 +13,7 @@ import { PostGradType } from '@prisma/client';
 const Step2Work: FC = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const previousData = queryClient.getQueryData(['onboardingData']) as UserUpdate;
+  const previousData = queryClient.getQueryData(['onboardingData']) as IncompleteUserOnboarding;
 
   const [formData, setFormData] = useState({
     company: '',
@@ -31,8 +31,8 @@ const Step2Work: FC = () => {
   }, [formData]);
 
   const updateOnboardingData = useMutation({
-    mutationFn: (workData: UserUpdate) => {
-      const data: UserUpdate = {
+    mutationFn: (workData: IncompleteUserOnboarding) => {
+      const data: IncompleteUserOnboarding = {
         ...previousData,
         company: workData.company,
         title: workData.title,

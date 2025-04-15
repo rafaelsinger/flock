@@ -9,20 +9,20 @@ import { FaBuilding, FaUniversity } from 'react-icons/fa';
 import { MdOutlineLocationCity, MdWork } from 'react-icons/md';
 import { HiOutlineAcademicCap } from 'react-icons/hi';
 import { useSession } from 'next-auth/react';
-import { UserUpdate } from '@/types/user';
+import { UserOnboarding } from '@/types/user';
 import { motion } from 'framer-motion';
 import { OnboardingProgress } from '@/components';
 
 const ReviewPage: FC = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const data = queryClient.getQueryData(['onboardingData']) as UserUpdate;
+  const data = queryClient.getQueryData(['onboardingData']) as UserOnboarding;
   const isFinalizingRef = useRef(false);
   const { data: sessionStorage, update } = useSession();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const finalizeOnboarding = useMutation({
-    mutationFn: async (finalData: UserUpdate) => {
+    mutationFn: async (finalData: UserOnboarding) => {
       isFinalizingRef.current = true;
       setIsSubmitting(true);
       finalData = { ...finalData, isOnboarded: true };
@@ -194,7 +194,6 @@ const ReviewPage: FC = () => {
                 <p className="text-[#333333]">
                   {data.city}
                   {data.state && `, ${data.state}`}
-                  {data.boroughDistrict && `, ${data.boroughDistrict}`}
                   {data.country && data.country !== 'USA' && `, ${data.country}`}
                 </p>
               </motion.div>
