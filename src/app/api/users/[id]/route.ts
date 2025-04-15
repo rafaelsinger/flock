@@ -106,3 +106,44 @@ export async function PUT(request: Request, context: { params: { id: string } })
     return new NextResponse('Internal Server Error', { status: 500 });
   }
 }
+
+export async function DELETE(request: Request, context: { params: { id: string } }) {
+  const { params } = context;
+  const { id } = params;
+
+  try {
+    const session = await auth();
+
+    if (!session?.user) {
+      return new NextResponse('Unauthorized - No session', { status: 401 });
+    }
+
+    if (!id) {
+      return new NextResponse('Bad Request - Missing ID parameter', { status: 400 });
+    }
+
+    if (session.user.id !== id) {
+      return new NextResponse('Unauthorized - Cannot delete another user account', { status: 401 });
+    }
+
+    // Delete user account (Prisma will cascade delete related data thanks to our schema setup)
+    await prisma.user.delete({
+      where: {
+        id: id,
+      },
+    });
+
+    return new NextResponse(
+      JSON.stringify({ success: true, message: 'Account deleted successfully' }),
+      {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+  } catch (error) {
+    console.error('Error deleting user account:', error);
+    return new NextResponse('Internal Server Error', { status: 500 });
+  }
+}

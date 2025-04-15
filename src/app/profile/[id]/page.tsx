@@ -7,7 +7,7 @@ import { useSession, signOut } from 'next-auth/react';
 import { IoArrowBack } from 'react-icons/io5';
 import { BsBriefcase, BsGeoAlt, BsEyeFill, BsPerson } from 'react-icons/bs';
 import { LuGraduationCap } from 'react-icons/lu';
-import { FaEdit, FaSignOutAlt, FaBuilding, FaUniversity, FaHome } from 'react-icons/fa';
+import { FaEdit, FaSignOutAlt, FaBuilding, FaUniversity, FaHome, FaTrash } from 'react-icons/fa';
 import { MdWork } from 'react-icons/md';
 import { HiOutlineAcademicCap } from 'react-icons/hi';
 import { NotFoundState } from '@/components/NotFoundState/NotFoundState';
@@ -59,7 +59,21 @@ const ProfilePage: FC = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedUserData, setEditedUserData] = useState<UpdateUser | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const profileCardRef = useRef<HTMLDivElement>(null);
+
+  // Use this for delete account event handling
+  useEffect(() => {
+    const handleDeleteRequest = () => {
+      setShowDeleteConfirm(true);
+    };
+
+    window.addEventListener('delete-account', handleDeleteRequest);
+
+    return () => {
+      window.removeEventListener('delete-account', handleDeleteRequest);
+    };
+  }, []);
 
   // Use React Query to fetch user data
   const { data: userData, isLoading, error } = useUserData(userId);
@@ -111,6 +125,29 @@ const ProfilePage: FC = () => {
     },
   });
 
+  // Mutation for deleting user account
+  const deleteAccountMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch(`/api/users/${userId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete account');
+      }
+
+      return response.json();
+    },
+    onSuccess: () => {
+      // Sign out and redirect to homepage after successful deletion
+      signOut({ callbackUrl: '/' });
+    },
+    onError: (error) => {
+      console.error('Error deleting account:', error);
+      setShowDeleteConfirm(false);
+    },
+  });
+
   const handleSave = () => {
     if (editedUserData) {
       updateUserMutation.mutate(editedUserData);
@@ -119,6 +156,18 @@ const ProfilePage: FC = () => {
 
   const handleSignOut = () => {
     signOut({ callbackUrl: '/' });
+  };
+
+  const handleDeleteAccount = () => {
+    if (showDeleteConfirm) {
+      deleteAccountMutation.mutate();
+    } else {
+      setShowDeleteConfirm(true);
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setShowDeleteConfirm(false);
   };
 
   if (isLoading) {
@@ -181,6 +230,40 @@ const ProfilePage: FC = () => {
             </motion.button>
           )}
         </motion.div>
+
+        {/* Delete Confirmation Dialog */}
+        <AnimatePresence>
+          {showDeleteConfirm && (
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+              className="bg-white rounded-xl border border-red-200 p-6 mb-6 shadow-sm"
+            >
+              <h3 className="text-lg font-medium text-red-700 mb-3">Delete Account?</h3>
+              <p className="text-sm text-gray-600 mb-4">
+                This action cannot be undone. All of your data will be permanently deleted.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={handleDeleteAccount}
+                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                  disabled={deleteAccountMutation.isPending}
+                >
+                  {deleteAccountMutation.isPending ? 'Deleting...' : 'Yes, Delete My Account'}
+                </button>
+                <button
+                  onClick={handleCancelDelete}
+                  className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                  disabled={deleteAccountMutation.isPending}
+                >
+                  Cancel
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Profile Card */}
         <motion.div
@@ -408,6 +491,20 @@ const ViewMode = ({ userData, isOwnProfile, onEdit }: ViewModeProps) => {
                   </>
                 )}
               </ul>
+            </motion.div>
+          )}
+
+          {isOwnProfile && (
+            <motion.div className="mt-8" variants={itemVariants}>
+              <motion.button
+                onClick={() => window.dispatchEvent(new CustomEvent('delete-account'))}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 transition-all cursor-pointer"
+              >
+                <FaTrash className="text-sm" />
+                Delete Account
+              </motion.button>
             </motion.div>
           )}
         </div>
