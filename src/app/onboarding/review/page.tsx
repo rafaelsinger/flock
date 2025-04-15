@@ -73,7 +73,6 @@ const ReviewPage: FC = () => {
       console.error('Error saving user data:', error);
       isFinalizingRef.current = false;
       setIsSubmitting(false);
-      // You might want to show an error message to the user here
     },
   });
 

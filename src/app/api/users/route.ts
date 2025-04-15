@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/auth';
-import { Prisma } from '@prisma/client';
+import { PostGradType, Prisma } from '@prisma/client';
 
 export const GET = async (request: NextRequest) => {
   try {
@@ -15,7 +15,12 @@ export const GET = async (request: NextRequest) => {
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '12');
     const search = searchParams.get('search') || '';
-    const postGradType = searchParams.get('postGradType') as 'work' | 'school' | 'all' | undefined;
+    const postGradType = searchParams.get('postGradType') as
+      | 'work'
+      | 'school'
+      | 'all'
+      | 'seeking'
+      | undefined; //TODO: should be PostGradType
     const country = searchParams.get('country') || '';
     const state = searchParams.get('state') || '';
     const city = searchParams.get('city') || '';
@@ -44,7 +49,9 @@ export const GET = async (request: NextRequest) => {
             }
           : {},
         // Post grad type filter
-        postGradType && postGradType !== 'all' ? { postGradType } : {},
+        postGradType === 'work' || postGradType === 'school'
+          ? { postGradType }
+          : { postGradType: { not: PostGradType.seeking } },
         // Location filters
         country ? { location: { country } } : {},
         state ? { location: { state } } : {},
