@@ -424,15 +424,6 @@ export const FlockMap: React.FC<FlockMapProps> = ({ onCitySelect, showAllClassYe
         {showSkeleton ? renderLegendSkeleton() : <Legend colorScale={colorScale} />}
       </div>
 
-      {/* Class Year Indicator */}
-      {userClassYear && (
-        <div className="absolute top-16 left-4 bg-white rounded-lg shadow-md border border-gray-100 p-2 z-10">
-          <div className="text-xs text-gray-700">
-            {!showAllClassYears ? `Showing class of ${userClassYear}` : 'Showing all class years'}
-          </div>
-        </div>
-      )}
-
       {/* Back Button */}
       {selectedState && (
         <button
