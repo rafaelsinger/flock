@@ -1,11 +1,11 @@
 import React from 'react';
 import { UserCard } from '@/components/UserCard/UserCard';
-import { User } from '@/types/user';
+import { UserWithLocation } from '@/types/user';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Users } from 'lucide-react';
 
 interface UserGridProps {
-  users: User[];
+  users: UserWithLocation[];
   loading: boolean;
   page: number;
   totalPages: number;
