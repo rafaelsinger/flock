@@ -59,13 +59,15 @@ const ProfilePage: FC = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedUserData, setEditedUserData] = useState<UpdateUser | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const profileCardRef = useRef<HTMLDivElement>(null);
 
   // Use this for delete account event handling
   useEffect(() => {
     const handleDeleteRequest = () => {
-      setShowDeleteConfirm(true);
+      // Instead of using global state, directly trigger the delete action
+      if (confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
+        deleteUser();
+      }
     };
 
     window.addEventListener('delete-account', handleDeleteRequest);
@@ -92,6 +94,25 @@ const ProfilePage: FC = () => {
       profileCardRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   }, [isEditing]);
+
+  // Function to handle account deletion
+  const deleteUser = async () => {
+    try {
+      const response = await fetch(`/api/users/${userId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete account');
+      }
+
+      // Sign out and redirect to homepage after successful deletion
+      signOut({ callbackUrl: '/' });
+    } catch (error) {
+      console.error('Error deleting account:', error);
+      alert('Failed to delete your account. Please try again later.');
+    }
+  };
 
   // Mutation for updating user data
   const updateUserMutation = useMutation({
@@ -125,29 +146,6 @@ const ProfilePage: FC = () => {
     },
   });
 
-  // Mutation for deleting user account
-  const deleteAccountMutation = useMutation({
-    mutationFn: async () => {
-      const response = await fetch(`/api/users/${userId}`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to delete account');
-      }
-
-      return response.json();
-    },
-    onSuccess: () => {
-      // Sign out and redirect to homepage after successful deletion
-      signOut({ callbackUrl: '/' });
-    },
-    onError: (error) => {
-      console.error('Error deleting account:', error);
-      setShowDeleteConfirm(false);
-    },
-  });
-
   const handleSave = () => {
     if (editedUserData) {
       updateUserMutation.mutate(editedUserData);
@@ -156,18 +154,6 @@ const ProfilePage: FC = () => {
 
   const handleSignOut = () => {
     signOut({ callbackUrl: '/' });
-  };
-
-  const handleDeleteAccount = () => {
-    if (showDeleteConfirm) {
-      deleteAccountMutation.mutate();
-    } else {
-      setShowDeleteConfirm(true);
-    }
-  };
-
-  const handleCancelDelete = () => {
-    setShowDeleteConfirm(false);
   };
 
   if (isLoading) {
@@ -230,40 +216,6 @@ const ProfilePage: FC = () => {
             </motion.button>
           )}
         </motion.div>
-
-        {/* Delete Confirmation Dialog */}
-        <AnimatePresence>
-          {showDeleteConfirm && (
-            <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.3 }}
-              className="bg-white rounded-xl border border-red-200 p-6 mb-6 shadow-sm"
-            >
-              <h3 className="text-lg font-medium text-red-700 mb-3">Delete Account?</h3>
-              <p className="text-sm text-gray-600 mb-4">
-                This action cannot be undone. All of your data will be permanently deleted.
-              </p>
-              <div className="flex gap-3">
-                <button
-                  onClick={handleDeleteAccount}
-                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-                  disabled={deleteAccountMutation.isPending}
-                >
-                  {deleteAccountMutation.isPending ? 'Deleting...' : 'Yes, Delete My Account'}
-                </button>
-                <button
-                  onClick={handleCancelDelete}
-                  className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
-                  disabled={deleteAccountMutation.isPending}
-                >
-                  Cancel
-                </button>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
 
         {/* Profile Card */}
         <motion.div
@@ -345,18 +297,20 @@ const ViewMode = ({ userData, isOwnProfile, onEdit }: ViewModeProps) => {
       exit="exit"
     >
       {isOwnProfile && (
-        <motion.button
-          onClick={onEdit}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          className="absolute top-0 right-0 inline-flex items-center px-4 py-2 rounded-lg bg-[#F9C5D1]/10 text-[#F28B82] hover:bg-[#F9C5D1]/20 transition-all cursor-pointer"
-        >
-          <FaEdit className="mr-2" />
-          Edit Profile
-        </motion.button>
+        <div className="absolute top-0 right-0">
+          <motion.button
+            onClick={onEdit}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="inline-flex items-center px-4 py-2 rounded-lg bg-[#F9C5D1]/10 text-[#F28B82] hover:bg-[#F9C5D1]/20 transition-all cursor-pointer"
+          >
+            <FaEdit className="mr-2" />
+            Edit Profile
+          </motion.button>
+        </div>
       )}
 
-      <div className="flex flex-col md:flex-row md:items-start gap-6">
+      <div className="flex flex-col md:flex-row md:items-start gap-6 pt-16 sm:pt-0">
         {renderProfileIcon()}
 
         <div className="flex-1">
@@ -493,20 +447,6 @@ const ViewMode = ({ userData, isOwnProfile, onEdit }: ViewModeProps) => {
               </ul>
             </motion.div>
           )}
-
-          {isOwnProfile && (
-            <motion.div className="mt-8" variants={itemVariants}>
-              <motion.button
-                onClick={() => window.dispatchEvent(new CustomEvent('delete-account'))}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 transition-all cursor-pointer"
-              >
-                <FaTrash className="text-sm" />
-                Delete Account
-              </motion.button>
-            </motion.div>
-          )}
         </div>
       </div>
     </motion.div>
@@ -527,6 +467,8 @@ const EditForm = ({ userData, setUserData, onSave, onCancel, isSubmitting }: Edi
   const companyLabel = userData.postGradType === 'work' ? 'Company' : 'School';
 
   const [activeField, setActiveField] = useState<string | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const deleteButtonRef = useRef<HTMLButtonElement>(null);
 
   // Animation variants for input fields
   const inputVariants = {
@@ -591,6 +533,13 @@ const EditForm = ({ userData, setUserData, onSave, onCancel, isSubmitting }: Edi
 
     setUserData(newUserData);
   };
+
+  // Scroll to the confirmation dialog when it appears
+  useEffect(() => {
+    if (showDeleteConfirm && deleteButtonRef.current) {
+      deleteButtonRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [showDeleteConfirm]);
 
   return (
     <motion.form
@@ -890,6 +839,62 @@ const EditForm = ({ userData, setUserData, onSave, onCancel, isSubmitting }: Edi
             'Save Changes'
           )}
         </motion.button>
+      </motion.div>
+
+      {/* Delete Account Section */}
+      <motion.div variants={itemVariants} className="mt-12 pt-6 border-t border-gray-200">
+        <h3 className="text-lg font-medium text-red-600 mb-2">Danger Zone</h3>
+        <p className="text-sm text-gray-600 mb-4">
+          Once you delete your account, there is no going back. Please be certain.
+        </p>
+        <motion.button
+          ref={deleteButtonRef}
+          type="button"
+          onClick={() => setShowDeleteConfirm(true)}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 transition-all cursor-pointer"
+        >
+          <FaTrash className="text-sm" />
+          Delete Account
+        </motion.button>
+
+        {/* Inline Delete Confirmation */}
+        <AnimatePresence>
+          {showDeleteConfirm && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.3 }}
+              className="bg-white rounded-xl border border-red-200 p-6 mt-4 shadow-sm"
+            >
+              <h3 className="text-lg font-medium text-red-700 mb-3">Are you sure?</h3>
+              <p className="text-sm text-gray-600 mb-4">
+                This action cannot be undone. All of your data will be permanently deleted.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const deleteAccountEvent = new CustomEvent('delete-account');
+                    window.dispatchEvent(deleteAccountEvent);
+                  }}
+                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                >
+                  Yes, Delete My Account
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowDeleteConfirm(false)}
+                  className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.div>
     </motion.form>
   );

@@ -1,24 +1,81 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Flock
 
-## Getting Started
+<div align="center">
+  <img src="public/logo.svg" alt="Flock Logo" width="120" height="120" />
+  
+  <h3>Connect with your BC community</h3>
 
-First, run the development server:
+![Version](https://img.shields.io/badge/version-1.0.0-blue)
+![License](https://img.shields.io/badge/license-Proprietary-red)
+![Next.js](https://img.shields.io/badge/Next.js-14-black)
+![Deployment](https://img.shields.io/badge/deployment-Vercel-black)
+
+</div>
+
+## 🚀 Overview
+
+Flock is a platform for Boston College students to connect and find their classmates after graduation. Whether you're pursuing a career or further education, Flock helps you maintain your BC connections wherever life takes you.
+
+## ✨ Features
+
+- **Alumni Directory** - Find classmates by location, industry, school, or company
+- **Smart Profile Management** - Create and control your professional presence
+- **Location Mapping** - See where fellow Eagles have landed post-graduation
+- **Roommate Matching** - Indicate if you're looking for roommates in your area
+- **Privacy Controls** - Granular visibility settings for your information
+
+## 🛠️ Tech Stack
+
+- **Frontend:** Next.js, React, TailwindCSS, Framer Motion
+- **Backend:** Next.js API Routes
+- **Database:** PostgreSQL with Prisma ORM
+- **Authentication:** NextAuth with Google provider
+- **State Management:** React Query, React Context
+- **Deployment:** Vercel
+
+## 🧩 Architecture
+
+Flock is built with a modern, responsive architecture focusing on:
+
+- Server-side rendering for optimal performance
+- Type safety with TypeScript throughout
+- Efficient data fetching with React Query
+- Seamless animations with Framer Motion
+- Mobile-first responsive design
+
+## 🚦 Getting Started
 
 ```bash
+# Clone the repository
+git clone <repository-url>
+
+# Install dependencies
+npm install
+
+# Setup environment variables
+cp .env.example .env.local
+
+# Run the development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 📊 Project Status
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Current version: **1.0.0**
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- ✅ User authentication
+- ✅ Profile management
+- ✅ Alumni directory
+- ✅ Search & filtering
+- ✅ Location services
+- ✅ Roommate indicators
+
+## 📝 License
+
+This software is proprietary and owned by the Flock Dev Team (Rafael Singer and Hunter Scheppat).
+All rights reserved. See the [LICENSE](./LICENSE) file for details.
+
+Copyright (c) 2024 Flock Dev Team
 
 ## Learn More
 
