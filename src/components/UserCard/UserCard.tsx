@@ -2,11 +2,11 @@ import React, { useState } from 'react';
 import { MapPin, Building, Mail, Briefcase, GraduationCap, Home } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
-import { User, getDisplayCompany, getDisplayRole } from '@/types/user';
+import { UserWithLocation, getDisplayCompany, getDisplayRole } from '@/types/user';
 import { motion } from 'framer-motion';
 
 interface UserCardProps {
-  user: User;
+  user: UserWithLocation;
   prefetch?: boolean;
 }
 
