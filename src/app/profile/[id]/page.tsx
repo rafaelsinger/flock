@@ -23,6 +23,7 @@ import {
   UpdateUser,
 } from '@/types/user';
 import { CitySelect } from '@/components/Select/CitySelect';
+import { PostGradType } from '@prisma/client';
 
 // Common input classes for consistency with onboarding flow
 const inputClasses =
@@ -265,7 +266,10 @@ const ViewMode = ({ userData, isOwnProfile, onEdit }: ViewModeProps) => {
   const displayRole = getDisplayRole(userData);
   const displayCompany = getDisplayCompany(userData);
 
+  const isSeeking = userData.postGradType === PostGradType.seeking;
+
   const renderProfileIcon = () => {
+    if (isSeeking) return null;
     return userData.postGradType === 'work' ? (
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
@@ -318,7 +322,7 @@ const ViewMode = ({ userData, isOwnProfile, onEdit }: ViewModeProps) => {
           </motion.h1>
 
           {/* Only show if the user is viewing their own profile or if at least one visibility setting is true */}
-          {(showRole || showCompany) && (
+          {(showRole || showCompany) && !isSeeking && (
             <motion.div className="flex items-start space-x-2 mb-4" variants={itemVariants}>
               <div className="mt-1">
                 {userData.postGradType === 'work' ? (
@@ -348,18 +352,20 @@ const ViewMode = ({ userData, isOwnProfile, onEdit }: ViewModeProps) => {
             </motion.div>
           )}
 
-          <motion.div className="flex items-start space-x-2 mb-4" variants={itemVariants}>
-            <BsGeoAlt className="text-[#F28B82] text-xl mt-1" />
-            <div>
-              <p className="text-lg text-[#333333]">
-                {userData.location?.city}
-                {userData.location?.state && `, ${userData.location?.state}`}
-                {userData.location?.country &&
-                  userData.location?.country !== 'USA' &&
-                  `, ${userData.location?.country}`}
-              </p>
-            </div>
-          </motion.div>
+          {!isSeeking && (
+            <motion.div className="flex items-start space-x-2 mb-4" variants={itemVariants}>
+              <BsGeoAlt className="text-[#F28B82] text-xl mt-1" />
+              <div>
+                <p className="text-lg text-[#333333]">
+                  {userData.location?.city}
+                  {userData.location?.state && `, ${userData.location?.state}`}
+                  {userData.location?.country &&
+                    userData.location?.country !== 'USA' &&
+                    `, ${userData.location?.country}`}
+                </p>
+              </div>
+            </motion.div>
+          )}
 
           {/* Roommate status */}
           {userData.lookingForRoommate && (
@@ -393,7 +399,7 @@ const ViewMode = ({ userData, isOwnProfile, onEdit }: ViewModeProps) => {
             </motion.div>
           )}
 
-          {isOwnProfile && (
+          {isOwnProfile && !isSeeking && (
             <motion.div
               className="mt-8 p-4 rounded-xl bg-[#FFF9F8] border border-[#F9C5D1]/10"
               variants={itemVariants}

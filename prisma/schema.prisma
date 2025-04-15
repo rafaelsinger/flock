@@ -101,4 +101,5 @@ model VerificationToken {
 enum PostGradType {
   work
   school
+  seeking
 }

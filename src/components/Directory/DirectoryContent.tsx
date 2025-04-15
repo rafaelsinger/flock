@@ -7,6 +7,7 @@ import { FaGraduationCap, FaBriefcase, FaHome, FaMapMarkerAlt } from 'react-icon
 import { motion, AnimatePresence } from 'framer-motion';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useSession } from 'next-auth/react';
+import { PostGradType } from '@prisma/client';
 
 interface FilterOptions {
   postGradType?: 'work' | 'school' | 'all';
@@ -58,6 +59,7 @@ export const DirectoryContent: React.FC<DirectoryContentProps> = ({
   const [showRoommateOnly, setShowRoommateOnly] = useState(false);
 
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
+  const isSeeking = session?.user.postGradType === PostGradType.seeking;
 
   // Helper function to build query parameters
   const buildQueryParams = useCallback(
@@ -184,6 +186,7 @@ export const DirectoryContent: React.FC<DirectoryContentProps> = ({
 
   const handleMyCityFilterChange = () => {
     // If already active, toggle off
+    if (isSeeking) return;
     if (isMyCityActive) {
       onFiltersChange({
         ...filters,
@@ -203,8 +206,8 @@ export const DirectoryContent: React.FC<DirectoryContentProps> = ({
   };
 
   // Get user's general location (city & state) if available
-  const userCity = session?.user?.location.city;
-  const userState = session?.user?.location.state;
+  const userCity = !isSeeking ? session?.user?.location.city : undefined;
+  const userState = !isSeeking ? session?.user?.location.state : undefined;
   const hasUserLocation = !!(userCity && userState);
 
   // Check if My City filter is active
