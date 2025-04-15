@@ -3,15 +3,14 @@
 import { FC, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { US_STATES, COUNTRIES, STATES_WITH_BOROUGHS } from '@/constants/location';
+import { STATES_WITH_BOROUGHS } from '@/constants/location';
 import { UserUpdate } from '@/types/user';
 import { motion } from 'framer-motion';
 import { OnboardingProgress } from '@/components';
 import { IoLocationOutline } from 'react-icons/io5';
 import { MdOutlineLocationCity } from 'react-icons/md';
-import { TbMap2 } from 'react-icons/tb';
-import { HiOutlineGlobeAlt } from 'react-icons/hi';
 import { IoMdPeople } from 'react-icons/io';
+import { CitySelect } from '@/components/Select/CitySelect';
 
 const Step3: FC = () => {
   const router = useRouter();
@@ -19,11 +18,13 @@ const Step3: FC = () => {
   const previousData = queryClient.getQueryData(['onboardingData']) as UserUpdate;
 
   const [formData, setFormData] = useState({
-    country: 'USA',
+    country: '',
     state: '',
     city: '',
     boroughDistrict: '',
     lookingForRoommate: false,
+    lat: 0,
+    lng: 0,
   });
 
   const [isFormValid, setIsFormValid] = useState(false);
@@ -32,8 +33,9 @@ const Step3: FC = () => {
   useEffect(() => {
     setIsFormValid(
       formData.country.trim() !== '' &&
-        (formData.country !== 'USA' || formData.state.trim() !== '') &&
-        formData.city.trim() !== ''
+        formData.city.trim() !== '' &&
+        formData.lat !== 0 &&
+        formData.lng !== 0
     );
   }, [formData]);
 
@@ -46,6 +48,8 @@ const Step3: FC = () => {
         city: locationData.city,
         boroughDistrict: locationData.boroughDistrict,
         lookingForRoommate: locationData.lookingForRoommate,
+        // lat: locationData.lat,
+        // lng: locationData.lng,
       };
       return Promise.resolve(data);
     },
@@ -69,20 +73,12 @@ const Step3: FC = () => {
     return null;
   }
 
-  const showStateField = formData.country === 'USA';
   const showBoroughField =
     formData.country === 'USA' && STATES_WITH_BOROUGHS.includes(formData.state);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const locationData = {
-      ...formData,
-      // Only include state for USA
-      state: showStateField ? formData.state : '',
-      // Only include borough for specific states
-      borough: showBoroughField ? formData.boroughDistrict : '',
-    };
-    updateOnboardingData.mutate(locationData);
+    updateOnboardingData.mutate(formData);
   };
 
   const inputVariants = {
@@ -107,7 +103,6 @@ const Step3: FC = () => {
     visible: { opacity: 1, y: 0 },
   };
 
-  // Common classes for better maintainability
   const inputClasses =
     'w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-[#F9C5D1] focus:ring-2 focus:ring-[#F9C5D1]/20 outline-none transition-all hover:border-[#F9C5D1]/50 cursor-pointer text-[#333333]';
   const labelClasses = 'flex items-center text-sm font-medium text-[#333333] mb-2';
@@ -131,103 +126,32 @@ const Step3: FC = () => {
       <form onSubmit={handleSubmit} className="space-y-8">
         <div className="space-y-6">
           <motion.div variants={itemVariants}>
-            <label htmlFor="country" className={labelClasses}>
-              <HiOutlineGlobeAlt className="mr-2 text-[#F28B82]" />
-              Country
-            </label>
-            <motion.div
-              variants={inputVariants}
-              animate={activeField === 'country' ? 'focus' : 'blur'}
-            >
-              <select
-                id="country"
-                value={formData.country}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    country: e.target.value,
-                    // Reset state and borough when country changes
-                    state: '',
-                    boroughDistrict: '',
-                  }))
-                }
-                onFocus={() => setActiveField('country')}
-                onBlur={() => setActiveField(null)}
-                className={inputClasses}
-                required
-              >
-                <option value="">Select a country</option>
-                {COUNTRIES.map(({ value, label }) => (
-                  <option key={value} value={value}>
-                    {label}
-                  </option>
-                ))}
-              </select>
-            </motion.div>
-          </motion.div>
-
-          {showStateField && (
-            <motion.div variants={itemVariants} initial="hidden" animate="visible">
-              <label htmlFor="state" className={labelClasses}>
-                <TbMap2 className="mr-2 text-[#F28B82]" />
-                State
-              </label>
-              <motion.div
-                variants={inputVariants}
-                animate={activeField === 'state' ? 'focus' : 'blur'}
-              >
-                <select
-                  id="state"
-                  value={formData.state}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      state: e.target.value,
-                      // Reset borough when state changes
-                      boroughDistrict: '',
-                    }))
-                  }
-                  onFocus={() => setActiveField('state')}
-                  onBlur={() => setActiveField(null)}
-                  className={inputClasses}
-                  required
-                >
-                  <option value="">Select a state</option>
-                  {US_STATES.map(({ value, label }) => (
-                    <option key={value} value={value}>
-                      {label}
-                    </option>
-                  ))}
-                </select>
-              </motion.div>
-            </motion.div>
-          )}
-
-          <motion.div variants={itemVariants}>
             <label htmlFor="city" className={labelClasses}>
               <MdOutlineLocationCity className="mr-2 text-[#F28B82]" />
-              City
+              Location
             </label>
             <motion.div
               variants={inputVariants}
               animate={activeField === 'city' ? 'focus' : 'blur'}
             >
-              <input
-                type="text"
-                id="city"
+              <CitySelect
                 value={formData.city}
-                onChange={(e) => setFormData((prev) => ({ ...prev, city: e.target.value }))}
-                onFocus={() => setActiveField('city')}
-                onBlur={() => setActiveField(null)}
-                className={inputClasses}
-                placeholder="e.g. San Francisco"
-                required
+                onChange={(location) => {
+                  setFormData((prev) => ({
+                    ...prev,
+                    city: location.city,
+                    state: location.state,
+                    country: location.country,
+                    lat: location.lat,
+                    lng: location.lng,
+                  }));
+                }}
               />
             </motion.div>
           </motion.div>
 
           {showBoroughField && (
-            <motion.div variants={itemVariants} initial="hidden" animate="visible">
+            <motion.div variants={itemVariants}>
               <label htmlFor="borough" className={labelClasses}>
                 <IoLocationOutline className="mr-2 text-[#F28B82]" />
                 Borough/Neighborhood <span className="text-[#666666] text-sm ml-1">(optional)</span>
@@ -252,7 +176,7 @@ const Step3: FC = () => {
             </motion.div>
           )}
 
-          <motion.div variants={itemVariants} initial="hidden" animate="visible">
+          <motion.div variants={itemVariants}>
             <label className={`${labelClasses} mb-3`}>
               <IoMdPeople className="mr-2 text-[#F28B82]" />
               Looking for Roommates

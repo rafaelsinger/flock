@@ -1,5 +1,5 @@
-import React from 'react';
-import { useLoadScript, Autocomplete } from '@react-google-maps/api';
+import React, { useState, useCallback } from 'react';
+import { useDebounce } from '@/hooks/useDebounce';
 
 interface Location {
   city: string;
@@ -14,50 +14,136 @@ interface CitySelectProps {
   onChange: (location: Location) => void;
 }
 
-interface AddressComponent {
-  long_name: string;
-  short_name: string;
-  types: string[];
+interface Datasource {
+  sourcename: string;
+  attribution: string;
+  license: string;
+  url: string;
+}
+
+interface Timezone {
+  name: string;
+  offset_STD: string;
+  offset_STD_seconds: number;
+  offset_DST: string;
+  offset_DST_seconds: number;
+  abbreviation_STD: string;
+  abbreviation_DST: string;
+}
+
+interface Rank {
+  importance: number;
+  confidence: number;
+  confidence_city_level: number;
+  match_type: string;
+}
+
+interface BoundingBox {
+  lon1: number;
+  lat1: number;
+  lon2: number;
+  lat2: number;
+}
+
+interface GeoapifyResult {
+  datasource: Datasource;
+  old_name?: string;
+  country: string;
+  country_code: string;
+  state: string;
+  county: string;
+  city: string;
+  iso3166_2: string;
+  lon: number;
+  lat: number;
+  state_code: string;
+  result_type: string;
+  formatted: string;
+  address_line1: string;
+  address_line2: string;
+  category: string;
+  timezone: Timezone;
+  plus_code: string;
+  plus_code_short: string;
+  rank: Rank;
+  place_id: string;
+  bbox: BoundingBox;
+}
+
+interface GeoapifyResponse {
+  results: GeoapifyResult[];
 }
 
 export const CitySelect: React.FC<CitySelectProps> = ({ value, onChange }) => {
-  const { isLoaded } = useLoadScript({
-    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
-    libraries: ['places'],
-  });
+  const [inputValue, setInputValue] = useState(value);
+  const [suggestions, setSuggestions] = useState<GeoapifyResult[]>([]);
+  const debouncedValue = useDebounce(inputValue, 250);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const autocompleteRef = React.useRef<google.maps.places.Autocomplete | null>(null);
-
-  const handlePlaceChanged = () => {
-    const place = autocompleteRef.current?.getPlace();
-    const location = place?.geometry?.location;
-
-    if (place && location) {
-      onChange({
-        city: place.address_components?.[0]?.long_name || '',
-        state:
-          place.address_components?.find((c: AddressComponent) =>
-            c.types.includes('administrative_area_level_1')
-          )?.short_name || '',
-        country:
-          place.address_components?.find((c: AddressComponent) => c.types.includes('country'))
-            ?.short_name || '',
-        lat: location.lat(),
-        lng: location.lng(),
-      });
+  const fetchSuggestions = useCallback(async (text: string) => {
+    if (!text) {
+      setSuggestions([]);
+      return;
     }
+
+    setIsLoading(true);
+    try {
+      const response = await fetch(
+        `https://api.geoapify.com/v1/geocode/autocomplete?text=${encodeURIComponent(text)}&type=city&format=json&apiKey=${process.env.NEXT_PUBLIC_GEOAPIFY_KEY}`
+      );
+      const data = (await response.json()) as GeoapifyResponse;
+      setSuggestions(data.results || []);
+    } catch (error) {
+      console.error('Error fetching suggestions:', error);
+      setSuggestions([]);
+    }
+    setIsLoading(false);
+  }, []);
+
+  React.useEffect(() => {
+    console.log({ debouncedValue });
+    fetchSuggestions(debouncedValue);
+  }, [debouncedValue, fetchSuggestions]);
+
+  const handleSelect = (feature: GeoapifyResult) => {
+    const location: Location = {
+      city: feature.city || '',
+      state: feature.state || '',
+      country: feature.country || '',
+      lat: feature.lat,
+      lng: feature.lon,
+    };
+
+    setInputValue(feature.formatted);
+    setSuggestions([]);
+    onChange(location);
   };
 
-  if (!isLoaded) return <div>Loading...</div>;
-
   return (
-    <Autocomplete
-      onLoad={(autocomplete: google.maps.places.Autocomplete) => {
-        autocompleteRef.current = autocomplete;
-      }}
-      onPlaceChanged={handlePlaceChanged}
-    >
-      <input type="text" placeholder="Enter your city" className="input" defaultValue={value} />
-    </Autocomplete>
+    <div className="relative">
+      <input
+        type="text"
+        value={inputValue}
+        onChange={(e) => setInputValue(e.target.value)}
+        placeholder="Enter your city"
+        className="input w-full text-[#333]"
+      />
+
+      {isLoading && <div className="absolute right-3 top-1/2 -translate-y-1/2">Loading...</div>}
+
+      {suggestions.length > 0 && (
+        <ul className="absolute z-10 w-full mt-1 bg-white border rounded-md shadow-lg max-h-60 overflow-auto">
+          {suggestions.map((feature, index) => (
+            <li
+              key={index}
+              className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-[#333]"
+              onClick={() => handleSelect(feature)}
+            >
+              {feature.formatted}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
   );
 };
