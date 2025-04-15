@@ -46,7 +46,7 @@ model User {
   school            String?
   program           String?
   discipline        String?
-  classYear         Int          @map("class_year")
+  classYear         Int          @map("class_year") @default(2025)
   internshipSeason  String?      @map("internship_season")
   internshipYear    Int?         @map("internship_year")
   lookingForRoommate Boolean?     @default(false) @map("looking_for_roommate")

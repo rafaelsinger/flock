@@ -9,26 +9,8 @@ import authConfig from './auth.config';
 import { redirect } from 'next/navigation';
 import { NextResponse } from 'next/server';
 
-// Create a custom adapter based on PrismaAdapter
-const customPrismaAdapter = () => {
-  const adapter = PrismaAdapter(prisma);
-  return {
-    ...adapter,
-    createUser: (data) => {
-      // Add required classYear field with a default value
-      return prisma.user.create({
-        data: {
-          ...data,
-          classYear: 2024, // Default class year (can be updated later during onboarding)
-          isOnboarded: false, // Ensure user always needs to go through onboarding
-        },
-      });
-    },
-  };
-};
-
 export const { handlers, signIn, signOut, auth } = NextAuth({
-  adapter: customPrismaAdapter(),
+  adapter: PrismaAdapter(prisma),
   session: { strategy: 'jwt' },
   callbacks: {
     authorized: async ({ request, auth }) => {
