@@ -3,54 +3,107 @@
 import { FC, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { IncompleteUserOnboarding } from '@/types/user';
+import { GraduateFormData, IncompleteUserOnboarding } from '@/types/user';
 import { motion } from 'framer-motion';
 import { OnboardingProgress } from '@/components';
-import { HiOutlineEye, HiOutlineEyeOff } from 'react-icons/hi';
-import { FaBuilding, FaUniversity } from 'react-icons/fa';
-import { BsBriefcase, BsBookHalf, BsCalendar } from 'react-icons/bs';
-import { UserType, PostGradType } from '@prisma/client';
+import { BsEyeSlash, BsEye } from 'react-icons/bs';
+import { PostGradType } from '@prisma/client';
 
-type WorkFormData = {
+// Type definitions
+type SchoolFormData = {
+  visibilityOptions: {
+    school: boolean;
+    major: boolean;
+  };
+};
+
+// Updated to use the same fields for both user types
+type InternFormData = {
   visibilityOptions: {
     company: boolean;
     title: boolean;
   };
 };
 
-type SchoolFormData = {
-  visibilityOptions: {
-    school: boolean;
-    program: boolean;
-  };
-};
-
-type InternFormData = {
-  visibilityOptions: {
-    internship: boolean;
-  };
-};
-
-type FormData = WorkFormData | SchoolFormData | InternFormData;
+type FormData = InternFormData | SchoolFormData | GraduateFormData;
 
 const Step4: FC = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
   const previousData = queryClient.getQueryData(['onboardingData']) as IncompleteUserOnboarding;
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const isIntern = previousData?.userType === UserType.intern;
-  const postGradType = previousData?.postGradType || '';
+  const isIntern = previousData?.userType === 'intern';
 
-  const updateOnboardingData = useMutation({
-    mutationFn: (visibilityData: IncompleteUserOnboarding) => {
-      const data: IncompleteUserOnboarding = {
+  const getInitialVisibilityOptions = (): FormData => {
+    if (isIntern) {
+      return {
+        visibilityOptions: {
+          company: true,
+          title: true,
+        },
+      };
+    } else if (previousData?.postGradType === PostGradType.school) {
+      return {
+        visibilityOptions: {
+          school: true,
+          major: true,
+        },
+      };
+    } else {
+      // Graduate with work
+      return {
+        visibilityOptions: {
+          company: true,
+          title: true,
+        },
+      };
+    }
+  };
+
+  // Get the appropriate field label based on user type and post-graduation path
+  const getFieldLabel = (fieldType: 'company' | 'title' | 'school' | 'major'): string => {
+    if (isIntern) {
+      if (fieldType === 'company') return 'Internship Company';
+      if (fieldType === 'title') return 'Internship Title';
+    } else if (previousData?.postGradType === PostGradType.school) {
+      if (fieldType === 'school') return 'School';
+      if (fieldType === 'major') return 'Major';
+    } else {
+      if (fieldType === 'company') return 'Company';
+      if (fieldType === 'title') return 'Role';
+    }
+    return '';
+  };
+
+  // Function to check if company/school should be checked
+  const getCompanySchoolChecked = (): boolean => {
+    if (isIntern || previousData?.postGradType === PostGradType.work) {
+      return (formData as InternFormData | GraduateFormData).visibilityOptions.company;
+    } else if (previousData?.postGradType === PostGradType.school) {
+      return (formData as SchoolFormData).visibilityOptions.school;
+    }
+    return true;
+  };
+
+  // Function to check if title/major should be checked
+  const getTitleMajorChecked = (): boolean => {
+    if (isIntern || previousData?.postGradType === PostGradType.work) {
+      return (formData as InternFormData | GraduateFormData).visibilityOptions.title;
+    } else if (previousData?.postGradType === PostGradType.school) {
+      return (formData as SchoolFormData).visibilityOptions.major;
+    }
+    return true;
+  };
+
+  const [formData, setFormData] = useState<FormData>(getInitialVisibilityOptions());
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const updateVisibilityOptions = useMutation({
+    mutationFn: (updatedFormData: FormData) => {
+      const data = {
         ...previousData,
         visibilityOptions: {
-          company: visibilityData.visibilityOptions?.company,
-          title: visibilityData.visibilityOptions?.title,
-          school: visibilityData.visibilityOptions?.school,
-          program: visibilityData.visibilityOptions?.program,
-          internship: visibilityData.visibilityOptions?.internship,
+          ...previousData.visibilityOptions,
+          ...(updatedFormData as FormData).visibilityOptions,
         },
       };
       return Promise.resolve(data);
@@ -61,35 +114,8 @@ const Step4: FC = () => {
     },
   });
 
-  // Initialize form data based on user type and post grad type
-  const getInitialFormData = () => {
-    if (isIntern) {
-      return {
-        visibilityOptions: {
-          internship: true,
-        },
-      } as InternFormData;
-    } else if (postGradType === PostGradType.work) {
-      return {
-        visibilityOptions: {
-          company: true,
-          title: true,
-        },
-      } as WorkFormData;
-    } else {
-      return {
-        visibilityOptions: {
-          school: true,
-          program: true,
-        },
-      } as SchoolFormData;
-    }
-  };
-
-  const [formData, setFormData] = useState<FormData>(getInitialFormData());
-
   useEffect(() => {
-    if (!previousData || !previousData.postGradType) {
+    if (!previousData) {
       router.push('/onboarding/step1');
     }
   }, [previousData, router]);
@@ -98,112 +124,38 @@ const Step4: FC = () => {
     router.prefetch('/onboarding/review');
   }, [router]);
 
-  if (!previousData || !previousData.postGradType) {
+  if (!previousData) {
     return null;
   }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    updateOnboardingData.mutate(formData);
+    updateVisibilityOptions.mutate(formData);
   };
 
-  // Handle changes to visibility options
-  const handleCompanySchoolChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (isIntern) {
-      setFormData(
-        (prev) =>
-          ({
-            ...prev,
-            visibilityOptions: {
-              ...(prev as InternFormData).visibilityOptions,
-              internship: e.target.checked,
-            },
-          }) as InternFormData
-      );
-    } else if (postGradType === PostGradType.work) {
-      setFormData(
-        (prev) =>
-          ({
-            ...prev,
-            visibilityOptions: {
-              ...(prev as WorkFormData).visibilityOptions,
-              company: e.target.checked,
-            },
-          }) as WorkFormData
-      );
-    } else {
-      setFormData(
-        (prev) =>
-          ({
-            ...prev,
-            visibilityOptions: {
-              ...(prev as SchoolFormData).visibilityOptions,
-              school: e.target.checked,
-            },
-          }) as SchoolFormData
-      );
+  const handleVisibilityChange = (field: string) => {
+    if (isIntern || previousData?.postGradType === PostGradType.work) {
+      if (field === 'company' || field === 'title') {
+        const workFormData = formData as InternFormData | GraduateFormData;
+        setFormData({
+          visibilityOptions: {
+            ...workFormData.visibilityOptions,
+            [field]: !workFormData.visibilityOptions[field as 'company' | 'title'],
+          },
+        } as FormData);
+      }
+    } else if (previousData?.postGradType === PostGradType.school) {
+      if (field === 'school' || field === 'major') {
+        const schoolFormData = formData as SchoolFormData;
+        setFormData({
+          visibilityOptions: {
+            ...schoolFormData.visibilityOptions,
+            [field]: !schoolFormData.visibilityOptions[field as 'school' | 'major'],
+          },
+        } as FormData);
+      }
     }
-  };
-
-  const handleTitleProgramChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (isIntern) {
-      // Nothing to do here for interns, since they only have one visibility option
-      return;
-    } else if (postGradType === PostGradType.work) {
-      setFormData(
-        (prev) =>
-          ({
-            ...prev,
-            visibilityOptions: {
-              ...(prev as WorkFormData).visibilityOptions,
-              title: e.target.checked,
-            },
-          }) as WorkFormData
-      );
-    } else {
-      setFormData(
-        (prev) =>
-          ({
-            ...prev,
-            visibilityOptions: {
-              ...(prev as SchoolFormData).visibilityOptions,
-              program: e.target.checked,
-            },
-          }) as SchoolFormData
-      );
-    }
-  };
-
-  // Determine labels based on user type
-  const getCompanySchoolLabel = () => {
-    if (isIntern) return 'Internship';
-    if (postGradType === PostGradType.work) return 'Company';
-    return 'School';
-  };
-
-  const getCompanySchoolDescription = () => {
-    if (isIntern) return 'Display your internship details to classmates';
-    if (postGradType === PostGradType.work) return 'Display your company name to classmates';
-    return 'Display your school to classmates';
-  };
-
-  const getTitleProgramLabel = () => {
-    if (postGradType === PostGradType.work) return 'Role';
-    return 'Program';
-  };
-
-  const getTitleProgramDescription = () => {
-    if (postGradType === PostGradType.work) return 'Display your role to classmates';
-    return 'Display your program to classmates';
-  };
-
-  // Check value
-  const getCompanySchoolChecked = () => {
-    if (isIntern) return (formData as InternFormData).visibilityOptions.internship;
-    if (postGradType === PostGradType.work)
-      return (formData as WorkFormData).visibilityOptions.company;
-    return (formData as SchoolFormData).visibilityOptions.school;
   };
 
   const containerVariants = {
@@ -223,10 +175,16 @@ const Step4: FC = () => {
     visible: { opacity: 1, y: 0 },
   };
 
-  const cardVariants = {
-    hover: { scale: 1.02, backgroundColor: 'rgba(249, 197, 209, 0.05)' },
-    tap: { scale: 0.98 },
-    initial: { scale: 1 },
+  const getCompanySchoolFieldName = (): string => {
+    if (isIntern) return 'company';
+    if (previousData?.postGradType === PostGradType.school) return 'school';
+    return 'company';
+  };
+
+  const getTitleMajorFieldName = (): string => {
+    if (isIntern) return 'title';
+    if (previousData?.postGradType === PostGradType.school) return 'major';
+    return 'title';
   };
 
   return (
@@ -247,177 +205,119 @@ const Step4: FC = () => {
         <OnboardingProgress currentStep={5} totalSteps={6} />
 
         <motion.div className="text-center mb-10 mt-4" variants={itemVariants}>
-          <h1 className="text-3xl md:text-4xl font-bold text-[#333333] mb-4">
-            Privacy Preferences
-          </h1>
+          <h1 className="text-3xl md:text-4xl font-bold text-[#333333] mb-4">Profile Visibility</h1>
           <p className="text-lg md:text-xl text-[#666666]">
-            Choose what information you want to share
+            Choose what information you want to display on your public profile.
           </p>
         </motion.div>
 
         <form onSubmit={handleSubmit} className="space-y-10 max-w-2xl mx-auto">
-          <motion.div className="space-y-6" variants={itemVariants}>
-            <div className="space-y-4">
-              <motion.label
-                className="flex items-center justify-between p-5 rounded-xl border-2 border-gray-200 hover:border-gray-300 transition-all cursor-pointer"
-                variants={cardVariants}
-                whileHover="hover"
-                whileTap="tap"
-                initial="initial"
-              >
-                <div className="flex items-start space-x-3">
-                  {isIntern ? (
-                    <BsCalendar className="text-[#F28B82] text-xl mt-1" />
-                  ) : postGradType === PostGradType.work ? (
-                    <FaBuilding className="text-[#F28B82] text-xl mt-1" />
-                  ) : (
-                    <FaUniversity className="text-[#A7D7F9] text-xl mt-1" />
-                  )}
-                  <div>
-                    <span className="font-medium text-[#333333] block text-lg">
-                      Show {getCompanySchoolLabel()}
-                    </span>
-                    <p className="text-sm text-[#666666] mt-1">{getCompanySchoolDescription()}</p>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-3">
+          <div className="space-y-6">
+            <motion.div className="space-y-4" variants={itemVariants}>
+              <div className="flex justify-between items-center">
+                <label className="text-lg font-medium text-[#333333]">
+                  {getFieldLabel(getCompanySchoolFieldName() as 'company' | 'school')}
+                </label>
+                <button
+                  type="button"
+                  onClick={() => handleVisibilityChange(getCompanySchoolFieldName())}
+                  className={`flex items-center space-x-2 px-4 py-2 rounded-lg ${
+                    getCompanySchoolChecked()
+                      ? 'bg-[#F28B82]/10 text-[#F28B82]'
+                      : 'bg-gray-100 text-gray-500'
+                  } transition-colors`}
+                >
                   {getCompanySchoolChecked() ? (
-                    <HiOutlineEye className="text-[#F28B82] text-lg" />
+                    <>
+                      <BsEye className="text-lg" />
+                      <span>Visible</span>
+                    </>
                   ) : (
-                    <HiOutlineEyeOff className="text-gray-400 text-lg" />
+                    <>
+                      <BsEyeSlash className="text-lg" />
+                      <span>Hidden</span>
+                    </>
                   )}
-                  <div className="h-7 w-12 relative flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={getCompanySchoolChecked()}
-                      onChange={handleCompanySchoolChange}
-                      className="h-6 w-6 rounded-md border-gray-300 text-[#F28B82] focus:ring-[#F9C5D1] transition-colors cursor-pointer"
-                    />
-                  </div>
-                </div>
-              </motion.label>
-
-              {!isIntern && (
-                <motion.label
-                  className="flex items-center justify-between p-5 rounded-xl border-2 border-gray-200 hover:border-gray-300 transition-all cursor-pointer"
-                  variants={cardVariants}
-                  whileHover="hover"
-                  whileTap="tap"
-                  initial="initial"
-                >
-                  <div className="flex items-start space-x-3">
-                    {postGradType === PostGradType.work ? (
-                      <BsBriefcase className="text-[#F28B82] text-xl mt-1" />
-                    ) : (
-                      <BsBookHalf className="text-[#A7D7F9] text-xl mt-1" />
-                    )}
-                    <div>
-                      <span className="font-medium text-[#333333] block text-lg">
-                        Show {getTitleProgramLabel()}
-                      </span>
-                      <p className="text-sm text-[#666666] mt-1">{getTitleProgramDescription()}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    {postGradType === PostGradType.work ? (
-                      (formData as WorkFormData).visibilityOptions.title ? (
-                        <HiOutlineEye className="text-[#F28B82] text-lg" />
-                      ) : (
-                        <HiOutlineEyeOff className="text-gray-400 text-lg" />
-                      )
-                    ) : (formData as SchoolFormData).visibilityOptions.program ? (
-                      <HiOutlineEye className="text-[#A7D7F9] text-lg" />
-                    ) : (
-                      <HiOutlineEyeOff className="text-gray-400 text-lg" />
-                    )}
-                    <div className="h-7 w-12 relative flex items-center">
-                      <input
-                        type="checkbox"
-                        checked={
-                          postGradType === PostGradType.work
-                            ? (formData as WorkFormData).visibilityOptions.title
-                            : (formData as SchoolFormData).visibilityOptions.program
-                        }
-                        onChange={handleTitleProgramChange}
-                        className="h-6 w-6 rounded-md border-gray-300 text-[#F28B82] focus:ring-[#F9C5D1] transition-colors cursor-pointer"
-                      />
-                    </div>
-                  </div>
-                </motion.label>
-              )}
-            </div>
-
-            <div className="mt-8 bg-[#F9FAFB] p-4 rounded-xl border border-gray-100">
-              <p className="text-sm text-[#666666] flex items-start">
-                <svg
-                  className="w-5 h-5 mr-2 text-[#F28B82] flex-shrink-0 mt-0.5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-                <span>
-                  Your general profile information and location will always be visible to your BC
-                  classmates. These preferences only control the visibility of your specific role
-                  and organization details.
-                </span>
+                </button>
+              </div>
+              <p className="text-sm text-[#666666]">
+                {getCompanySchoolChecked()
+                  ? `Your ${getFieldLabel(
+                      getCompanySchoolFieldName() as 'company' | 'school'
+                    ).toLowerCase()} will be visible on your public profile.`
+                  : `Your ${getFieldLabel(
+                      getCompanySchoolFieldName() as 'company' | 'school'
+                    ).toLowerCase()} will be hidden from your public profile.`}
               </p>
-            </div>
-          </motion.div>
+            </motion.div>
 
-          <motion.div className="flex justify-between items-center pt-4" variants={itemVariants}>
+            <motion.div className="space-y-4" variants={itemVariants}>
+              <div className="flex justify-between items-center">
+                <label className="text-lg font-medium text-[#333333]">
+                  {getFieldLabel(getTitleMajorFieldName() as 'title' | 'major')}
+                </label>
+                <button
+                  type="button"
+                  onClick={() => handleVisibilityChange(getTitleMajorFieldName())}
+                  className={`flex items-center space-x-2 px-4 py-2 rounded-lg ${
+                    getTitleMajorChecked()
+                      ? 'bg-[#F28B82]/10 text-[#F28B82]'
+                      : 'bg-gray-100 text-gray-500'
+                  } transition-colors`}
+                >
+                  {getTitleMajorChecked() ? (
+                    <>
+                      <BsEye className="text-lg" />
+                      <span>Visible</span>
+                    </>
+                  ) : (
+                    <>
+                      <BsEyeSlash className="text-lg" />
+                      <span>Hidden</span>
+                    </>
+                  )}
+                </button>
+              </div>
+              <p className="text-sm text-[#666666]">
+                {getTitleMajorChecked()
+                  ? `Your ${getFieldLabel(
+                      getTitleMajorFieldName() as 'title' | 'major'
+                    ).toLowerCase()} will be visible on your public profile.`
+                  : `Your ${getFieldLabel(
+                      getTitleMajorFieldName() as 'title' | 'major'
+                    ).toLowerCase()} will be hidden from your public profile.`}
+              </p>
+            </motion.div>
+          </div>
+
+          <motion.div
+            className="flex flex-col md:flex-row justify-between space-y-4 md:space-y-0 md:space-x-4"
+            variants={itemVariants}
+          >
             <motion.button
               type="button"
               onClick={() => router.back()}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="px-6 py-3 rounded-xl border-2 border-gray-200 text-[#666666] hover:text-[#333333] hover:border-gray-300 transition-all font-medium"
+              className="px-6 py-3 md:py-4 rounded-xl border border-[#F9C5D1] text-[#F28B82] font-medium transition-all hover:bg-[#F9C5D1]/5 flex-1 max-w-[200px] mx-auto md:mx-0"
             >
               Back
             </motion.button>
             <motion.button
               type="submit"
               disabled={isSubmitting}
-              whileHover={!isSubmitting ? { scale: 1.03 } : {}}
-              whileTap={!isSubmitting ? { scale: 0.98 } : {}}
-              className={`px-8 py-3 rounded-xl transition-all text-base md:text-lg font-medium min-w-[120px] ${
-                !isSubmitting
-                  ? 'bg-gradient-to-r from-[#F28B82] to-[#E67C73] text-white shadow-md hover:shadow-lg'
-                  : 'bg-[#F9C5D1]/50 cursor-not-allowed text-white/70'
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className={`px-6 py-3 md:py-4 rounded-xl font-medium bg-gradient-to-r from-[#F9C5D1] to-[#F28B82] text-white cursor-pointer flex-1 max-w-[200px] mx-auto md:mx-0 ${
+                isSubmitting ? 'opacity-70' : ''
               }`}
             >
               {isSubmitting ? (
-                <span className="flex items-center justify-center">
-                  <svg
-                    className="animate-spin -ml-1 mr-2 h-5 w-5 text-white"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    ></circle>
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    ></path>
-                  </svg>
-                  Processing...
-                </span>
+                <div className="flex items-center justify-center">
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                </div>
               ) : (
-                'Continue to Review'
+                'Continue'
               )}
             </motion.button>
           </motion.div>

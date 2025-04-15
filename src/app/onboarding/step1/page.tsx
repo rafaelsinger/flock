@@ -6,7 +6,7 @@ import { BsBriefcase } from 'react-icons/bs';
 import { LuGraduationCap } from 'react-icons/lu';
 import { MdOutlineScience } from 'react-icons/md';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { PostGradType, UserType } from '@prisma/client';
+import { PostGradType } from '@prisma/client';
 import { IncompleteUserOnboarding, UserWithLocation } from '@/types/user';
 import { motion } from 'framer-motion';
 import { OnboardingProgress } from '@/components';
@@ -22,7 +22,7 @@ const Step1: FC = () => {
   const previousData = queryClient.getQueryData(['onboardingData']) as IncompleteUserOnboarding;
   const isFinalizingRef = useRef(false);
   const [localClassYear, setLocalClassYear] = useState<number | null>(null);
-  const isIntern = previousData?.userType === UserType.intern;
+  const isIntern = previousData?.userType === 'intern';
 
   // Check immediately if classYear exists, before rendering content
   useEffect(() => {
@@ -147,7 +147,7 @@ const Step1: FC = () => {
 
       // Use either previously stored data or local class year
       const classYear = previousData?.classYear || localClassYear;
-      const userType = previousData?.userType || UserType.grad;
+      const userType = previousData?.userType || 'grad';
 
       if (!classYear) {
         console.error('Missing classYear data. Redirecting to step0');

@@ -67,21 +67,35 @@ const ProfilePage: FC = () => {
     // Function to handle account deletion
     const deleteUser = async () => {
       try {
+        // Call the API to delete the account
         const response = await fetch(`/api/users/${userId}`, {
           method: 'DELETE',
         });
 
         if (!response.ok) {
-          throw new Error('Failed to delete account');
+          throw new Error(`Failed to delete account: ${response.statusText}`);
         }
 
         // Sign out and redirect to homepage after successful deletion
+        alert('Your account has been successfully deleted. You will now be signed out.');
         signOut({ callbackUrl: '/' });
-      } catch (error) {
+      } catch (error: unknown) {
         console.error('Error deleting account:', error);
-        alert('Failed to delete your account. Please try again later.');
+
+        // More user-friendly error message
+        const errorMessage = error instanceof Error ? error.message : String(error);
+
+        if (errorMessage.includes('not found')) {
+          alert('Account not found or already deleted. You will be signed out.');
+          signOut({ callbackUrl: '/' });
+        } else {
+          alert(
+            `Failed to delete your account: ${errorMessage || 'Unknown error'}. Please try again later.`
+          );
+        }
       }
     };
+
     const handleDeleteRequest = () => {
       // Instead of using global state, directly trigger the delete action
       if (confirm('Are you sure you want to delete your account? This action cannot be undone.')) {

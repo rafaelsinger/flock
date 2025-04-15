@@ -8,30 +8,22 @@ import { IncompleteUserOnboarding } from '@/types/user';
 import { motion } from 'framer-motion';
 import { BsBriefcase, BsBuilding, BsPerson, BsCalendar } from 'react-icons/bs';
 import { OnboardingProgress } from '@/components';
-import { PostGradType, UserType } from '@prisma/client';
+import { PostGradType } from '@prisma/client';
 
 const Step2Work: FC = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
   const previousData = queryClient.getQueryData(['onboardingData']) as IncompleteUserOnboarding;
-  const isIntern = previousData?.userType === UserType.intern;
+  const isIntern = previousData?.userType === 'intern';
 
-  // Adjust form fields based on user type
-  const [formData, setFormData] = useState(
-    isIntern
-      ? {
-          internshipCompany: '',
-          internshipTitle: '',
-          industry: '',
-          internshipSeason: 'Summer', // Default to summer
-          internshipYear: new Date().getFullYear(), // Default to current year
-        }
-      : {
-          company: '',
-          title: '',
-          industry: '',
-        }
-  );
+  // Adjust form fields based on user type - now we use the same fields for both
+  const [formData, setFormData] = useState({
+    company: '',
+    title: '',
+    industry: '',
+    internshipSeason: isIntern ? 'Summer' : undefined, // Only for interns
+    internshipYear: isIntern ? new Date().getFullYear() : undefined, // Only for interns
+  });
 
   const [isFormValid, setIsFormValid] = useState(false);
   const [activeField, setActiveField] = useState<string | null>(null);
@@ -41,8 +33,8 @@ const Step2Work: FC = () => {
   useEffect(() => {
     if (isIntern) {
       setIsFormValid(
-        formData.internshipCompany?.trim() !== '' &&
-          formData.internshipTitle?.trim() !== '' &&
+        formData.company?.trim() !== '' &&
+          formData.title?.trim() !== '' &&
           formData.industry !== '' &&
           formData.internshipSeason?.trim() !== '' &&
           formData.internshipYear !== null
@@ -59,7 +51,11 @@ const Step2Work: FC = () => {
       // Prepare data differently based on user type
       const data: IncompleteUserOnboarding = {
         ...previousData,
-        ...workData,
+        company: workData.company,
+        title: workData.title,
+        industry: workData.industry,
+        internshipSeason: isIntern ? workData.internshipSeason : undefined,
+        internshipYear: isIntern ? workData.internshipYear : undefined,
       };
       return Promise.resolve(data);
     },
@@ -70,7 +66,7 @@ const Step2Work: FC = () => {
   });
 
   useEffect(() => {
-    const validPostGradType = isIntern ? PostGradType.internship : PostGradType.work;
+    const validPostGradType = isIntern ? 'internship' : PostGradType.work;
     if (!previousData || previousData.postGradType !== validPostGradType) {
       router.push('/onboarding/step1');
     }
@@ -80,7 +76,7 @@ const Step2Work: FC = () => {
     router.prefetch('/onboarding/step3');
   }, [router]);
 
-  const validPostGradType = isIntern ? PostGradType.internship : PostGradType.work;
+  const validPostGradType = isIntern ? 'internship' : PostGradType.work;
   if (!previousData || previousData.postGradType !== validPostGradType) {
     return null;
   }
@@ -145,7 +141,7 @@ const Step2Work: FC = () => {
           <div className="space-y-6">
             <motion.div variants={itemVariants}>
               <label
-                htmlFor={isIntern ? 'internshipCompany' : 'company'}
+                htmlFor="company"
                 className="flex items-center text-sm font-medium text-[#333333] mb-2"
               >
                 <BsBuilding className="mr-2 text-[#F28B82]" />
@@ -153,21 +149,19 @@ const Step2Work: FC = () => {
               </label>
               <motion.div
                 variants={inputVariants}
-                animate={
-                  activeField === (isIntern ? 'internshipCompany' : 'company') ? 'focus' : 'blur'
-                }
+                animate={activeField === 'company' ? 'focus' : 'blur'}
               >
                 <input
                   type="text"
-                  id={isIntern ? 'internshipCompany' : 'company'}
-                  value={isIntern ? formData.internshipCompany : formData.company}
+                  id="company"
+                  value={formData.company}
                   onChange={(e) =>
                     setFormData((prev) => ({
                       ...prev,
-                      [isIntern ? 'internshipCompany' : 'company']: e.target.value,
+                      company: e.target.value,
                     }))
                   }
-                  onFocus={() => setActiveField(isIntern ? 'internshipCompany' : 'company')}
+                  onFocus={() => setActiveField('company')}
                   onBlur={() => setActiveField(null)}
                   className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-[#F9C5D1] focus:ring-2 focus:ring-[#F9C5D1]/20 outline-none transition-all text-[#333333]"
                   placeholder={isIntern ? 'e.g. Google' : 'e.g. Stripe'}
@@ -178,7 +172,7 @@ const Step2Work: FC = () => {
 
             <motion.div variants={itemVariants}>
               <label
-                htmlFor={isIntern ? 'internshipTitle' : 'role'}
+                htmlFor="title"
                 className="flex items-center text-sm font-medium text-[#333333] mb-2"
               >
                 <BsPerson className="mr-2 text-[#F28B82]" />
@@ -186,19 +180,19 @@ const Step2Work: FC = () => {
               </label>
               <motion.div
                 variants={inputVariants}
-                animate={activeField === (isIntern ? 'internshipTitle' : 'role') ? 'focus' : 'blur'}
+                animate={activeField === 'title' ? 'focus' : 'blur'}
               >
                 <input
                   type="text"
-                  id={isIntern ? 'internshipTitle' : 'role'}
-                  value={isIntern ? formData.internshipTitle : formData.title}
+                  id="title"
+                  value={formData.title}
                   onChange={(e) =>
                     setFormData((prev) => ({
                       ...prev,
-                      [isIntern ? 'internshipTitle' : 'title']: e.target.value,
+                      title: e.target.value,
                     }))
                   }
-                  onFocus={() => setActiveField(isIntern ? 'internshipTitle' : 'role')}
+                  onFocus={() => setActiveField('title')}
                   onBlur={() => setActiveField(null)}
                   className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-[#F9C5D1] focus:ring-2 focus:ring-[#F9C5D1]/20 outline-none transition-all text-[#333333]"
                   placeholder={
@@ -240,6 +234,7 @@ const Step2Work: FC = () => {
               </motion.div>
             </motion.div>
 
+            {/* Internship-specific fields */}
             {isIntern && (
               <>
                 <motion.div variants={itemVariants}>
@@ -248,7 +243,7 @@ const Step2Work: FC = () => {
                     className="flex items-center text-sm font-medium text-[#333333] mb-2"
                   >
                     <BsCalendar className="mr-2 text-[#F28B82]" />
-                    Season
+                    Internship Season
                   </label>
                   <motion.div
                     variants={inputVariants}
@@ -265,10 +260,12 @@ const Step2Work: FC = () => {
                       className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-[#F9C5D1] focus:ring-2 focus:ring-[#F9C5D1]/20 outline-none transition-all cursor-pointer hover:border-[#F9C5D1]/50 text-[#333333]"
                       required
                     >
+                      <option value="">Select a season</option>
+                      <option value="Spring">Spring</option>
                       <option value="Summer">Summer</option>
                       <option value="Fall">Fall</option>
                       <option value="Winter">Winter</option>
-                      <option value="Spring">Spring</option>
+                      <option value="Year-round">Year-round</option>
                     </select>
                   </motion.div>
                 </motion.div>
@@ -279,7 +276,7 @@ const Step2Work: FC = () => {
                     className="flex items-center text-sm font-medium text-[#333333] mb-2"
                   >
                     <BsCalendar className="mr-2 text-[#F28B82]" />
-                    Year
+                    Internship Year
                   </label>
                   <motion.div
                     variants={inputVariants}
@@ -291,7 +288,7 @@ const Step2Work: FC = () => {
                       onChange={(e) =>
                         setFormData((prev) => ({
                           ...prev,
-                          internshipYear: parseInt(e.target.value),
+                          internshipYear: e.target.value ? parseInt(e.target.value) : undefined,
                         }))
                       }
                       onFocus={() => setActiveField('internshipYear')}
@@ -299,8 +296,9 @@ const Step2Work: FC = () => {
                       className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-[#F9C5D1] focus:ring-2 focus:ring-[#F9C5D1]/20 outline-none transition-all cursor-pointer hover:border-[#F9C5D1]/50 text-[#333333]"
                       required
                     >
-                      {[...Array(3)].map((_, i) => {
-                        const year = new Date().getFullYear() + i;
+                      <option value="">Select a year</option>
+                      {[...Array(5)].map((_, idx) => {
+                        const year = new Date().getFullYear() + idx;
                         return (
                           <option key={year} value={year}>
                             {year}
@@ -314,51 +312,32 @@ const Step2Work: FC = () => {
             )}
           </div>
 
-          <motion.div className="flex justify-between items-center pt-4" variants={itemVariants}>
+          <motion.div
+            className="flex flex-col md:flex-row justify-between space-y-4 md:space-y-0 md:space-x-4"
+            variants={itemVariants}
+          >
             <motion.button
               type="button"
               onClick={() => router.back()}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="px-6 py-3 rounded-xl border-2 border-gray-200 text-[#666666] hover:text-[#333333] hover:border-gray-300 transition-all font-medium"
+              className="px-6 py-3 md:py-4 rounded-xl border border-[#F9C5D1] text-[#F28B82] font-medium transition-all hover:bg-[#F9C5D1]/5 flex-1 max-w-[200px] mx-auto md:mx-0"
             >
               Back
             </motion.button>
             <motion.button
               type="submit"
               disabled={!isFormValid || isSubmitting}
-              whileHover={isFormValid && !isSubmitting ? { scale: 1.03 } : {}}
-              whileTap={isFormValid && !isSubmitting ? { scale: 0.98 } : {}}
-              className={`px-8 py-3 rounded-xl transition-all text-base md:text-lg font-medium min-w-[120px] ${
-                isFormValid && !isSubmitting
-                  ? 'bg-gradient-to-r from-[#F28B82] to-[#E67C73] text-white shadow-md hover:shadow-lg'
-                  : 'bg-[#F9C5D1]/50 cursor-not-allowed text-white/70'
+              whileHover={{ scale: isFormValid && !isSubmitting ? 1.02 : 1 }}
+              whileTap={{ scale: isFormValid && !isSubmitting ? 0.98 : 1 }}
+              className={`px-6 py-3 md:py-4 rounded-xl font-medium bg-gradient-to-r from-[#F9C5D1] to-[#F28B82] text-white cursor-pointer flex-1 max-w-[200px] mx-auto md:mx-0 ${
+                !isFormValid || isSubmitting ? 'opacity-70 cursor-not-allowed' : ''
               }`}
             >
               {isSubmitting ? (
-                <span className="flex items-center justify-center">
-                  <svg
-                    className="animate-spin -ml-1 mr-2 h-5 w-5 text-white"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    ></circle>
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    ></path>
-                  </svg>
-                  Processing...
-                </span>
+                <div className="flex items-center justify-center">
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                </div>
               ) : (
                 'Continue'
               )}
