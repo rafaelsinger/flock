@@ -17,8 +17,18 @@ const Step1: FC = () => {
   const [selectedOption, setSelectedOption] = useState<PostGradType | null>(null);
   const { data: sessionStorage, update } = useSession();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const previousData = queryClient.getQueryData(['onboardingData']) as IncompleteUserOnboarding;
   const isFinalizingRef = useRef(false);
+
+  // Check immediately if classYear exists, before rendering content
+  useEffect(() => {
+    if (!previousData || !previousData.classYear) {
+      router.replace('/onboarding/step0');
+    } else {
+      setIsLoading(false);
+    }
+  }, [previousData, router]);
 
   const updateOnboardingData = useMutation({
     mutationFn: (type: PostGradType) => {
@@ -90,12 +100,10 @@ const Step1: FC = () => {
     router.prefetch('/');
   }, [router]);
 
-  useEffect(() => {
-    // Add check for classYear
-    if (!previousData || !previousData.classYear) {
-      router.push('/onboarding/step0');
-    }
-  }, [previousData, router]);
+  // If loading, return either null or a simple loading indicator to prevent flash
+  if (isLoading) {
+    return null;
+  }
 
   return (
     <motion.div
