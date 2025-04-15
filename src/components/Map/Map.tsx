@@ -3,7 +3,7 @@ import * as React from 'react';
 import { Map as MapGL, Source, Layer, Marker, LayerProps, MapRef } from 'react-map-gl/maplibre';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { useQuery } from '@tanstack/react-query';
-import { Plus, Minus } from 'lucide-react';
+import { Plus, Minus, Maximize2, Minimize2 } from 'lucide-react';
 import center from '@turf/center';
 import { STATE_NAME_TO_ABBREV } from '@/constants/location';
 import type { PropertyValueSpecification } from 'maplibre-gl';
@@ -243,8 +243,33 @@ export const FlockMap: React.FC<FlockMapProps> = ({ onCitySelect }) => {
     [locationData]
   );
 
+  const [isFullscreen, setIsFullscreen] = React.useState(false);
+  const containerRef = React.useRef<HTMLDivElement>(null);
+
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      containerRef.current?.requestFullscreen();
+      setIsFullscreen(true);
+    } else {
+      document.exitFullscreen();
+      setIsFullscreen(false);
+    }
+  };
+
+  React.useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
+
   return (
-    <div className={`w-full h-full relative ${zoomedIn ? 'bg-gray-50' : 'bg-[#F9F9F9]'}`}>
+    <div
+      ref={containerRef}
+      className={`w-full h-full relative ${zoomedIn ? 'bg-gray-50' : 'bg-[#F9F9F9]'}`}
+    >
       <MapGL
         {...viewState}
         ref={mapRef}
@@ -410,6 +435,13 @@ export const FlockMap: React.FC<FlockMapProps> = ({ onCitySelect }) => {
           Back to USA
         </button>
       )}
+
+      <button
+        onClick={toggleFullscreen}
+        className="absolute top-4 right-16 p-2 bg-white rounded-lg shadow-md border hover:bg-gray-50 transition z-10 text-[#333]"
+      >
+        {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+      </button>
     </div>
   );
 };
