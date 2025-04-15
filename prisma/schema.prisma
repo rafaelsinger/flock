@@ -16,6 +16,20 @@ model Industry {
   @@map("industries")
 }
 
+model Location {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  country         String?
+  state           String?
+  city            String?
+  latitude        Float?   @map("lat")
+  longitude       Float?   @map("lon")
+  users           User[]
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("locations")
+}
+
 model User {
   id                String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name              String
@@ -29,17 +43,16 @@ model User {
   title             String?      @map("title")
   school            String?
   program           String?
-  country           String?
-  state             String?
-  city              String?
-  boroughDistrict   String?      @map("borough_district")
+  classYear         Int          @default(2025) @map("class_year")
   lookingForRoommate Boolean?     @default(false) @map("looking_for_roommate")
   industryId        String?      @map("industry_id") @db.Uuid
+  locationId        String?      @map("location_id") @db.Uuid
   visibilityOptions Json?        @default("{}") @map("visibility_options")
   createdAt         DateTime     @default(now()) @map("created_at")
   updatedAt         DateTime     @default(now()) @updatedAt @map("updated_at")
   isOnboarded       Boolean      @default(false) @map("is_onboarded")
   industry          Industry?    @relation(fields: [industryId], references: [id])
+  location          Location?    @relation(fields: [locationId], references: [id])
 
   @@map("users")
 }
