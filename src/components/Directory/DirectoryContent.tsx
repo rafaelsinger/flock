@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { FilterPanel } from '@/components/FilterPanel';
 import { UserGrid } from '@/components/UserGrid';
 import { MdClear, MdSearch, MdRefresh } from 'react-icons/md';
-import { FaGraduationCap, FaBriefcase, FaHome } from 'react-icons/fa';
+import { FaGraduationCap, FaBriefcase, FaHome, FaMapMarkerAlt } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useSession } from 'next-auth/react';
@@ -182,10 +182,34 @@ export const DirectoryContent: React.FC<DirectoryContentProps> = ({
     });
   };
 
+  const handleMyCityFilterChange = () => {
+    // If already active, toggle off
+    if (isMyCityActive) {
+      onFiltersChange({
+        ...filters,
+        country: undefined,
+        state: undefined,
+        city: undefined,
+      });
+    } else {
+      // Set to user's location
+      onFiltersChange({
+        ...filters,
+        city: userCity,
+        state: userState,
+        country: 'USA',
+      });
+    }
+  };
+
   // Get user's general location (city & state) if available
   const userCity = session?.user?.location.city;
   const userState = session?.user?.location.state;
   const hasUserLocation = !!(userCity && userState);
+
+  // Check if My City filter is active
+  const isMyCityActive =
+    filters.city === userCity && filters.state === userState && filters.country === 'USA';
 
   // Determine content to render based on fullscreen state
   const renderContent = () => {
@@ -209,10 +233,10 @@ export const DirectoryContent: React.FC<DirectoryContentProps> = ({
               </div>
               <input
                 type="text"
-                placeholder="Search by name, company, school, location, or email..."
+                placeholder="Search by name, company, school, or location..."
                 value={searchQuery}
                 onChange={(e) => handleSearch(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 rounded-lg border border-gray-200 focus:border-[#F9C5D1] focus:ring-2 focus:ring-[#F9C5D1]/20 outline-none transition-all"
+                className="w-full pl-12 pr-4 py-3 rounded-lg border border-gray-200 focus:border-[#F9C5D1] focus:ring-2 focus:ring-[#F9C5D1]/20 outline-none transition-all text-gray-700"
               />
               {searchQuery && (
                 <button
@@ -283,18 +307,16 @@ export const DirectoryContent: React.FC<DirectoryContentProps> = ({
 
               {hasUserLocation && (
                 <motion.button
-                  onClick={() =>
-                    handleFilter({
-                      ...filters,
-                      city: userCity,
-                      state: userState,
-                      country: 'USA',
-                    })
-                  }
-                  className="px-4 py-2 rounded-full border border-gray-200 text-gray-600 hover:border-[#F9C5D1] transition-all flex items-center gap-2"
+                  onClick={handleMyCityFilterChange}
+                  className={`px-4 py-2 rounded-full border ${
+                    isMyCityActive
+                      ? 'bg-[#A7D7F9]/10 border-[#A7D7F9] text-[#A7D7F9]'
+                      : 'border-gray-200 text-gray-600 hover:border-[#F9C5D1]'
+                  } transition-all flex items-center gap-2`}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
+                  <FaMapMarkerAlt className="text-sm" />
                   <span>My City</span>
                 </motion.button>
               )}
@@ -312,181 +334,194 @@ export const DirectoryContent: React.FC<DirectoryContentProps> = ({
             </div>
           </div>
 
-          {/* Active filters summary */}
-          <AnimatePresence>
-            {hasFiltersActive && (
-              <motion.div
-                className="mt-4 pt-4 border-t border-gray-100 flex flex-wrap items-center gap-2"
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-              >
-                <span className="text-sm text-gray-500">Active filters:</span>
+          {/* Active filters section - always visible with border */}
+          <div className="mt-4 pt-4 border-t border-gray-100">
+            <div className="flex flex-wrap items-center gap-2 min-h-[28px]">
+              {hasFiltersActive && (
+                <>
+                  <span className="text-sm text-gray-500">Active filters:</span>
 
-                {activeTypeFilter !== 'all' && (
-                  <motion.span
-                    className="px-2 py-1 bg-gray-100 rounded-md text-xs text-gray-700 flex items-center"
-                    initial={{ scale: 0.8, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    exit={{ scale: 0.8, opacity: 0 }}
-                    whileHover={{ scale: 1.05 }}
-                  >
-                    {activeTypeFilter === 'work' ? 'Working' : 'Studying'}
-                    <button
-                      onClick={() => setActiveTypeFilter('all')}
-                      className="ml-1 text-gray-500 hover:text-[#F28B82]"
+                  {activeTypeFilter !== 'all' && (
+                    <motion.span
+                      className="px-2 py-1 bg-gray-100 rounded-md text-xs text-gray-700 flex items-center"
+                      initial={{ scale: 0.8, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      exit={{ scale: 0.8, opacity: 0 }}
+                      whileHover={{ scale: 1.05 }}
                     >
-                      <MdClear size={14} />
-                    </button>
-                  </motion.span>
-                )}
+                      {activeTypeFilter === 'work' ? 'Working' : 'Studying'}
+                      <button
+                        onClick={() => {
+                          setActiveTypeFilter('all');
+                          onFiltersChange({ ...filters, postGradType: undefined });
+                        }}
+                        className="ml-1 text-gray-500 hover:text-[#F28B82]"
+                      >
+                        <MdClear size={14} />
+                      </button>
+                    </motion.span>
+                  )}
 
-                {searchQuery && (
-                  <motion.span
-                    className="px-2 py-1 bg-gray-100 rounded-md text-xs text-gray-700 flex items-center"
-                    initial={{ scale: 0.8, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    exit={{ scale: 0.8, opacity: 0 }}
-                    whileHover={{ scale: 1.05 }}
-                  >
-                    Search:{' '}
-                    {searchQuery.length > 15 ? `${searchQuery.substring(0, 15)}...` : searchQuery}
-                    <button
-                      onClick={() => setSearchQuery('')}
-                      className="ml-1 text-gray-500 hover:text-[#F28B82]"
+                  {searchQuery && (
+                    <motion.span
+                      className="px-2 py-1 bg-gray-100 rounded-md text-xs text-gray-700 flex items-center"
+                      initial={{ scale: 0.8, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      exit={{ scale: 0.8, opacity: 0 }}
+                      whileHover={{ scale: 1.05 }}
                     >
-                      <MdClear size={14} />
-                    </button>
-                  </motion.span>
-                )}
+                      Search:{' '}
+                      {searchQuery.length > 15 ? `${searchQuery.substring(0, 15)}...` : searchQuery}
+                      <button
+                        onClick={() => setSearchQuery('')}
+                        className="ml-1 text-gray-500 hover:text-[#F28B82]"
+                      >
+                        <MdClear size={14} />
+                      </button>
+                    </motion.span>
+                  )}
 
-                {filters.savedFilter && (
-                  <motion.span
-                    className="px-2 py-1 bg-[#F9C5D1]/10 rounded-md text-xs text-[#F28B82] flex items-center"
-                    initial={{ scale: 0.8, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    exit={{ scale: 0.8, opacity: 0 }}
-                    whileHover={{ scale: 1.05 }}
-                  >
-                    Saved: {filters.savedFilter}
-                    <button
-                      onClick={() => onFiltersChange({ ...filters, savedFilter: undefined })}
-                      className="ml-1 text-gray-500 hover:text-[#F28B82]"
+                  {filters.savedFilter && (
+                    <motion.span
+                      className="px-2 py-1 bg-gray-100 rounded-md text-xs text-gray-700 flex items-center"
+                      initial={{ scale: 0.8, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      exit={{ scale: 0.8, opacity: 0 }}
+                      whileHover={{ scale: 1.05 }}
                     >
-                      <MdClear size={14} />
-                    </button>
-                  </motion.span>
-                )}
+                      Saved: {filters.savedFilter}
+                      <button
+                        onClick={() => onFiltersChange({ ...filters, savedFilter: undefined })}
+                        className="ml-1 text-gray-500 hover:text-[#F28B82]"
+                      >
+                        <MdClear size={14} />
+                      </button>
+                    </motion.span>
+                  )}
 
-                {filters.country && (
-                  <motion.span
-                    className="px-2 py-1 bg-gray-100 rounded-md text-xs text-gray-700 flex items-center"
-                    initial={{ scale: 0.8, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    exit={{ scale: 0.8, opacity: 0 }}
-                    whileHover={{ scale: 1.05 }}
-                  >
-                    Country: {filters.country}
-                    <button
-                      onClick={() =>
-                        onFiltersChange({
-                          ...filters,
-                          country: undefined,
-                          state: undefined,
-                          city: undefined,
-                        })
-                      }
-                      className="ml-1 text-gray-500 hover:text-[#F28B82]"
+                  {/* My City filter pill */}
+                  {isMyCityActive && (
+                    <motion.span
+                      className="px-2 py-1 bg-gray-100 rounded-md text-xs text-gray-700 flex items-center"
+                      initial={{ scale: 0.8, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      exit={{ scale: 0.8, opacity: 0 }}
+                      whileHover={{ scale: 1.05 }}
                     >
-                      <MdClear size={14} />
-                    </button>
-                  </motion.span>
-                )}
+                      My City: {userCity}, {userState}
+                      <button
+                        onClick={() =>
+                          onFiltersChange({
+                            ...filters,
+                            country: undefined,
+                            state: undefined,
+                            city: undefined,
+                          })
+                        }
+                        className="ml-1 text-gray-500 hover:text-[#F28B82]"
+                      >
+                        <MdClear size={14} />
+                      </button>
+                    </motion.span>
+                  )}
 
-                {filters.state && (
-                  <motion.span
-                    className="px-2 py-1 bg-gray-100 rounded-md text-xs text-gray-700 flex items-center"
-                    initial={{ scale: 0.8, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    exit={{ scale: 0.8, opacity: 0 }}
-                    whileHover={{ scale: 1.05 }}
-                  >
-                    State: {filters.state}
-                    <button
-                      onClick={() =>
-                        onFiltersChange({ ...filters, state: undefined, city: undefined })
-                      }
-                      className="ml-1 text-gray-500 hover:text-[#F28B82]"
+                  {/* Only show country/state/city filters if My City filter is not active */}
+                  {filters.country && !isMyCityActive && (
+                    <motion.span
+                      className="px-2 py-1 bg-gray-100 rounded-md text-xs text-gray-700 flex items-center"
+                      initial={{ scale: 0.8, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      exit={{ scale: 0.8, opacity: 0 }}
+                      whileHover={{ scale: 1.05 }}
                     >
-                      <MdClear size={14} />
-                    </button>
-                  </motion.span>
-                )}
+                      Country: {filters.country}
+                      <button
+                        onClick={() =>
+                          onFiltersChange({
+                            ...filters,
+                            country: undefined,
+                            state: undefined,
+                            city: undefined,
+                          })
+                        }
+                        className="ml-1 text-gray-500 hover:text-[#F28B82]"
+                      >
+                        <MdClear size={14} />
+                      </button>
+                    </motion.span>
+                  )}
 
-                {filters.city && (
-                  <motion.span
-                    className="px-2 py-1 bg-gray-100 rounded-md text-xs text-gray-700 flex items-center"
-                    initial={{ scale: 0.8, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    exit={{ scale: 0.8, opacity: 0 }}
-                    whileHover={{ scale: 1.05 }}
-                  >
-                    City: {filters.city}
-                    <button
-                      onClick={() => onFiltersChange({ ...filters, city: undefined })}
-                      className="ml-1 text-gray-500 hover:text-[#F28B82]"
+                  {filters.state && !isMyCityActive && (
+                    <motion.span
+                      className="px-2 py-1 bg-gray-100 rounded-md text-xs text-gray-700 flex items-center"
+                      initial={{ scale: 0.8, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      exit={{ scale: 0.8, opacity: 0 }}
+                      whileHover={{ scale: 1.05 }}
                     >
-                      <MdClear size={14} />
-                    </button>
-                  </motion.span>
-                )}
+                      State: {filters.state}
+                      <button
+                        onClick={() =>
+                          onFiltersChange({ ...filters, state: undefined, city: undefined })
+                        }
+                        className="ml-1 text-gray-500 hover:text-[#F28B82]"
+                      >
+                        <MdClear size={14} />
+                      </button>
+                    </motion.span>
+                  )}
 
-                {showRoommateOnly && (
-                  <motion.span
-                    className="px-2 py-1 bg-[#8FC9A9]/10 rounded-md text-xs text-[#8FC9A9] flex items-center"
-                    initial={{ scale: 0.8, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    exit={{ scale: 0.8, opacity: 0 }}
-                    whileHover={{ scale: 1.05 }}
-                  >
-                    Looking for Roommates
-                    <button
-                      onClick={() => setShowRoommateOnly(false)}
-                      className="ml-1 text-gray-500 hover:text-[#8FC9A9]"
+                  {filters.city && !isMyCityActive && (
+                    <motion.span
+                      className="px-2 py-1 bg-gray-100 rounded-md text-xs text-gray-700 flex items-center"
+                      initial={{ scale: 0.8, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      exit={{ scale: 0.8, opacity: 0 }}
+                      whileHover={{ scale: 1.05 }}
                     >
-                      <MdClear size={14} />
-                    </button>
-                  </motion.span>
-                )}
+                      City: {filters.city}
+                      <button
+                        onClick={() => onFiltersChange({ ...filters, city: undefined })}
+                        className="ml-1 text-gray-500 hover:text-[#F28B82]"
+                      >
+                        <MdClear size={14} />
+                      </button>
+                    </motion.span>
+                  )}
 
-                {filters.lookingForRoommate && !showRoommateOnly && (
-                  <motion.span
-                    className="px-2 py-1 bg-[#8FC9A9]/10 rounded-md text-xs text-[#8FC9A9] flex items-center"
-                    initial={{ scale: 0.8, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    exit={{ scale: 0.8, opacity: 0 }}
-                    whileHover={{ scale: 1.05 }}
-                  >
-                    Looking for Roommates
-                    <button
-                      onClick={() => onFiltersChange({ ...filters, lookingForRoommate: undefined })}
-                      className="ml-1 text-gray-500 hover:text-[#8FC9A9]"
+                  {/* Roommate filter pill */}
+                  {(showRoommateOnly || filters.lookingForRoommate) && (
+                    <motion.span
+                      className="px-2 py-1 bg-gray-100 rounded-md text-xs text-gray-700 flex items-center"
+                      initial={{ scale: 0.8, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      exit={{ scale: 0.8, opacity: 0 }}
+                      whileHover={{ scale: 1.05 }}
                     >
-                      <MdClear size={14} />
-                    </button>
-                  </motion.span>
-                )}
+                      Looking for Roommates
+                      <button
+                        onClick={() => {
+                          setShowRoommateOnly(false);
+                          onFiltersChange({ ...filters, lookingForRoommate: undefined });
+                        }}
+                        className="ml-1 text-gray-500 hover:text-[#F28B82]"
+                      >
+                        <MdClear size={14} />
+                      </button>
+                    </motion.span>
+                  )}
 
-                <button
-                  onClick={handleClearFilters}
-                  className="ml-auto text-xs px-3 py-1 text-[#F28B82] hover:text-[#E67C73] transition-colors flex items-center gap-1"
-                >
-                  <MdClear size={14} />
-                  Clear all
-                </button>
-              </motion.div>
-            )}
-          </AnimatePresence>
+                  <button
+                    onClick={handleClearFilters}
+                    className="ml-auto text-xs px-3 py-1 text-[#F28B82] hover:text-[#E67C73] transition-colors flex items-center gap-1"
+                  >
+                    <MdClear size={14} />
+                    Clear all
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
         </motion.div>
 
         {/* Stats Bar */}

@@ -214,23 +214,6 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
 
               <div className="space-y-5">
                 <motion.div variants={itemVariants}>
-                  <label className={labelClasses}>Post-Grad Path</label>
-                  <select
-                    value={postGradType}
-                    onChange={(e) =>
-                      handleFilterChange({
-                        postGradType: e.target.value as 'work' | 'school' | 'all',
-                      })
-                    }
-                    className={selectClasses}
-                  >
-                    <option value="all">All Paths</option>
-                    <option value="work">Working</option>
-                    <option value="school">Studying</option>
-                  </select>
-                </motion.div>
-
-                <motion.div variants={itemVariants}>
                   <label className={labelClasses}>Country</label>
                   <select
                     value={country}
@@ -288,28 +271,6 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
                   />
                 </motion.div>
 
-                <motion.div variants={itemVariants}>
-                  <div className="flex items-center mb-2">
-                    <input
-                      type="checkbox"
-                      id="roommate-checkbox"
-                      checked={lookingForRoommate}
-                      onChange={(e) =>
-                        handleFilterChange({
-                          lookingForRoommate: e.target.checked,
-                        })
-                      }
-                      className="w-4 h-4 text-[#8FC9A9] border-gray-300 rounded focus:ring-[#8FC9A9]"
-                    />
-                    <label
-                      htmlFor="roommate-checkbox"
-                      className="ml-2 text-sm font-medium text-[#333333]"
-                    >
-                      Looking for roommates
-                    </label>
-                  </div>
-                </motion.div>
-
                 {/* Save Filter Form */}
                 <AnimatePresence>
                   {showSaveForm && (
@@ -361,11 +322,12 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
                   <motion.button
                     onClick={() => {
                       handleFilterChange({
-                        postGradType: 'all',
+                        ...currentFilters,
+                        postGradType: currentFilters.postGradType,
                         country: '',
                         state: '',
                         city: '',
-                        lookingForRoommate: false,
+                        lookingForRoommate: currentFilters.lookingForRoommate,
                       });
                     }}
                     className="flex items-center gap-2 text-sm text-gray-500 hover:text-[#333333] transition-colors"
@@ -373,7 +335,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
                     whileTap={{ scale: 0.97 }}
                   >
                     <Trash2 className="h-4 w-4" />
-                    Reset All
+                    Reset Location Filters
                   </motion.button>
                 </div>
               </div>
@@ -383,10 +345,12 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
               <motion.button
                 onClick={() => {
                   onFilter({
-                    postGradType,
+                    ...currentFilters,
+                    postGradType: currentFilters.postGradType,
                     country,
                     state,
                     city,
+                    lookingForRoommate: currentFilters.lookingForRoommate,
                   });
                   setIsOpen(false);
                 }}
