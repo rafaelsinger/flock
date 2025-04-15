@@ -368,7 +368,9 @@ export const FlockMap: React.FC<FlockMapProps> = ({ onCitySelect }) => {
             }}
           >
             <div className="font-medium text-[#333]">{hoverInfo.name}</div>
-            <div className="text-gray-500">{hoverInfo.value} grads</div>
+            <div className="text-gray-500">
+              {hoverInfo.value} {hoverInfo.value === 1 ? 'grad' : 'grads'}
+            </div>
           </div>
         )}
         {hoveredCity && (
