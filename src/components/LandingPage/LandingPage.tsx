@@ -18,7 +18,7 @@ export const LandingPage = () => {
 
   // Handle sign in
   const handleSignIn = () => {
-    signIn('google');
+    signIn('google', { callbackUrl: '/onboarding/step0' });
   };
 
   // Handle mouse move for parallax effect
