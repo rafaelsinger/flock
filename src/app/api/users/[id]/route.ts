@@ -9,11 +9,6 @@ export const GET = async (request: NextRequest) => {
     return new NextResponse('No ID provided', { status: 400 });
   }
   try {
-    const session = await auth();
-    if (!session?.user) {
-      return new NextResponse('Unauthorized - No session', { status: 401 });
-    }
-
     const user = await prisma.user.findFirst({
       where: {
         id: id,
