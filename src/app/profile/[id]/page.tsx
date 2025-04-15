@@ -63,6 +63,24 @@ const ProfilePage: FC = () => {
 
   // Use this for delete account event handling
   useEffect(() => {
+    // Function to handle account deletion
+    const deleteUser = async () => {
+      try {
+        const response = await fetch(`/api/users/${userId}`, {
+          method: 'DELETE',
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to delete account');
+        }
+
+        // Sign out and redirect to homepage after successful deletion
+        signOut({ callbackUrl: '/' });
+      } catch (error) {
+        console.error('Error deleting account:', error);
+        alert('Failed to delete your account. Please try again later.');
+      }
+    };
     const handleDeleteRequest = () => {
       // Instead of using global state, directly trigger the delete action
       if (confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
@@ -75,7 +93,7 @@ const ProfilePage: FC = () => {
     return () => {
       window.removeEventListener('delete-account', handleDeleteRequest);
     };
-  }, []);
+  }, [userId]);
 
   // Use React Query to fetch user data
   const { data: userData, isLoading, error } = useUserData(userId);
@@ -94,25 +112,6 @@ const ProfilePage: FC = () => {
       profileCardRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   }, [isEditing]);
-
-  // Function to handle account deletion
-  const deleteUser = async () => {
-    try {
-      const response = await fetch(`/api/users/${userId}`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to delete account');
-      }
-
-      // Sign out and redirect to homepage after successful deletion
-      signOut({ callbackUrl: '/' });
-    } catch (error) {
-      console.error('Error deleting account:', error);
-      alert('Failed to delete your account. Please try again later.');
-    }
-  };
 
   // Mutation for updating user data
   const updateUserMutation = useMutation({

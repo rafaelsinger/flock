@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { auth } from '@/auth';
 import { Prisma } from '@prisma/client';
 
-export const GET = auth(async function GET(request: NextRequest) {
+export const GET = async (request: NextRequest) => {
   try {
     const session = await auth();
     if (!session) {
@@ -103,4 +103,4 @@ export const GET = auth(async function GET(request: NextRequest) {
     console.error('Error fetching users:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
-});
+};

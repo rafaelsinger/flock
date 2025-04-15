@@ -72,7 +72,7 @@ export const DemoSection = ({ isVisible, handleSignIn, demoRef }: DemoSectionPro
           {/* All tab contents have consistent height of 500px instead of 600px */}
           {activeTab === 'map' && (
             <div className="h-[500px] relative">
-              <Map display={true} />
+              <Map onCitySelect={() => {}} />
               {/* Enhanced blur overlay with interactive elements */}
               <div className="absolute inset-0 backdrop-blur-[6px] bg-white/30 flex flex-col items-center justify-center z-10">
                 <div className="max-w-md mx-auto text-center">

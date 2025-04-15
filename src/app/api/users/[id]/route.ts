@@ -3,12 +3,17 @@ import { prisma } from '@/lib/prisma';
 import { auth } from '@/auth';
 import { UpdateUser } from '@/types/user';
 
-export const GET = auth(async function GET(request: NextRequest) {
+export const GET = async (request: NextRequest) => {
   const id = request.url.split('/users/')[1];
   if (!id) {
     return new NextResponse('No ID provided', { status: 400 });
   }
   try {
+    const session = await auth();
+    if (!session?.user) {
+      return new NextResponse('Unauthorized - No session', { status: 401 });
+    }
+
     const user = await prisma.user.findFirst({
       where: {
         id: id,
@@ -27,9 +32,9 @@ export const GET = auth(async function GET(request: NextRequest) {
     console.error('Error fetching user:', error);
     return new NextResponse('Internal Server Error', { status: 500 });
   }
-});
+};
 
-export async function PUT(request: Request, context: { params: { id: string } }) {
+export const PUT = async (request: NextRequest, context: { params: Promise<{ id: string }> }) => {
   const { params } = await context;
   const { id } = await params;
   try {
@@ -105,11 +110,14 @@ export async function PUT(request: Request, context: { params: { id: string } })
     console.error('Error updating user:', error);
     return new NextResponse('Internal Server Error', { status: 500 });
   }
-}
+};
 
-export async function DELETE(request: Request, context: { params: { id: string } }) {
-  const { params } = context;
-  const { id } = params;
+export const DELETE = async (
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) => {
+  const { params } = await context;
+  const { id } = await params;
 
   try {
     const session = await auth();
@@ -146,4 +154,4 @@ export async function DELETE(request: Request, context: { params: { id: string }
     console.error('Error deleting user account:', error);
     return new NextResponse('Internal Server Error', { status: 500 });
   }
-}
+};
