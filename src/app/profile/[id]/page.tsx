@@ -317,9 +317,9 @@ const ViewMode = ({ userData, isOwnProfile, onEdit }: ViewModeProps) => {
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ delay: 0.2 }}
-          className="w-16 h-16 rounded-full bg-[#B8D9FE]/10 flex items-center justify-center"
+          className="w-16 h-16 rounded-full bg-[#F4B942]/10 flex items-center justify-center"
         >
-          <MdWork className="text-[#B8D9FE] text-2xl" />
+          <MdWork className="text-[#F4B942] text-2xl" />
         </motion.div>
       );
     }
@@ -387,7 +387,7 @@ const ViewMode = ({ userData, isOwnProfile, onEdit }: ViewModeProps) => {
               </span>
             )}
             {isInternship && userData.classYear !== 2025 && (
-              <span className="inline-block px-3 py-1 bg-[#B8D9FE]/10 text-[#B8D9FE] text-sm font-medium rounded-full">
+              <span className="inline-block px-3 py-1 bg-[#F4B942]/10 text-[#F4B942] text-sm font-medium rounded-full">
                 Class of {userData.classYear} - Internship
               </span>
             )}
@@ -405,7 +405,7 @@ const ViewMode = ({ userData, isOwnProfile, onEdit }: ViewModeProps) => {
                 {isWork ? (
                   <MdWork className="text-[#F28B82] text-xl" />
                 ) : isInternship ? (
-                  <MdWork className="text-[#B8D9FE] text-xl" />
+                  <MdWork className="text-[#F4B942] text-xl" />
                 ) : (
                   <HiOutlineAcademicCap className="text-[#A7D7F9] text-xl" />
                 )}
@@ -413,8 +413,18 @@ const ViewMode = ({ userData, isOwnProfile, onEdit }: ViewModeProps) => {
               <div>
                 <p className="text-lg text-[#333333]">
                   {showRole && <span className="font-medium">{capitalize(displayRole)}</span>}
-                  {showRole && showCompany && ' at '}
+                  {showRole && showCompany && isSchool && userData.discipline
+                    ? ' at '
+                    : showRole && showCompany
+                      ? ' at '
+                      : ''}
                   {showCompany && displayCompany}
+                  {showRole && isSchool && userData.discipline && (
+                    <span className="text-gray-600">
+                      {' '}
+                      ({capitalize(userData.discipline || '')})
+                    </span>
+                  )}
                 </p>
                 {isOwnProfile && !showRole && (
                   <p className="text-sm text-[#666666] italic">
@@ -722,7 +732,7 @@ const EditForm = ({ userData, setUserData, onSave, onCancel, isSubmitting }: Edi
           {isWork ? (
             <BsBriefcase className="mr-2 text-[#F28B82]" />
           ) : isInternship ? (
-            <MdWork className="mr-2 text-[#B8D9FE]" />
+            <MdWork className="mr-2 text-[#F4B942]" />
           ) : isSchool ? (
             <LuGraduationCap className="mr-2 text-[#A7D7F9]" />
           ) : (
@@ -822,6 +832,30 @@ const EditForm = ({ userData, setUserData, onSave, onCancel, isSubmitting }: Edi
               />
             </motion.div>
           </motion.div>
+
+          {isSchool && (
+            <motion.div variants={itemVariants}>
+              <label htmlFor="discipline" className={labelClasses}>
+                <HiOutlineAcademicCap className="mr-2 text-[#A7D7F9]" />
+                Discipline
+              </label>
+              <motion.div
+                variants={inputVariants}
+                animate={activeField === 'discipline' ? 'focus' : 'blur'}
+              >
+                <input
+                  id="discipline"
+                  type="text"
+                  placeholder="e.g. Computer Science, Biology, Economics"
+                  value={userData.discipline || ''}
+                  onChange={(e) => setUserData({ ...userData, discipline: e.target.value })}
+                  onFocus={() => setActiveField('discipline')}
+                  onBlur={() => setActiveField(null)}
+                  className={inputClasses}
+                />
+              </motion.div>
+            </motion.div>
+          )}
 
           {(isWork || isInternship) && (
             <motion.div variants={itemVariants}>

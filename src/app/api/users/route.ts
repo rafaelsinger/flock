@@ -58,10 +58,12 @@ export const GET = async (request: NextRequest) => {
           : {},
         // Post grad type filter - always exclude seeking
         postGradType === 'work'
-          ? { postGradType: { in: [PostGradType.work, PostGradType.school] } }
+          ? { postGradType: { equals: PostGradType.work } }
           : postGradType === 'school'
-            ? { postGradType }
-            : { postGradType: { not: PostGradType.seeking } },
+            ? { postGradType: { equals: PostGradType.school } }
+            : postGradType === 'internship'
+              ? { postGradType: { equals: PostGradType.internship } }
+              : { postGradType: { not: PostGradType.seeking } },
         // Class year filter - when explicitly requested or for intern restrictions
         // Only apply class year filter if not showing all class years
         classYear && !showAllClassYears

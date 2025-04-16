@@ -75,7 +75,6 @@ export const UserCard: React.FC<UserCardProps> = ({ user, prefetch = false }) =>
         color: '#F4B942', // Gold/yellow color
         bgColor: 'bg-[#F4B942]/10',
         borderColor: 'border-[#F4B942]',
-        label: user.classYear < 2025 ? 'Graduate' : 'Intern',
         status: user.classYear < 2025 ? 'graduate' : 'intern',
       };
     }
@@ -88,7 +87,6 @@ export const UserCard: React.FC<UserCardProps> = ({ user, prefetch = false }) =>
           color: '#F28B82',
           bgColor: 'bg-[#F9C5D1]/10',
           borderColor: 'border-[#F9C5D1]',
-          label: 'Working',
           status: 'graduate',
         };
       case 'school':
@@ -97,7 +95,6 @@ export const UserCard: React.FC<UserCardProps> = ({ user, prefetch = false }) =>
           color: '#A7D7F9',
           bgColor: 'bg-[#A7D7F9]/10',
           borderColor: 'border-[#A7D7F9]',
-          label: 'Studying',
           status: 'student',
         };
       default:
@@ -120,13 +117,12 @@ export const UserCard: React.FC<UserCardProps> = ({ user, prefetch = false }) =>
           color: '#9E9E9E',
           bgColor: 'bg-[#9E9E9E]/10',
           borderColor: 'border-[#9E9E9E]',
-          label: 'Seeking',
           status: 'seeking',
         };
     }
   };
 
-  const { Icon, color, bgColor, borderColor, label } = getPostGradStatus();
+  const { Icon, color, bgColor, borderColor } = getPostGradStatus();
 
   return (
     <motion.div
@@ -153,14 +149,7 @@ export const UserCard: React.FC<UserCardProps> = ({ user, prefetch = false }) =>
                 />
               </div>
 
-              {/* Status badge */}
-              <div
-                className={`absolute -top-2 -right-2 px-2 py-0.5 rounded-full text-white text-xs font-semibold`}
-                style={{ backgroundColor: color }}
-              >
-                {label}
-              </div>
-
+              {/* Roommate indicator */}
               {user.lookingForRoommate && (
                 <div className="absolute -bottom-1 -right-1 w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-[#8FC9A9]/10 flex items-center justify-center border border-white">
                   <Home className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-[#8FC9A9]" />

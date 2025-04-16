@@ -1,6 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { FilterPanel } from '@/components/FilterPanel';
 import { UserGrid } from '@/components/UserGrid';
 import { MdClear, MdSearch, MdRefresh } from 'react-icons/md';
 import {
@@ -16,11 +15,10 @@ import { useSession } from 'next-auth/react';
 import { PostGradType } from '@prisma/client';
 
 interface FilterOptions {
-  postGradType?: 'work' | 'school' | 'all';
+  postGradType?: 'work' | 'school' | 'internship' | 'all';
   country?: string;
   state?: string;
   city?: string;
-  savedFilter?: string;
   lookingForRoommate?: boolean;
   showAllClassYears?: boolean;
   classYear?: number;
@@ -45,24 +43,15 @@ const itemVariants = {
 interface DirectoryContentProps {
   filters: FilterOptions;
   onFiltersChange: (filters: FilterOptions) => void;
-  savedFilters: Record<string, FilterOptions>;
-  onSaveFilter: (name: string, filter: FilterOptions) => void;
-  onDeleteFilter: (name: string) => void;
-  onSelectFilter: (name: string) => void;
 }
 
-export const DirectoryContent: React.FC<DirectoryContentProps> = ({
-  filters,
-  onFiltersChange,
-  savedFilters,
-  onSaveFilter,
-  onDeleteFilter,
-  onSelectFilter,
-}) => {
+export const DirectoryContent: React.FC<DirectoryContentProps> = ({ filters, onFiltersChange }) => {
   const { data: session } = useSession();
   const [page, setPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeTypeFilter, setActiveTypeFilter] = useState<'all' | 'work' | 'school'>('all');
+  const [activeTypeFilter, setActiveTypeFilter] = useState<
+    'all' | 'work' | 'school' | 'internship'
+  >('all');
   const [isMapFullscreen, setIsMapFullscreen] = useState(false);
   const [showRoommateOnly, setShowRoommateOnly] = useState(false);
 
@@ -175,10 +164,6 @@ export const DirectoryContent: React.FC<DirectoryContentProps> = ({
     setSearchQuery(query);
   };
 
-  const handleFilter = (newFilters: FilterOptions) => {
-    onFiltersChange(newFilters);
-  };
-
   const handleClearFilters = () => {
     setSearchQuery('');
     onFiltersChange({
@@ -189,7 +174,7 @@ export const DirectoryContent: React.FC<DirectoryContentProps> = ({
     setShowRoommateOnly(false);
   };
 
-  const handleTypeFilterChange = (type: 'all' | 'work' | 'school') => {
+  const handleTypeFilterChange = (type: 'all' | 'work' | 'school' | 'internship') => {
     // If already active, toggle off by setting back to 'all'
     if (activeTypeFilter === type && type !== 'all') {
       setActiveTypeFilter('all');
@@ -292,104 +277,113 @@ export const DirectoryContent: React.FC<DirectoryContentProps> = ({
             </div>
 
             {/* Quick filter buttons */}
-            <div className="flex flex-wrap gap-2 items-center">
-              <motion.button
-                onClick={() => handleTypeFilterChange('all')}
-                className={`px-4 py-2 rounded-full border ${
-                  activeTypeFilter === 'all'
-                    ? 'bg-[#F9C5D1]/10 border-[#F28B82] text-[#F28B82]'
-                    : 'border-gray-200 text-gray-600 hover:border-[#F9C5D1]'
-                } transition-all flex items-center gap-2`}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <span>All</span>
-              </motion.button>
-
-              <motion.button
-                onClick={() => handleTypeFilterChange('work')}
-                className={`px-4 py-2 rounded-full border ${
-                  activeTypeFilter === 'work'
-                    ? 'bg-[#F9C5D1]/10 border-[#F28B82] text-[#F28B82]'
-                    : 'border-gray-200 text-gray-600 hover:border-[#F9C5D1]'
-                } transition-all flex items-center gap-2`}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <FaBriefcase className="text-sm" />
-                <span>Working</span>
-              </motion.button>
-
-              <motion.button
-                onClick={() => handleTypeFilterChange('school')}
-                className={`px-4 py-2 rounded-full border ${
-                  activeTypeFilter === 'school'
-                    ? 'bg-[#A7D7F9]/10 border-[#A7D7F9] text-[#A7D7F9]'
-                    : 'border-gray-200 text-gray-600 hover:border-[#A7D7F9]'
-                } transition-all flex items-center gap-2`}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <FaGraduationCap className="text-sm" />
-                <span>Studying</span>
-              </motion.button>
-
-              <motion.button
-                onClick={handleRoommateFilterChange}
-                className={`px-4 py-2 rounded-full border ${
-                  showRoommateOnly
-                    ? 'bg-[#8FC9A9]/10 border-[#8FC9A9] text-[#8FC9A9]'
-                    : 'border-gray-200 text-gray-600 hover:border-[#8FC9A9]'
-                } transition-all flex items-center gap-2`}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <FaHome className="text-sm" />
-                <span>Roommates</span>
-              </motion.button>
-
-              {hasUserLocation && (
+            <div className="flex flex-wrap gap-3 items-center">
+              {/* Status filters grouped in a container */}
+              <div className="flex items-center bg-gray-50 px-2 py-1 rounded-lg space-x-1">
                 <motion.button
-                  onClick={handleMyCityFilterChange}
-                  className={`px-4 py-2 rounded-full border ${
-                    isMyCityActive
-                      ? 'bg-[#A7D7F9]/10 border-[#A7D7F9] text-[#A7D7F9]'
-                      : 'border-gray-200 text-gray-600 hover:border-[#F9C5D1]'
-                  } transition-all flex items-center gap-2`}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+                  onClick={() => handleTypeFilterChange('all')}
+                  className={`px-3 py-1.5 rounded-md ${
+                    activeTypeFilter === 'all'
+                      ? 'bg-[#F9C5D1]/10 text-[#F28B82] font-medium'
+                      : 'text-gray-600 hover:bg-gray-100'
+                  } transition-all text-sm`}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                 >
-                  <FaMapMarkerAlt className="text-sm" />
-                  <span>My City</span>
+                  All
                 </motion.button>
-              )}
 
-              {/* Class Year Toggle Button */}
-              {userClassYear && (
                 <motion.button
-                  onClick={handleClassYearFilterChange}
-                  className={`px-4 py-2 rounded-full border ${
-                    !filters.showAllClassYears
-                      ? 'bg-[#F9C5D1]/10 border-[#F28B82] text-[#F28B82]'
-                      : 'border-gray-200 text-gray-600 hover:border-[#F9C5D1]'
-                  } transition-all flex items-center gap-2`}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+                  onClick={() => handleTypeFilterChange('work')}
+                  className={`px-3 py-1.5 rounded-md ${
+                    activeTypeFilter === 'work'
+                      ? 'bg-[#F9C5D1]/10 text-[#F28B82] font-medium'
+                      : 'text-gray-600 hover:bg-gray-100'
+                  } transition-all text-sm flex items-center gap-1.5`}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                 >
-                  <FaUserGraduate className="text-sm" />
-                  <span>Class of {userClassYear}</span>
+                  <FaBriefcase className="text-xs" />
+                  Working
                 </motion.button>
-              )}
 
-              <div className="flex-grow md:flex-grow-0 text-right md:text-left">
-                <FilterPanel
-                  onFilter={handleFilter}
-                  currentFilters={filters}
-                  savedFilters={savedFilters}
-                  onSaveFilter={onSaveFilter}
-                  onDeleteFilter={onDeleteFilter}
-                  onSelectFilter={onSelectFilter}
-                />
+                <motion.button
+                  onClick={() => handleTypeFilterChange('school')}
+                  className={`px-3 py-1.5 rounded-md ${
+                    activeTypeFilter === 'school'
+                      ? 'bg-[#A7D7F9]/10 text-[#A7D7F9] font-medium'
+                      : 'text-gray-600 hover:bg-gray-100'
+                  } transition-all text-sm flex items-center gap-1.5`}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <FaGraduationCap className="text-xs" />
+                  Studying
+                </motion.button>
+
+                <motion.button
+                  onClick={() => handleTypeFilterChange('internship')}
+                  className={`px-3 py-1.5 rounded-md ${
+                    activeTypeFilter === 'internship'
+                      ? 'bg-[#A7D7F9]/10 text-[#A7D7F9] font-medium'
+                      : 'text-gray-600 hover:bg-gray-100'
+                  } transition-all text-sm flex items-center gap-1.5`}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <FaBriefcase className="text-xs" />
+                  Internship
+                </motion.button>
+              </div>
+
+              {/* Secondary filters with less visual weight */}
+              <div className="flex items-center space-x-2">
+                <motion.button
+                  onClick={handleRoommateFilterChange}
+                  className={`px-3 py-1.5 rounded-md ${
+                    showRoommateOnly
+                      ? 'bg-[#8FC9A9]/10 text-[#8FC9A9] font-medium'
+                      : 'text-gray-600 hover:bg-gray-100'
+                  } transition-all text-sm flex items-center gap-1.5`}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <FaHome className="text-xs" />
+                  Roommates
+                </motion.button>
+
+                {hasUserLocation && (
+                  <motion.button
+                    onClick={handleMyCityFilterChange}
+                    className={`px-3 py-1.5 rounded-md ${
+                      isMyCityActive
+                        ? 'bg-[#A7D7F9]/10 text-[#A7D7F9] font-medium'
+                        : 'text-gray-600 hover:bg-gray-100'
+                    } transition-all text-sm flex items-center gap-1.5`}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <FaMapMarkerAlt className="text-xs" />
+                    My City
+                  </motion.button>
+                )}
+
+                {/* Class Year Toggle Button */}
+                {userClassYear && (
+                  <motion.button
+                    onClick={handleClassYearFilterChange}
+                    className={`px-3 py-1.5 rounded-md ${
+                      !filters.showAllClassYears
+                        ? 'bg-[#F9C5D1]/10 text-[#F28B82] font-medium'
+                        : 'text-gray-600 hover:bg-gray-100'
+                    } transition-all text-sm flex items-center gap-1.5`}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <FaUserGraduate className="text-xs" />
+                    Class of {userClassYear}
+                  </motion.button>
+                )}
               </div>
             </div>
           </div>
@@ -409,7 +403,11 @@ export const DirectoryContent: React.FC<DirectoryContentProps> = ({
                       exit={{ scale: 0.8, opacity: 0 }}
                       whileHover={{ scale: 1.05 }}
                     >
-                      {activeTypeFilter === 'work' ? 'Working' : 'Studying'}
+                      {activeTypeFilter === 'work'
+                        ? 'Working'
+                        : activeTypeFilter === 'school'
+                          ? 'Studying'
+                          : 'Internship'}
                       <button
                         onClick={() => {
                           setActiveTypeFilter('all');
@@ -434,24 +432,6 @@ export const DirectoryContent: React.FC<DirectoryContentProps> = ({
                       {searchQuery.length > 15 ? `${searchQuery.substring(0, 15)}...` : searchQuery}
                       <button
                         onClick={() => setSearchQuery('')}
-                        className="ml-1 text-gray-500 hover:text-[#F28B82]"
-                      >
-                        <MdClear size={14} />
-                      </button>
-                    </motion.span>
-                  )}
-
-                  {filters.savedFilter && (
-                    <motion.span
-                      className="px-2 py-1 bg-gray-100 rounded-md text-xs text-gray-700 flex items-center"
-                      initial={{ scale: 0.8, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      exit={{ scale: 0.8, opacity: 0 }}
-                      whileHover={{ scale: 1.05 }}
-                    >
-                      Saved: {filters.savedFilter}
-                      <button
-                        onClick={() => onFiltersChange({ ...filters, savedFilter: undefined })}
                         className="ml-1 text-gray-500 hover:text-[#F28B82]"
                       >
                         <MdClear size={14} />

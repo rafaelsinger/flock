@@ -12,11 +12,10 @@ import { TopDestinations } from '@/components/TopDestinations';
 import { FlockMap } from '../Map/Map';
 
 interface FilterOptions {
-  postGradType?: 'work' | 'school' | 'all';
+  postGradType?: 'work' | 'school' | 'internship' | 'all';
   country?: string;
   state?: string;
   city?: string;
-  savedFilter?: string;
   lookingForRoommate?: boolean;
   showAllClassYears?: boolean;
   classYear?: number;
@@ -29,7 +28,6 @@ export const Directory = () => {
   const [filters, setFilters] = useState<FilterOptions>({
     showAllClassYears: false, // Default to showing only user's class year
   });
-  const [savedFilters, setSavedFilters] = useState<Record<string, FilterOptions>>({});
   const [greeting, setGreeting] = useState('');
   const directoryContentRef = useRef<HTMLDivElement>(null);
 
@@ -52,14 +50,6 @@ export const Directory = () => {
     if (hour < 12) setGreeting('Good morning');
     else if (hour < 18) setGreeting('Good afternoon');
     else setGreeting('Good evening');
-  }, []);
-
-  // Load saved filters on mount
-  useEffect(() => {
-    const storedFilters = localStorage.getItem('savedFilters');
-    if (storedFilters) {
-      setSavedFilters(JSON.parse(storedFilters));
-    }
   }, []);
 
   // Initialize classYear filter when session loads
@@ -110,34 +100,6 @@ export const Directory = () => {
           block: 'start',
         });
       }, 100);
-    }
-  };
-
-  // Handle saving filters
-  const handleSaveFilter = (name: string, filter: FilterOptions) => {
-    const newSavedFilters = {
-      ...savedFilters,
-      [name]: filter,
-    };
-    setSavedFilters(newSavedFilters);
-    localStorage.setItem('savedFilters', JSON.stringify(newSavedFilters));
-  };
-
-  // Handle deleting filters
-  const handleDeleteFilter = (name: string) => {
-    const { [name]: _, ...restFilters } = savedFilters; // eslint-disable-line @typescript-eslint/no-unused-vars
-    setSavedFilters(restFilters);
-    localStorage.setItem('savedFilters', JSON.stringify(restFilters));
-  };
-
-  // Handle selecting a saved filter
-  const handleSelectFilter = (name: string) => {
-    const filter = savedFilters[name];
-    if (filter) {
-      setFilters({
-        ...filter,
-        savedFilter: name,
-      });
     }
   };
 
@@ -269,18 +231,11 @@ export const Directory = () => {
             {/* Directory Content */}
             <motion.div
               ref={directoryContentRef}
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ duration: 0.4, delay: 0.3 }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.2 }}
             >
-              <DirectoryContent
-                filters={filters}
-                onFiltersChange={handleFiltersChange}
-                savedFilters={savedFilters}
-                onSaveFilter={handleSaveFilter}
-                onDeleteFilter={handleDeleteFilter}
-                onSelectFilter={handleSelectFilter}
-              />
+              <DirectoryContent filters={filters} onFiltersChange={handleFiltersChange} />
             </motion.div>
 
             {/* Top Destinations */}
