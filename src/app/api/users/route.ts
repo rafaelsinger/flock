@@ -22,7 +22,6 @@ export const GET = async (request: NextRequest) => {
       | 'seeking'
       | 'internship'
       | undefined;
-    const userType = searchParams.get('userType') as 'grad' | 'intern' | undefined;
     const country = searchParams.get('country') || '';
     const state = searchParams.get('state') || '';
     const city = searchParams.get('city') || '';
@@ -37,12 +36,7 @@ export const GET = async (request: NextRequest) => {
     // Filter users based on the requesting user's profile
     // Interns can only see other interns from their class year
     let classYearFilter = {};
-    if (
-      session.user &&
-      session.user.userType === 'intern' &&
-      session.user.classYear &&
-      !showAllClassYears
-    ) {
+    if (session.user && session.user.classYear && !showAllClassYears) {
       classYearFilter = { classYear: { equals: session.user.classYear } };
     }
 
@@ -62,11 +56,9 @@ export const GET = async (request: NextRequest) => {
               ],
             }
           : {},
-        // User type filter
-        userType ? { userType } : {},
         // Post grad type filter - always exclude seeking
         postGradType === 'work'
-          ? { postGradType: { in: [PostGradType.work, PostGradType.internship] } }
+          ? { postGradType: { in: [PostGradType.work, PostGradType.school] } }
           : postGradType === 'school'
             ? { postGradType }
             : { postGradType: { not: PostGradType.seeking } },
@@ -107,7 +99,6 @@ export const GET = async (request: NextRequest) => {
       select: {
         id: true,
         name: true,
-        userType: true,
         location: {
           select: {
             city: true,

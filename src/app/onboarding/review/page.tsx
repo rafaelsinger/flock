@@ -12,7 +12,7 @@ import { useSession } from 'next-auth/react';
 import { UserOnboarding, UserWithLocation } from '@/types/user';
 import { motion } from 'framer-motion';
 import { OnboardingProgress } from '@/components';
-import { UserType, PostGradType } from '@prisma/client';
+import { PostGradType } from '@prisma/client';
 
 const ReviewPage: FC = () => {
   const router = useRouter();
@@ -21,7 +21,7 @@ const ReviewPage: FC = () => {
   const isFinalizingRef = useRef(false);
   const { data: sessionStorage, update } = useSession();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const isIntern = data?.userType === UserType.intern;
+  const isIntern = data?.classYear != 2025;
 
   const finalizeOnboarding = useMutation({
     mutationFn: async (finalData: UserOnboarding) => {

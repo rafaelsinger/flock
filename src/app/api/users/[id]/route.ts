@@ -111,12 +111,6 @@ export const PUT = async (request: NextRequest, context: { params: Promise<{ id:
       };
     }
 
-    // Add potentially problematic fields
-    if (userData.userType) {
-      // Using a type union with Prisma.UserUpdateInput to add the missing userType field
-      (updateData as Prisma.UserUpdateInput & { userType: string }).userType = userData.userType;
-    }
-
     const updatedUser = await prisma.user.update({
       where: {
         id: id,

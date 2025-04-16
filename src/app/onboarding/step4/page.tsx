@@ -31,7 +31,7 @@ const Step4: FC = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
   const previousData = queryClient.getQueryData(['onboardingData']) as IncompleteUserOnboarding;
-  const isIntern = previousData?.userType === 'intern';
+  const isIntern = previousData?.classYear != 2025;
 
   const getInitialVisibilityOptions = (): FormData => {
     if (isIntern) {

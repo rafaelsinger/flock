@@ -40,7 +40,6 @@ model User {
   accounts          Account[]
   sessions          Session[]
   postGradType      PostGradType @default(work) @map("postgrad_type")
-  userType          UserType     @default(grad) @map("user_type")
   company           String?
   title             String?      @map("title")
   school            String?
@@ -104,9 +103,4 @@ enum PostGradType {
   school
   seeking
   internship
-}
-
-enum UserType {
-  grad
-  intern
 }

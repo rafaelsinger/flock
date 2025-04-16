@@ -6,7 +6,6 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { IncompleteUserOnboarding } from '@/types/user';
 import { motion } from 'framer-motion';
 import { OnboardingProgress } from '@/components';
-import { UserType } from '@prisma/client';
 
 const Step0: FC = () => {
   const router = useRouter();
@@ -22,15 +21,11 @@ const Step0: FC = () => {
 
   const updateOnboardingData = useMutation({
     mutationFn: (year: string) => {
-      // Determine if user is an intern or grad based on class year
-      // If the selected year is 2025, they're a graduating senior (grad)
-      // Otherwise, they're an intern
+      // Process selected year
       const selectedYearNum = parseInt(year);
-      const userType = selectedYearNum === 2025 ? UserType.grad : UserType.intern;
 
       const data: IncompleteUserOnboarding = {
         classYear: selectedYearNum,
-        userType: userType,
       };
       return Promise.resolve(data);
     },
@@ -52,7 +47,7 @@ const Step0: FC = () => {
     }
   };
 
-  // Helper to display a user type indicator for each year option
+  // Helper to display a role indicator for each year option
   const getUserTypeIndicator = (year: string) => {
     const yearNum = parseInt(year);
     return yearNum === 2025 ? 'New Grad' : 'Intern';

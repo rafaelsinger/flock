@@ -14,7 +14,7 @@ const Step2Work: FC = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
   const previousData = queryClient.getQueryData(['onboardingData']) as IncompleteUserOnboarding;
-  const isIntern = previousData?.userType === 'intern';
+  const isIntern = previousData?.classYear != 2025;
 
   // Adjust form fields based on user type - now we use the same fields for both
   const [formData, setFormData] = useState({

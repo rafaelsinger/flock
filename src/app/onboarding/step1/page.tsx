@@ -21,7 +21,7 @@ const Step1: FC = () => {
   const previousData = queryClient.getQueryData(['onboardingData']) as IncompleteUserOnboarding;
   const isFinalizingRef = useRef(false);
   const [localClassYear, setLocalClassYear] = useState<number | null>(null);
-  const isIntern = previousData?.userType === 'intern';
+  const isIntern = previousData?.classYear != 2025;
 
   // Check immediately if classYear exists, before rendering content
   useEffect(() => {
@@ -151,7 +151,6 @@ const Step1: FC = () => {
 
       // Use either previously stored data or local class year
       const classYear = previousData?.classYear || localClassYear;
-      const userType = previousData?.userType || 'grad';
 
       if (!classYear) {
         console.error('Missing classYear data. Redirecting to step0');
@@ -163,7 +162,6 @@ const Step1: FC = () => {
       const dataToSubmit: IncompleteUserOnboarding = {
         ...(previousData || {}),
         classYear,
-        userType,
         postGradType: type,
         isOnboarded: true,
       };

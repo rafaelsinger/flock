@@ -7,7 +7,6 @@ export type CreateUser = {
   name: string;
   email: string;
   postGradType: PostGradType;
-  userType: 'grad' | 'intern';
   isOnboarded: boolean;
   title?: string | null;
   program?: string | null;
@@ -53,7 +52,6 @@ export type UserWithLocation = User & { location: Location };
 
 export interface IncompleteUserOnboarding {
   classYear?: number;
-  userType?: 'grad' | 'intern';
   postGradType?: PostGradType;
   company?: string;
   title?: string;
