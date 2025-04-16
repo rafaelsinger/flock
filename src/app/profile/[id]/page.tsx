@@ -24,6 +24,7 @@ import {
 } from '@/types/user';
 import { CitySelect } from '@/components/Select/CitySelect';
 import { PostGradType } from '@prisma/client';
+import { INDUSTRIES } from '@/constants/industries';
 
 // Common input classes for consistency with onboarding flow
 const inputClasses =
@@ -281,6 +282,9 @@ const ViewMode = ({ userData, isOwnProfile, onEdit }: ViewModeProps) => {
   const displayCompany = getDisplayCompany(userData);
 
   const isSeeking = userData.postGradType === PostGradType.seeking;
+  const isInternship = userData.postGradType === PostGradType.internship;
+  const isWork = userData.postGradType === PostGradType.work;
+  const isSchool = userData.postGradType === PostGradType.school;
 
   const renderProfileIcon = () => {
     if (isSeeking) {
@@ -304,6 +308,18 @@ const ViewMode = ({ userData, isOwnProfile, onEdit }: ViewModeProps) => {
               d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
             />
           </svg>
+        </motion.div>
+      );
+    }
+    if (isInternship) {
+      return (
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ delay: 0.2 }}
+          className="w-16 h-16 rounded-full bg-[#B8D9FE]/10 flex items-center justify-center"
+        >
+          <MdWork className="text-[#B8D9FE] text-2xl" />
         </motion.div>
       );
     }
@@ -358,12 +374,38 @@ const ViewMode = ({ userData, isOwnProfile, onEdit }: ViewModeProps) => {
             {userData.name}
           </motion.h1>
 
+          {/* Graduate type tag based on class year and type */}
+          <motion.div className="mb-4" variants={itemVariants}>
+            {isWork && userData.classYear === 2025 && (
+              <span className="inline-block px-3 py-1 bg-[#F28B82]/10 text-[#F28B82] text-sm font-medium rounded-full">
+                Class of 2025 - Full-time role
+              </span>
+            )}
+            {isSchool && userData.classYear === 2025 && (
+              <span className="inline-block px-3 py-1 bg-[#A7D7F9]/10 text-[#A7D7F9] text-sm font-medium rounded-full">
+                Class of 2025 - Graduate school
+              </span>
+            )}
+            {isInternship && userData.classYear !== 2025 && (
+              <span className="inline-block px-3 py-1 bg-[#B8D9FE]/10 text-[#B8D9FE] text-sm font-medium rounded-full">
+                Class of {userData.classYear} - Internship
+              </span>
+            )}
+            {isSeeking && (
+              <span className="inline-block px-3 py-1 bg-[#9E9E9E]/10 text-[#9E9E9E] text-sm font-medium rounded-full">
+                Actively looking
+              </span>
+            )}
+          </motion.div>
+
           {/* Only show if the user is viewing their own profile or if at least one visibility setting is true */}
           {(showRole || showCompany) && !isSeeking && (
             <motion.div className="flex items-start space-x-2 mb-4" variants={itemVariants}>
               <div className="mt-1">
-                {userData.postGradType === 'work' ? (
+                {isWork ? (
                   <MdWork className="text-[#F28B82] text-xl" />
+                ) : isInternship ? (
+                  <MdWork className="text-[#B8D9FE] text-xl" />
                 ) : (
                   <HiOutlineAcademicCap className="text-[#A7D7F9] text-xl" />
                 )}
@@ -381,8 +423,7 @@ const ViewMode = ({ userData, isOwnProfile, onEdit }: ViewModeProps) => {
                 )}
                 {isOwnProfile && !showCompany && (
                   <p className="text-sm text-[#666666] italic">
-                    Your {userData.postGradType === 'work' ? 'company' : 'school'} is hidden from
-                    other users
+                    Your {isWork || isInternship ? 'company' : 'school'} is hidden from other users
                   </p>
                 )}
               </div>
@@ -422,6 +463,16 @@ const ViewMode = ({ userData, isOwnProfile, onEdit }: ViewModeProps) => {
                     userData.location?.country !== 'USA' &&
                     `, ${userData.location?.country}`}
                 </p>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Class Year - Show for all types */}
+          {userData.classYear && (
+            <motion.div className="flex items-start space-x-2 mb-4" variants={itemVariants}>
+              <HiOutlineAcademicCap className="text-[#8A8A8A] text-xl mt-1" />
+              <div>
+                <p className="text-lg text-[#333333]">Class of {userData.classYear}</p>
               </div>
             </motion.div>
           )}
@@ -469,7 +520,7 @@ const ViewMode = ({ userData, isOwnProfile, onEdit }: ViewModeProps) => {
                 <h3 className="font-medium text-[#333333]">Visibility Settings</h3>
               </div>
               <ul className="space-y-2 text-[#666666] pl-4">
-                {userData.postGradType === 'work' ? (
+                {isWork || isInternship ? (
                   <>
                     <li className="flex items-center space-x-2">
                       <span className="w-1.5 h-1.5 rounded-full bg-[#F28B82]"></span>
@@ -527,8 +578,12 @@ interface EditFormProps {
 
 const EditForm = ({ userData, setUserData, onSave, onCancel, isSubmitting }: EditFormProps) => {
   // Determine which visibility labels to show based on user type
-  const roleLabel = userData.postGradType === 'work' ? 'Role' : 'Program';
-  const companyLabel = userData.postGradType === 'work' ? 'Company' : 'School';
+  const isWork = userData.postGradType === PostGradType.work;
+  const isInternship = userData.postGradType === PostGradType.internship;
+  const isSchool = userData.postGradType === PostGradType.school;
+
+  const roleLabel = isWork || isInternship ? 'Role' : 'Program';
+  const companyLabel = isWork || isInternship ? 'Company' : 'School';
 
   const [activeField, setActiveField] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -545,13 +600,13 @@ const EditForm = ({ userData, setUserData, onSave, onCancel, isSubmitting }: Edi
     const updatedVisibilityOptions = { ...userData.visibilityOptions };
 
     if (field === 'role') {
-      if (userData.postGradType === 'work') {
+      if (isWork || isInternship) {
         updatedVisibilityOptions.title = value;
       } else {
         updatedVisibilityOptions.program = value;
       }
     } else if (field === 'company') {
-      if (userData.postGradType === 'work') {
+      if (isWork || isInternship) {
         updatedVisibilityOptions.company = value;
       } else {
         updatedVisibilityOptions.school = value;
@@ -664,9 +719,11 @@ const EditForm = ({ userData, setUserData, onSave, onCancel, isSubmitting }: Edi
 
       <motion.div variants={itemVariants}>
         <label htmlFor="type" className={labelClasses}>
-          {userData.postGradType === 'work' ? (
+          {isWork ? (
             <BsBriefcase className="mr-2 text-[#F28B82]" />
-          ) : userData.postGradType === 'school' ? (
+          ) : isInternship ? (
+            <MdWork className="mr-2 text-[#B8D9FE]" />
+          ) : isSchool ? (
             <LuGraduationCap className="mr-2 text-[#A7D7F9]" />
           ) : (
             <svg
@@ -696,6 +753,7 @@ const EditForm = ({ userData, setUserData, onSave, onCancel, isSubmitting }: Edi
           >
             <option value="work">Working</option>
             <option value="school">Studying</option>
+            <option value="internship">Internship</option>
             <option value="seeking">Just looking</option>
           </select>
         </motion.div>
@@ -705,7 +763,7 @@ const EditForm = ({ userData, setUserData, onSave, onCancel, isSubmitting }: Edi
         <>
           <motion.div variants={itemVariants}>
             <label htmlFor="role" className={labelClasses}>
-              {userData.postGradType === 'work' ? (
+              {isWork || isInternship ? (
                 <MdWork className="mr-2 text-[#F28B82]" />
               ) : (
                 <HiOutlineAcademicCap className="mr-2 text-[#A7D7F9]" />
@@ -719,11 +777,9 @@ const EditForm = ({ userData, setUserData, onSave, onCancel, isSubmitting }: Edi
               <input
                 id="role"
                 type="text"
-                value={
-                  userData.postGradType === 'work' ? userData.title || '' : userData.program || ''
-                }
+                value={isWork || isInternship ? userData.title || '' : userData.program || ''}
                 onChange={(e) => {
-                  if (userData.postGradType === 'work') {
+                  if (isWork || isInternship) {
                     setUserData({ ...userData, title: e.target.value });
                   } else {
                     setUserData({ ...userData, program: e.target.value });
@@ -738,7 +794,7 @@ const EditForm = ({ userData, setUserData, onSave, onCancel, isSubmitting }: Edi
 
           <motion.div variants={itemVariants}>
             <label htmlFor="company" className={labelClasses}>
-              {userData.postGradType === 'work' ? (
+              {isWork || isInternship ? (
                 <FaBuilding className="mr-2 text-[#F28B82]" />
               ) : (
                 <FaUniversity className="mr-2 text-[#A7D7F9]" />
@@ -752,11 +808,9 @@ const EditForm = ({ userData, setUserData, onSave, onCancel, isSubmitting }: Edi
               <input
                 id="company"
                 type="text"
-                value={
-                  userData.postGradType === 'work' ? userData.company || '' : userData.school || ''
-                }
+                value={isWork || isInternship ? userData.company || '' : userData.school || ''}
                 onChange={(e) => {
-                  if (userData.postGradType === 'work') {
+                  if (isWork || isInternship) {
                     setUserData({ ...userData, company: e.target.value });
                   } else {
                     setUserData({ ...userData, school: e.target.value });
@@ -768,6 +822,35 @@ const EditForm = ({ userData, setUserData, onSave, onCancel, isSubmitting }: Edi
               />
             </motion.div>
           </motion.div>
+
+          {(isWork || isInternship) && (
+            <motion.div variants={itemVariants}>
+              <label htmlFor="industry" className={labelClasses}>
+                <BsBriefcase className="mr-2 text-[#F28B82]" />
+                Industry
+              </label>
+              <motion.div
+                variants={inputVariants}
+                animate={activeField === 'industry' ? 'focus' : 'blur'}
+              >
+                <select
+                  id="industry"
+                  value={userData.industry || ''}
+                  onChange={(e) => setUserData({ ...userData, industry: e.target.value })}
+                  onFocus={() => setActiveField('industry')}
+                  onBlur={() => setActiveField(null)}
+                  className={inputClasses.replace('cursor-text', 'cursor-pointer')}
+                >
+                  <option value="">Select an industry</option>
+                  {INDUSTRIES.map((industry) => (
+                    <option key={industry.value} value={industry.value}>
+                      {industry.label}
+                    </option>
+                  ))}
+                </select>
+              </motion.div>
+            </motion.div>
+          )}
         </>
       )}
 
@@ -844,7 +927,7 @@ const EditForm = ({ userData, setUserData, onSave, onCancel, isSubmitting }: Edi
               <input
                 type="checkbox"
                 checked={
-                  userData.postGradType === 'work'
+                  isWork || isInternship
                     ? (userData.visibilityOptions?.title ?? true)
                     : (userData.visibilityOptions?.program ?? true)
                 }
@@ -864,7 +947,7 @@ const EditForm = ({ userData, setUserData, onSave, onCancel, isSubmitting }: Edi
               <input
                 type="checkbox"
                 checked={
-                  userData.postGradType === 'work'
+                  isWork || isInternship
                     ? (userData.visibilityOptions?.company ?? true)
                     : (userData.visibilityOptions?.school ?? true)
                 }

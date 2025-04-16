@@ -82,14 +82,20 @@ export const getDisplayRole = (user: User | CreateUser): string => {
   if (user.postGradType === PostGradType.school) {
     return user.program || '';
   }
-  return user.title || '';
+  if (user.postGradType === PostGradType.work || user.postGradType === PostGradType.internship) {
+    return user.title || '';
+  }
+  return '';
 };
 
 export const getDisplayCompany = (user: User | CreateUser): string => {
   if (user.postGradType === PostGradType.school) {
     return user.school || '';
   }
-  return user.company || '';
+  if (user.postGradType === PostGradType.work || user.postGradType === PostGradType.internship) {
+    return user.company || '';
+  }
+  return '';
 };
 
 export const getLocation = (user: User | CreateUser): string => {
@@ -102,12 +108,18 @@ export const isRoleVisible = (user: User | CreateUser, isOwnProfile: boolean): b
   if (user.postGradType === PostGradType.school) {
     return isOwnProfile || (user.visibilityOptions.program ?? true);
   }
-  return isOwnProfile || (user.visibilityOptions.title ?? true);
+  if (user.postGradType === PostGradType.work || user.postGradType === PostGradType.internship) {
+    return isOwnProfile || (user.visibilityOptions.title ?? true);
+  }
+  return isOwnProfile;
 };
 
 export const isCompanyVisible = (user: User | CreateUser, isOwnProfile: boolean): boolean => {
   if (user.postGradType === PostGradType.school) {
     return isOwnProfile || (user.visibilityOptions.school ?? true);
   }
-  return isOwnProfile || (user.visibilityOptions.company ?? true);
+  if (user.postGradType === PostGradType.work || user.postGradType === PostGradType.internship) {
+    return isOwnProfile || (user.visibilityOptions.company ?? true);
+  }
+  return isOwnProfile;
 };

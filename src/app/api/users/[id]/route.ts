@@ -106,7 +106,10 @@ export const PUT = async (request: NextRequest, context: { params: Promise<{ id:
     if (userData.industry) {
       updateData.industry = {
         connect: {
-          name: userData.industry,
+          name:
+            typeof userData.industry === 'string'
+              ? userData.industry
+              : (userData.industry as { name: string }).name,
         },
       };
     }
