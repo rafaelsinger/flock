@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/auth';
 import { UpdateUser } from '@/types/user';
+import { Prisma } from '@prisma/client';
 
 export const GET = async (request: NextRequest) => {
   const id = request.url.split('/users/')[1];
@@ -78,29 +79,52 @@ export const PUT = async (request: NextRequest, context: { params: Promise<{ id:
       }
     }
 
+    // Prepare the data object with non-problematic fields first
+    const updateData: Prisma.UserUpdateInput = {
+      name: userData.name,
+      postGradType: userData.postGradType,
+      title: userData.title,
+      program: userData.program,
+      discipline: userData.discipline,
+      company: userData.company,
+      school: userData.school,
+      isOnboarded: userData.isOnboarded,
+      lookingForRoommate: userData.lookingForRoommate,
+      visibilityOptions: userData.visibilityOptions,
+      classYear: userData.classYear,
+    };
+
+    // Add relations
+    if (locationId) {
+      updateData.location = {
+        connect: {
+          id: locationId,
+        },
+      };
+    }
+
+    if (userData.industry) {
+      updateData.industry = {
+        connect: {
+          name: userData.industry,
+        },
+      };
+    }
+
+    // Add potentially problematic fields
+    if (userData.userType) {
+      // Using a type union with Prisma.UserUpdateInput to add the missing userType field
+      (updateData as Prisma.UserUpdateInput & { userType: string }).userType = userData.userType;
+    }
+
     const updatedUser = await prisma.user.update({
       where: {
         id: id,
       },
-      data: {
-        name: userData.name,
-        postGradType: userData.postGradType,
-        userType: userData.userType,
-        title: userData.title,
-        program: userData.program,
-        discipline: userData.discipline,
-        company: userData.company,
-        school: userData.school,
-        isOnboarded: userData.isOnboarded,
-        locationId: locationId,
-        lookingForRoommate: userData.lookingForRoommate,
-        visibilityOptions: userData.visibilityOptions,
-        classYear: userData.classYear,
-        internshipSeason: userData.internshipSeason,
-        internshipYear: userData.internshipYear,
-      },
+      data: updateData,
       include: {
         location: true,
+        industry: true,
       },
     });
 
@@ -165,16 +189,16 @@ export const DELETE = async (
         },
       }
     );
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error deleting user account:', error);
 
     // Check if it's a Prisma error (more detailed error handling)
-    if (error.code === 'P2025') {
+    if (typeof error === 'object' && error !== null && 'code' in error && error.code === 'P2025') {
       return new NextResponse(
         JSON.stringify({
           success: false,
           message: 'Account not found or already deleted',
-          error: error.message,
+          error: error instanceof Error ? error.message : String(error),
         }),
         {
           status: 404,
@@ -189,7 +213,7 @@ export const DELETE = async (
       JSON.stringify({
         success: false,
         message: 'Error deleting account',
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
       }),
       {
         status: 500,

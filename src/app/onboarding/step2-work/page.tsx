@@ -6,7 +6,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { INDUSTRIES } from '@/constants/industries';
 import { IncompleteUserOnboarding } from '@/types/user';
 import { motion } from 'framer-motion';
-import { BsBriefcase, BsBuilding, BsPerson, BsCalendar } from 'react-icons/bs';
+import { BsBriefcase, BsBuilding, BsPerson } from 'react-icons/bs';
 import { OnboardingProgress } from '@/components';
 import { PostGradType } from '@prisma/client';
 
@@ -21,8 +21,6 @@ const Step2Work: FC = () => {
     company: '',
     title: '',
     industry: '',
-    internshipSeason: isIntern ? 'Summer' : undefined, // Only for interns
-    internshipYear: isIntern ? new Date().getFullYear() : undefined, // Only for interns
   });
 
   const [isFormValid, setIsFormValid] = useState(false);
@@ -31,20 +29,10 @@ const Step2Work: FC = () => {
 
   // Different validation based on user type
   useEffect(() => {
-    if (isIntern) {
-      setIsFormValid(
-        formData.company?.trim() !== '' &&
-          formData.title?.trim() !== '' &&
-          formData.industry !== '' &&
-          formData.internshipSeason?.trim() !== '' &&
-          formData.internshipYear !== null
-      );
-    } else {
-      setIsFormValid(
-        formData.company?.trim() !== '' && formData.title?.trim() !== '' && formData.industry !== ''
-      );
-    }
-  }, [formData, isIntern]);
+    setIsFormValid(
+      formData.company?.trim() !== '' && formData.title?.trim() !== '' && formData.industry !== ''
+    );
+  }, [formData]);
 
   const updateOnboardingData = useMutation({
     mutationFn: (workData: IncompleteUserOnboarding) => {
@@ -54,8 +42,6 @@ const Step2Work: FC = () => {
         company: workData.company,
         title: workData.title,
         industry: workData.industry,
-        internshipSeason: isIntern ? workData.internshipSeason : undefined,
-        internshipYear: isIntern ? workData.internshipYear : undefined,
       };
       return Promise.resolve(data);
     },
@@ -233,83 +219,6 @@ const Step2Work: FC = () => {
                 </select>
               </motion.div>
             </motion.div>
-
-            {/* Internship-specific fields */}
-            {isIntern && (
-              <>
-                <motion.div variants={itemVariants}>
-                  <label
-                    htmlFor="internshipSeason"
-                    className="flex items-center text-sm font-medium text-[#333333] mb-2"
-                  >
-                    <BsCalendar className="mr-2 text-[#F28B82]" />
-                    Internship Season
-                  </label>
-                  <motion.div
-                    variants={inputVariants}
-                    animate={activeField === 'internshipSeason' ? 'focus' : 'blur'}
-                  >
-                    <select
-                      id="internshipSeason"
-                      value={formData.internshipSeason}
-                      onChange={(e) =>
-                        setFormData((prev) => ({ ...prev, internshipSeason: e.target.value }))
-                      }
-                      onFocus={() => setActiveField('internshipSeason')}
-                      onBlur={() => setActiveField(null)}
-                      className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-[#F9C5D1] focus:ring-2 focus:ring-[#F9C5D1]/20 outline-none transition-all cursor-pointer hover:border-[#F9C5D1]/50 text-[#333333]"
-                      required
-                    >
-                      <option value="">Select a season</option>
-                      <option value="Spring">Spring</option>
-                      <option value="Summer">Summer</option>
-                      <option value="Fall">Fall</option>
-                      <option value="Winter">Winter</option>
-                      <option value="Year-round">Year-round</option>
-                    </select>
-                  </motion.div>
-                </motion.div>
-
-                <motion.div variants={itemVariants}>
-                  <label
-                    htmlFor="internshipYear"
-                    className="flex items-center text-sm font-medium text-[#333333] mb-2"
-                  >
-                    <BsCalendar className="mr-2 text-[#F28B82]" />
-                    Internship Year
-                  </label>
-                  <motion.div
-                    variants={inputVariants}
-                    animate={activeField === 'internshipYear' ? 'focus' : 'blur'}
-                  >
-                    <select
-                      id="internshipYear"
-                      value={formData.internshipYear}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          internshipYear: e.target.value ? parseInt(e.target.value) : undefined,
-                        }))
-                      }
-                      onFocus={() => setActiveField('internshipYear')}
-                      onBlur={() => setActiveField(null)}
-                      className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-[#F9C5D1] focus:ring-2 focus:ring-[#F9C5D1]/20 outline-none transition-all cursor-pointer hover:border-[#F9C5D1]/50 text-[#333333]"
-                      required
-                    >
-                      <option value="">Select a year</option>
-                      {[...Array(5)].map((_, idx) => {
-                        const year = new Date().getFullYear() + idx;
-                        return (
-                          <option key={year} value={year}>
-                            {year}
-                          </option>
-                        );
-                      })}
-                    </select>
-                  </motion.div>
-                </motion.div>
-              </>
-            )}
           </div>
 
           <motion.div

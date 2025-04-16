@@ -28,8 +28,6 @@ export const GET = async (request: NextRequest) => {
     const city = searchParams.get('city') || '';
     const industry = searchParams.get('industry') || '';
     const classYear = searchParams.get('classYear') || '';
-    const internshipYear = searchParams.get('internshipYear') || '';
-    const internshipSeason = searchParams.get('internshipSeason') || '';
     const lookingForRoommate = searchParams.get('lookingForRoommate') === 'true';
     const isOnboarded = searchParams.has('isOnboarded')
       ? Boolean(JSON.parse(searchParams.get('isOnboarded')!))
@@ -69,9 +67,6 @@ export const GET = async (request: NextRequest) => {
           : { postGradType: { not: PostGradType.seeking } },
         // Class year filter - when explicitly requested or for intern restrictions
         classYear ? { classYear: { equals: parseInt(classYear) } } : classYearFilter,
-        // Internship specific filters
-        internshipYear ? { internshipYear: { equals: parseInt(internshipYear) } } : {},
-        internshipSeason ? { internshipSeason: { equals: internshipSeason } } : {},
         // Location filters
         country ? { location: { country } } : {},
         state ? { location: { state } } : {},
@@ -113,8 +108,6 @@ export const GET = async (request: NextRequest) => {
         classYear: true,
         internshipCompany: true,
         internshipTitle: true,
-        internshipSeason: true,
-        internshipYear: true,
         lookingForRoommate: true,
         visibilityOptions: true,
         industry: {

@@ -180,7 +180,7 @@ const ReviewPage: FC = () => {
                     </div>
                     <div>
                       <p className="text-sm font-medium text-[#666666]">Company</p>
-                      <p className="text-lg text-[#333333]">{data.internshipCompany}</p>
+                      <p className="text-lg text-[#333333]">{data.company}</p>
                     </div>
                   </motion.div>
 
@@ -190,19 +190,7 @@ const ReviewPage: FC = () => {
                     </div>
                     <div>
                       <p className="text-sm font-medium text-[#666666]">Role</p>
-                      <p className="text-lg text-[#333333]">{data.internshipTitle}</p>
-                    </div>
-                  </motion.div>
-
-                  <motion.div className="flex items-center space-x-3" variants={itemVariants}>
-                    <div className="w-8 h-8 rounded-full bg-[#F9C5D1]/10 flex items-center justify-center">
-                      <BsCalendar className="text-[#F28B82]" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-[#666666]">Timeframe</p>
-                      <p className="text-lg text-[#333333]">
-                        {data.internshipSeason} {data.internshipYear}
-                      </p>
+                      <p className="text-lg text-[#333333]">{data.title}</p>
                     </div>
                   </motion.div>
 
@@ -343,19 +331,34 @@ const ReviewPage: FC = () => {
 
               <motion.ul className="space-y-3 text-[#666666] pl-2 pt-2" variants={itemVariants}>
                 {isIntern ? (
-                  <motion.li className="flex items-center space-x-3" variants={itemVariants}>
-                    <div className="w-6 h-6 rounded-full flex items-center justify-center">
-                      {data.visibilityOptions?.internship ? (
-                        <span className="text-[#F28B82] text-lg">✓</span>
-                      ) : (
-                        <span className="text-gray-300 text-lg">✕</span>
-                      )}
-                    </div>
-                    <span className="text-base">
-                      Internship details {data.visibilityOptions?.internship ? 'visible' : 'hidden'}{' '}
-                      to classmates
-                    </span>
-                  </motion.li>
+                  <>
+                    <motion.li className="flex items-center space-x-3" variants={itemVariants}>
+                      <div className="w-6 h-6 rounded-full flex items-center justify-center">
+                        {data.visibilityOptions?.company ? (
+                          <span className="text-[#F28B82] text-lg">✓</span>
+                        ) : (
+                          <span className="text-gray-300 text-lg">✕</span>
+                        )}
+                      </div>
+                      <span className="text-base">
+                        Internship company {data.visibilityOptions?.company ? 'visible' : 'hidden'}{' '}
+                        to classmates
+                      </span>
+                    </motion.li>
+                    <motion.li className="flex items-center space-x-3" variants={itemVariants}>
+                      <div className="w-6 h-6 rounded-full flex items-center justify-center">
+                        {data.visibilityOptions?.title ? (
+                          <span className="text-[#F28B82] text-lg">✓</span>
+                        ) : (
+                          <span className="text-gray-300 text-lg">✕</span>
+                        )}
+                      </div>
+                      <span className="text-base">
+                        Internship role {data.visibilityOptions?.title ? 'visible' : 'hidden'} to
+                        classmates
+                      </span>
+                    </motion.li>
+                  </>
                 ) : data.postGradType === PostGradType.work ? (
                   <>
                     <motion.li className="flex items-center space-x-3" variants={itemVariants}>

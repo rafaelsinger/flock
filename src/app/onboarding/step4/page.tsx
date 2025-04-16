@@ -13,7 +13,7 @@ import { PostGradType } from '@prisma/client';
 type SchoolFormData = {
   visibilityOptions: {
     school: boolean;
-    major: boolean;
+    program: boolean;
   };
 };
 
@@ -45,7 +45,7 @@ const Step4: FC = () => {
       return {
         visibilityOptions: {
           school: true,
-          major: true,
+          program: true,
         },
       };
     } else {
@@ -60,13 +60,13 @@ const Step4: FC = () => {
   };
 
   // Get the appropriate field label based on user type and post-graduation path
-  const getFieldLabel = (fieldType: 'company' | 'title' | 'school' | 'major'): string => {
+  const getFieldLabel = (fieldType: 'company' | 'title' | 'school' | 'program'): string => {
     if (isIntern) {
       if (fieldType === 'company') return 'Internship Company';
       if (fieldType === 'title') return 'Internship Title';
     } else if (previousData?.postGradType === PostGradType.school) {
       if (fieldType === 'school') return 'School';
-      if (fieldType === 'major') return 'Major';
+      if (fieldType === 'program') return 'Program';
     } else {
       if (fieldType === 'company') return 'Company';
       if (fieldType === 'title') return 'Role';
@@ -84,12 +84,12 @@ const Step4: FC = () => {
     return true;
   };
 
-  // Function to check if title/major should be checked
+  // Function to check if title/program should be checked
   const getTitleMajorChecked = (): boolean => {
     if (isIntern || previousData?.postGradType === PostGradType.work) {
       return (formData as InternFormData | GraduateFormData).visibilityOptions.title;
     } else if (previousData?.postGradType === PostGradType.school) {
-      return (formData as SchoolFormData).visibilityOptions.major;
+      return (formData as SchoolFormData).visibilityOptions.program;
     }
     return true;
   };
@@ -146,12 +146,12 @@ const Step4: FC = () => {
         } as FormData);
       }
     } else if (previousData?.postGradType === PostGradType.school) {
-      if (field === 'school' || field === 'major') {
+      if (field === 'school' || field === 'program') {
         const schoolFormData = formData as SchoolFormData;
         setFormData({
           visibilityOptions: {
             ...schoolFormData.visibilityOptions,
-            [field]: !schoolFormData.visibilityOptions[field as 'school' | 'major'],
+            [field]: !schoolFormData.visibilityOptions[field as 'school' | 'program'],
           },
         } as FormData);
       }
@@ -183,7 +183,7 @@ const Step4: FC = () => {
 
   const getTitleMajorFieldName = (): string => {
     if (isIntern) return 'title';
-    if (previousData?.postGradType === PostGradType.school) return 'major';
+    if (previousData?.postGradType === PostGradType.school) return 'program';
     return 'title';
   };
 
@@ -254,7 +254,7 @@ const Step4: FC = () => {
             <motion.div className="space-y-4" variants={itemVariants}>
               <div className="flex justify-between items-center">
                 <label className="text-lg font-medium text-[#333333]">
-                  {getFieldLabel(getTitleMajorFieldName() as 'title' | 'major')}
+                  {getFieldLabel(getTitleMajorFieldName() as 'title' | 'program')}
                 </label>
                 <button
                   type="button"
@@ -281,10 +281,10 @@ const Step4: FC = () => {
               <p className="text-sm text-[#666666]">
                 {getTitleMajorChecked()
                   ? `Your ${getFieldLabel(
-                      getTitleMajorFieldName() as 'title' | 'major'
+                      getTitleMajorFieldName() as 'title' | 'program'
                     ).toLowerCase()} will be visible on your public profile.`
                   : `Your ${getFieldLabel(
-                      getTitleMajorFieldName() as 'title' | 'major'
+                      getTitleMajorFieldName() as 'title' | 'program'
                     ).toLowerCase()} will be hidden from your public profile.`}
               </p>
             </motion.div>

@@ -15,8 +15,6 @@ export type CreateUser = {
   company?: string | null;
   school?: string | null;
   classYear: number;
-  internshipSeason?: string | null;
-  internshipYear?: number | null;
   industry?: string | null;
   location?: CreateLocation | null;
   lookingForRoommate?: boolean | null;
@@ -63,8 +61,6 @@ export interface IncompleteUserOnboarding {
   school?: string;
   program?: string;
   discipline?: string;
-  internshipSeason?: string;
-  internshipYear?: number;
   country?: string;
   state?: string;
   city?: string;
