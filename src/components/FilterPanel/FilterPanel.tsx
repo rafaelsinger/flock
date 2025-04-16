@@ -280,11 +280,12 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
                     <label className={labelClasses}>State</label>
                     <select
                       value={state}
-                      onChange={(e) =>
+                      onChange={(e) => {
+                        console.log(`Setting state filter to: ${e.target.value}`);
                         handleFilterChange({
                           state: e.target.value,
-                        })
-                      }
+                        });
+                      }}
                       className={selectClasses}
                     >
                       <option value="">All States</option>

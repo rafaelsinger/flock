@@ -81,17 +81,17 @@ export type UserOnboarding = CreateUser & CreateLocation;
 
 // Helper functions for common transformations
 export const getDisplayRole = (user: User | CreateUser): string => {
-  if (user.userType === 'intern') {
-    return user.title || '';
+  if (user.postGradType === PostGradType.school) {
+    return user.program || '';
   }
-  return user.postGradType === PostGradType.work ? user.title || '' : user.program || '';
+  return user.title || '';
 };
 
 export const getDisplayCompany = (user: User | CreateUser): string => {
-  if (user.userType === 'intern') {
-    return user.company || '';
+  if (user.postGradType === PostGradType.school) {
+    return user.school || '';
   }
-  return user.postGradType === PostGradType.work ? user.company || '' : user.school || '';
+  return user.company || '';
 };
 
 export const getLocation = (user: User | CreateUser): string => {
@@ -101,25 +101,15 @@ export const getLocation = (user: User | CreateUser): string => {
 };
 
 export const isRoleVisible = (user: User | CreateUser, isOwnProfile: boolean): boolean => {
-  if (user.userType === 'intern') {
-    return isOwnProfile || (user.visibilityOptions.title ?? true);
+  if (user.postGradType === PostGradType.school) {
+    return isOwnProfile || (user.visibilityOptions.program ?? true);
   }
-  return (
-    isOwnProfile ||
-    (user.postGradType === PostGradType.work
-      ? (user.visibilityOptions.title ?? true)
-      : (user.visibilityOptions.program ?? true))
-  );
+  return isOwnProfile || (user.visibilityOptions.title ?? true);
 };
 
 export const isCompanyVisible = (user: User | CreateUser, isOwnProfile: boolean): boolean => {
-  if (user.userType === 'intern') {
-    return isOwnProfile || (user.visibilityOptions.company ?? true);
+  if (user.postGradType === PostGradType.school) {
+    return isOwnProfile || (user.visibilityOptions.school ?? true);
   }
-  return (
-    isOwnProfile ||
-    (user.postGradType === PostGradType.work
-      ? (user.visibilityOptions.company ?? true)
-      : (user.visibilityOptions.school ?? true))
-  );
+  return isOwnProfile || (user.visibilityOptions.company ?? true);
 };

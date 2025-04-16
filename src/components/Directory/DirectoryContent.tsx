@@ -110,7 +110,9 @@ export const DirectoryContent: React.FC<DirectoryContentProps> = ({
       }
 
       // Add class year filter if user is not showing all class years
-      if (!filters.showAllClassYears && userClassYear) {
+      if (filters.showAllClassYears) {
+        params.showAllClassYears = 'true';
+      } else if (userClassYear) {
         params.classYear = userClassYear.toString();
       }
 
@@ -196,7 +198,10 @@ export const DirectoryContent: React.FC<DirectoryContentProps> = ({
     } else {
       setActiveTypeFilter(type);
       // Also update the filters object to ensure consistency
-      onFiltersChange({ ...filters, postGradType: type === 'all' ? undefined : type });
+      onFiltersChange({
+        ...filters,
+        postGradType: type === 'all' ? undefined : type,
+      });
     }
   };
 

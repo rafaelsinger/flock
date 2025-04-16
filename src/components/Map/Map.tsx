@@ -224,6 +224,9 @@ export const FlockMap: React.FC<FlockMapProps> = ({ onCitySelect, showAllClassYe
       });
     }
 
+    // Call the city select handler with the state abbreviation
+    // For state clicks, we pass empty string for city and the state abbreviation
+    console.log(`Clicking state: ${clickedState}, abbreviation: ${stateAbbrev}`);
     onCitySelect('', stateAbbrev);
   };
 

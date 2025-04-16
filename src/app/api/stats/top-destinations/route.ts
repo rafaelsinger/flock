@@ -24,7 +24,9 @@ export async function GET(request: NextRequest) {
             company: {
               not: null,
             },
-            postGradType: 'work',
+            postGradType: {
+              in: ['work', 'internship'],
+            },
           },
           select: {
             company: true,
