@@ -1,4 +1,4 @@
-const branch = process.env.VERCEL_GIT_BRANCH;
+const branch = process.env.VERCEL_GIT_COMMIT_REF;
 const environment = process.env.VERCEL_ENV; // "production", "preview", "development"
 
 // skip if not production or not staging
