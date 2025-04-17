@@ -78,6 +78,20 @@ export const PUT = async (request: NextRequest, context: { params: Promise<{ id:
       }
     }
 
+    let industryId: string | null = null;
+    if (userData.industry) {
+      const industry = await prisma.industry.findFirst({
+        where: {
+          name: userData.industry,
+        },
+      });
+      if (industry) {
+        industryId = industry.id;
+      } else {
+        console.error(`Industry with name ${userData.industry} not found`);
+      }
+    }
+
     const updatedUser = await prisma.user.update({
       where: {
         id: id,
@@ -92,6 +106,7 @@ export const PUT = async (request: NextRequest, context: { params: Promise<{ id:
         school: userData.school,
         isOnboarded: userData.isOnboarded,
         locationId: locationId,
+        industryId: industryId,
         lookingForRoommate: userData.lookingForRoommate,
         visibilityOptions: userData.visibilityOptions,
       },
