@@ -1,4 +1,4 @@
-# Flock
+# Flock!
 
 <div align="center">
   <img src="public/logo.svg" alt="Flock Logo" width="120" height="120" />
