@@ -9,14 +9,6 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-model Industry {
-  id    String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name  String @unique
-  users User[]
-
-  @@map("industries")
-}
-
 model Location {
   id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   country         String
@@ -47,13 +39,12 @@ model User {
   discipline        String?
   classYear         Int          @map("class_year") @default(2025)
   lookingForRoommate Boolean?     @default(false) @map("looking_for_roommate")
-  industryId        String?      @map("industry_id") @db.Uuid
+  industry          Industries?  @map("industry")
   locationId        String?      @map("location_id") @db.Uuid
   visibilityOptions Json?        @default("{}") @map("visibility_options")
   createdAt         DateTime     @default(now()) @map("created_at")
   updatedAt         DateTime     @default(now()) @updatedAt @map("updated_at")
   isOnboarded       Boolean      @default(false) @map("is_onboarded")
-  industry          Industry?    @relation(fields: [industryId], references: [id])
   location          Location?    @relation(fields: [locationId], references: [id])
 
   @@map("users")
@@ -103,4 +94,17 @@ enum PostGradType {
   school
   seeking
   internship
+}
+
+enum Industries {
+  technology 
+  finance
+  consulting
+  healthcare
+  education
+  retail
+  manufacturing
+  media
+  nonprofit
+  other
 }

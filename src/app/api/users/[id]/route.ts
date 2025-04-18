@@ -103,15 +103,9 @@ export const PUT = async (request: NextRequest, context: { params: Promise<{ id:
       };
     }
 
+    // Set industry using proper enum syntax
     if (userData.industry) {
-      updateData.industry = {
-        connect: {
-          name:
-            typeof userData.industry === 'string'
-              ? userData.industry
-              : (userData.industry as { name: string }).name,
-        },
-      };
+      updateData.industry = userData.industry;
     }
 
     const updatedUser = await prisma.user.update({
@@ -121,7 +115,6 @@ export const PUT = async (request: NextRequest, context: { params: Promise<{ id:
       data: updateData,
       include: {
         location: true,
-        industry: true,
       },
     });
 
