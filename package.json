@@ -12,9 +12,6 @@
     "vercel-build": "prisma generate && prisma migrate deploy && next build",
     "prepare": "husky"
   },
-  "prisma": {
-    "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
-  },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
       "eslint --fix",
