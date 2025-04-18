@@ -25,6 +25,7 @@ import {
 import { CitySelect } from '@/components/Select/CitySelect';
 import { PostGradType } from '@prisma/client';
 import { INDUSTRIES } from '@/constants/industries';
+import { ProgramTypeSelect } from '@/components/Select/ProgramTypeSelect';
 
 // Common input classes for consistency with onboarding flow
 const inputClasses =
@@ -784,21 +785,22 @@ const EditForm = ({ userData, setUserData, onSave, onCancel, isSubmitting }: Edi
               variants={inputVariants}
               animate={activeField === 'role' ? 'focus' : 'blur'}
             >
-              <input
-                id="role"
-                type="text"
-                value={isWork || isInternship ? userData.title || '' : userData.program || ''}
-                onChange={(e) => {
-                  if (isWork || isInternship) {
-                    setUserData({ ...userData, title: e.target.value });
-                  } else {
-                    setUserData({ ...userData, program: e.target.value });
-                  }
-                }}
-                onFocus={() => setActiveField('role')}
-                onBlur={() => setActiveField(null)}
-                className={inputClasses}
-              />
+              {isWork || isInternship ? (
+                <input
+                  id="role"
+                  type="text"
+                  value={userData.title || ''}
+                  onChange={(e) => setUserData({ ...userData, title: e.target.value })}
+                  onFocus={() => setActiveField('role')}
+                  onBlur={() => setActiveField(null)}
+                  className={inputClasses}
+                />
+              ) : (
+                <ProgramTypeSelect
+                  value={userData.program}
+                  onChange={(program) => setUserData({ ...userData, program })}
+                />
+              )}
             </motion.div>
           </motion.div>
 

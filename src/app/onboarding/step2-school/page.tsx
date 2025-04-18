@@ -8,7 +8,7 @@ import { motion } from 'framer-motion';
 import { FaUniversity } from 'react-icons/fa';
 import { HiOutlineAcademicCap } from 'react-icons/hi';
 import { OnboardingProgress } from '@/components';
-import { PostGradType } from '@prisma/client';
+import { PostGradType, ProgramType } from '@prisma/client';
 import { SchoolSelect } from '@/components/Select/SchoolSelect';
 import { ProgramTypeSelect } from '@/components/Select/ProgramTypeSelect';
 import { DisciplineSelect } from '@/components/Select/DisciplineSelect';
@@ -18,9 +18,13 @@ const Step2School: FC = () => {
   const queryClient = useQueryClient();
   const previousData = queryClient.getQueryData(['onboardingData']) as IncompleteUserOnboarding;
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    school: string;
+    program: ProgramType | undefined;
+    discipline: string;
+  }>({
     school: '',
-    program: '',
+    program: undefined,
     discipline: '',
   });
 
@@ -29,7 +33,7 @@ const Step2School: FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const updateOnboardingData = useMutation({
-    mutationFn: (schoolData: IncompleteUserOnboarding) => {
+    mutationFn: (schoolData: typeof formData) => {
       const data: IncompleteUserOnboarding = {
         ...previousData,
         school: schoolData.school,
@@ -54,7 +58,7 @@ const Step2School: FC = () => {
     setIsFormValid(
       Boolean(formData.school?.trim()) &&
         Boolean(formData.discipline?.trim()) &&
-        Boolean(formData.program?.trim())
+        formData.program !== undefined
     );
   }, [formData]);
 

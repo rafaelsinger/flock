@@ -34,7 +34,7 @@ model User {
   company           String?
   title             String?      @map("title")
   school            String?
-  program           String?
+  program           ProgramType? @map("program")
   discipline        String?
   classYear         Int          @map("class_year") @default(2025)
   lookingForRoommate Boolean?     @default(false) @map("looking_for_roommate")
@@ -106,4 +106,23 @@ enum Industries {
   media
   nonprofit
   other
+}
+
+enum ProgramType {
+  Bachelors
+  Masters
+  PhD
+  JD
+  MD
+  MBA
+  EdD
+  MPH
+  ProfessionalCertificate
+  PostdoctoralFellowship
+  ResidencyProgram
+  AssociatesDegree
+  TradeSchoolVocational
+  GapYear
+  Undecided
+  Other
 }

@@ -1,6 +1,6 @@
 // User types for the application
 
-import { PostGradType } from '@prisma/client';
+import { PostGradType, ProgramType } from '@prisma/client';
 
 // Single User model for the entire application
 export type CreateUser = {
@@ -9,7 +9,7 @@ export type CreateUser = {
   postGradType: PostGradType;
   isOnboarded: boolean;
   title?: string | null;
-  program?: string | null;
+  program?: ProgramType | null;
   discipline?: string | null;
   company?: string | null;
   school?: string | null;
@@ -57,7 +57,7 @@ export interface IncompleteUserOnboarding {
   title?: string;
   industry?: string;
   school?: string;
-  program?: string;
+  program?: ProgramType;
   discipline?: string;
   country?: string;
   state?: string;
