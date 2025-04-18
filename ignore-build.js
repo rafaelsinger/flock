@@ -1,8 +1,8 @@
 const branch = process.env.VERCEL_GIT_COMMIT_REF;
 const environment = process.env.VERCEL_ENV; // "production", "preview", "development"
 
-// skip if not production or not staging
-if (environment !== 'production' || (environment === 'preview' && branch !== 'staging')) {
+// skip if not production and not staging
+if (environment !== 'production' && environment === 'preview' && branch !== 'staging') {
   console.log(`🛑 Ignoring build: branch is "${branch}" and not "staging"`);
   process.exit(0); // skip the build
 }
