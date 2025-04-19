@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/auth';
 import { getStateFullName } from '@/lib/utils';
+import { PostGradType } from '@prisma/client';
 
 export async function GET(request: NextRequest) {
   try {
@@ -19,7 +20,12 @@ export async function GET(request: NextRequest) {
         where: {
           state,
           users: {
-            some: {}, // Only include locations that have at least one user
+            some: {
+              // Exclude users with 'seeking' postGradType
+              postGradType: {
+                not: PostGradType.seeking,
+              },
+            },
           },
         },
         select: {
@@ -28,7 +34,14 @@ export async function GET(request: NextRequest) {
           longitude: true,
           _count: {
             select: {
-              users: true,
+              users: {
+                where: {
+                  // Count only non-seeking users
+                  postGradType: {
+                    not: PostGradType.seeking,
+                  },
+                },
+              },
             },
           },
         },
@@ -57,14 +70,26 @@ export async function GET(request: NextRequest) {
       const locationsWithUsers = await prisma.location.findMany({
         where: {
           users: {
-            some: {}, // Only include locations that have at least one user
+            some: {
+              // Exclude users with 'seeking' postGradType
+              postGradType: {
+                not: PostGradType.seeking,
+              },
+            },
           },
         },
         select: {
           state: true,
           _count: {
             select: {
-              users: true,
+              users: {
+                where: {
+                  // Count only non-seeking users
+                  postGradType: {
+                    not: PostGradType.seeking,
+                  },
+                },
+              },
             },
           },
         },

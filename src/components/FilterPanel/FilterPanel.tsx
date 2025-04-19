@@ -155,7 +155,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
     'w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-[#F9C5D1] focus:ring-2 focus:ring-[#F9C5D1]/20 outline-none transition-colors hover:border-[#F9C5D1]/50 cursor-pointer text-[#333333]';
   const labelClasses = 'block text-sm font-medium text-[#333333] mb-2';
 
-  const showStateField = country === 'USA';
+  const showStateField = country === 'United States';
 
   return (
     <div className="relative" ref={filterPanelRef}>
