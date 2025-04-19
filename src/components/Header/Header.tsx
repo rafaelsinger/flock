@@ -17,7 +17,7 @@ interface HeaderProps {
   showStatusBanner?: boolean;
 }
 
-export const Header = ({ transparent = false, showStatusBanner = true }: HeaderProps) => {
+export const Header = ({ transparent = false, showStatusBanner = false }: HeaderProps) => {
   const [isScrolled, setIsScrolled] = useState(false);
 
   // Handle sign in
