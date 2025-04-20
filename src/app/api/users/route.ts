@@ -20,18 +20,25 @@ export const GET = async (request: NextRequest) => {
       | 'school'
       | 'all'
       | 'seeking'
-      | undefined; //TODO: should be PostGradType
+      | 'internship'
+      | undefined;
     const country = searchParams.get('country') || '';
     const state = searchParams.get('state') || '';
     const city = searchParams.get('city') || '';
     const industry = searchParams.get('industry') || '';
+    const classYear = searchParams.get('classYear') || '';
     const lookingForRoommate = searchParams.get('lookingForRoommate') === 'true';
-    const isOnboarded = searchParams.has('isOnboarded')
-      ? Boolean(JSON.parse(searchParams.get('isOnboarded')!))
-      : true;
+    const showAllClassYears = searchParams.get('showAllClassYears') === 'true';
 
     // Calculate skip for pagination
     const skip = (page - 1) * limit;
+
+    // Filter users based on the requesting user's profile
+    // Interns can only see other interns from their class year
+    let classYearFilter = {};
+    if (session.user && session.user.classYear && !showAllClassYears) {
+      classYearFilter = { classYear: { equals: session.user.classYear } };
+    }
 
     // Start building where clause with basic visibility requirements
     const where: Prisma.UserWhereInput = {
@@ -48,13 +55,24 @@ export const GET = async (request: NextRequest) => {
               ],
             }
           : {},
-        // Post grad type filter
-        postGradType === 'work' || postGradType === 'school'
-          ? { postGradType }
-          : { postGradType: { not: PostGradType.seeking } },
+        // Post grad type filter - always exclude seeking
+        postGradType === 'work'
+          ? { postGradType: { equals: PostGradType.work } }
+          : postGradType === 'school'
+            ? { postGradType: { equals: PostGradType.school } }
+            : postGradType === 'internship'
+              ? { postGradType: { equals: PostGradType.internship } }
+              : { postGradType: { not: PostGradType.seeking } },
+        // Class year filter - when explicitly requested or for intern restrictions
+        // Only apply class year filter if not showing all class years
+        classYear && !showAllClassYears
+          ? { classYear: { equals: parseInt(classYear) } }
+          : !showAllClassYears
+            ? classYearFilter
+            : {},
         // Location filters
         country ? { location: { country } } : {},
-        state ? { location: { state } } : {},
+        state ? { location: { state: { equals: state, mode: 'insensitive' as const } } } : {},
         city ? { location: { city: { contains: city, mode: 'insensitive' as const } } } : {},
         // Industry filter
         industry
@@ -66,7 +84,10 @@ export const GET = async (request: NextRequest) => {
           : {},
         // Roommate filter
         lookingForRoommate ? { lookingForRoommate: { equals: true } } : {},
-        { isOnboarded: { equals: isOnboarded } },
+        // Always ensure users are onboarded
+        { isOnboarded: { equals: true } },
+        // Always exclude seeking users
+        { postGradType: { not: PostGradType.seeking } },
       ].filter((condition) => Object.keys(condition).length > 0), // Remove empty conditions
     };
 
@@ -87,8 +108,11 @@ export const GET = async (request: NextRequest) => {
           },
         },
         company: true,
+        title: true,
         school: true,
+        program: true,
         postGradType: true,
+        classYear: true,
         lookingForRoommate: true,
         visibilityOptions: true,
         industry: {

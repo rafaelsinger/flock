@@ -90,7 +90,7 @@ export const UserGrid: React.FC<UserGridProps> = ({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {users.map((user, index) => (
                 <motion.div
                   key={user.id}
@@ -100,8 +100,9 @@ export const UserGrid: React.FC<UserGridProps> = ({
                     y: 0,
                     transition: { delay: index * 0.05 },
                   }}
-                  whileHover={{ y: -4 }}
+                  whileHover={{ scale: 1.02 }}
                   transition={{ duration: 0.2 }}
+                  className="h-full"
                 >
                   <UserCard user={user} prefetch={prefetchUserData} />
                 </motion.div>

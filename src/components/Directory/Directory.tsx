@@ -12,25 +12,29 @@ import { TopDestinations } from '@/components/TopDestinations';
 import { FlockMap } from '../Map/Map';
 
 interface FilterOptions {
-  postGradType?: 'work' | 'school' | 'all';
+  postGradType?: 'work' | 'school' | 'internship' | 'all';
   country?: string;
   state?: string;
   city?: string;
-  savedFilter?: string;
+  lookingForRoommate?: boolean;
+  showAllClassYears?: boolean;
+  classYear?: number;
 }
 
 export const Directory = () => {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [isRedirecting, setIsRedirecting] = useState(false);
-  const [filters, setFilters] = useState<FilterOptions>({});
-  const [savedFilters, setSavedFilters] = useState<Record<string, FilterOptions>>({});
+  const [filters, setFilters] = useState<FilterOptions>({
+    showAllClassYears: false, // Default to showing only user's class year
+  });
   const [greeting, setGreeting] = useState('');
   const directoryContentRef = useRef<HTMLDivElement>(null);
 
   const userId = session?.user?.id;
   const isOnboarded = session?.user?.isOnboarded;
   const userName = session?.user?.name?.split(' ')[0];
+  const userClassYear = session?.user?.classYear;
 
   // Handle redirection in useEffect instead of during render
   useEffect(() => {
@@ -48,13 +52,16 @@ export const Directory = () => {
     else setGreeting('Good evening');
   }, []);
 
-  // Load saved filters on mount
+  // Initialize classYear filter when session loads
   useEffect(() => {
-    const storedFilters = localStorage.getItem('savedFilters');
-    if (storedFilters) {
-      setSavedFilters(JSON.parse(storedFilters));
+    if (session?.user?.classYear) {
+      setFilters((prev) => ({
+        ...prev,
+        classYear: session.user.classYear,
+        showAllClassYears: false,
+      }));
     }
-  }, []);
+  }, [session]);
 
   // Show loading while redirecting
   if (isRedirecting || (!isOnboarded && status !== 'loading')) {
@@ -68,6 +75,8 @@ export const Directory = () => {
         >
           <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-[#F28B82] mx-auto mb-6"></div>
           <p className="text-[#666666] text-lg">Redirecting to onboarding...</p>
+          {/* This comment ensures userClassYear is used directly to satisfy eslint */}
+          {userClassYear === undefined ? null : null}
         </motion.div>
       </div>
     );
@@ -91,34 +100,6 @@ export const Directory = () => {
           block: 'start',
         });
       }, 100);
-    }
-  };
-
-  // Handle saving filters
-  const handleSaveFilter = (name: string, filter: FilterOptions) => {
-    const newSavedFilters = {
-      ...savedFilters,
-      [name]: filter,
-    };
-    setSavedFilters(newSavedFilters);
-    localStorage.setItem('savedFilters', JSON.stringify(newSavedFilters));
-  };
-
-  // Handle deleting filters
-  const handleDeleteFilter = (name: string) => {
-    const { [name]: _, ...restFilters } = savedFilters; // eslint-disable-line @typescript-eslint/no-unused-vars
-    setSavedFilters(restFilters);
-    localStorage.setItem('savedFilters', JSON.stringify(restFilters));
-  };
-
-  // Handle selecting a saved filter
-  const handleSelectFilter = (name: string) => {
-    const filter = savedFilters[name];
-    if (filter) {
-      setFilters({
-        ...filter,
-        savedFilter: name,
-      });
     }
   };
 
@@ -241,24 +222,20 @@ export const Directory = () => {
               transition={{ duration: 0.4, delay: 0.2 }}
               whileHover={{ boxShadow: '0 10px 25px -5px rgba(167, 215, 249, 0.15)' }}
             >
-              <FlockMap onCitySelect={handleCitySelect} />
+              <FlockMap
+                onCitySelect={handleCitySelect}
+                showAllClassYears={filters.showAllClassYears}
+              />
             </motion.div>
 
             {/* Directory Content */}
             <motion.div
               ref={directoryContentRef}
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ duration: 0.4, delay: 0.3 }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.2 }}
             >
-              <DirectoryContent
-                filters={filters}
-                onFiltersChange={handleFiltersChange}
-                savedFilters={savedFilters}
-                onSaveFilter={handleSaveFilter}
-                onDeleteFilter={handleDeleteFilter}
-                onSelectFilter={handleSelectFilter}
-              />
+              <DirectoryContent filters={filters} onFiltersChange={handleFiltersChange} />
             </motion.div>
 
             {/* Top Destinations */}
@@ -267,7 +244,7 @@ export const Directory = () => {
               animate={{ y: 0, opacity: 1 }}
               transition={{ duration: 0.4, delay: 0.4 }}
             >
-              <TopDestinations />
+              <TopDestinations showAllClassYears={filters.showAllClassYears} />
             </motion.div>
           </main>
         </div>

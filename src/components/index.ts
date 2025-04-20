@@ -3,7 +3,7 @@ export { Button } from './Button';
 export { CallToAction } from './CallToAction';
 export { Directory } from './Directory';
 export { Features } from './Features';
-export { FilterPanel } from './FilterPanel';
+export { FilterPanel } from './FilterPanel/FilterPanel';
 export { Hero } from './Hero';
 export { LandingPage } from './LandingPage';
 export { Map } from './Map';

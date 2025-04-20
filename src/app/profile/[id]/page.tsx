@@ -24,6 +24,7 @@ import {
 } from '@/types/user';
 import { CitySelect } from '@/components/Select/CitySelect';
 import { PostGradType } from '@prisma/client';
+import { INDUSTRIES } from '@/constants/industries';
 
 // Common input classes for consistency with onboarding flow
 const inputClasses =
@@ -67,21 +68,35 @@ const ProfilePage: FC = () => {
     // Function to handle account deletion
     const deleteUser = async () => {
       try {
+        // Call the API to delete the account
         const response = await fetch(`/api/users/${userId}`, {
           method: 'DELETE',
         });
 
         if (!response.ok) {
-          throw new Error('Failed to delete account');
+          throw new Error(`Failed to delete account: ${response.statusText}`);
         }
 
         // Sign out and redirect to homepage after successful deletion
+        alert('Your account has been successfully deleted. You will now be signed out.');
         signOut({ callbackUrl: '/' });
-      } catch (error) {
+      } catch (error: unknown) {
         console.error('Error deleting account:', error);
-        alert('Failed to delete your account. Please try again later.');
+
+        // More user-friendly error message
+        const errorMessage = error instanceof Error ? error.message : String(error);
+
+        if (errorMessage.includes('not found')) {
+          alert('Account not found or already deleted. You will be signed out.');
+          signOut({ callbackUrl: '/' });
+        } else {
+          alert(
+            `Failed to delete your account: ${errorMessage || 'Unknown error'}. Please try again later.`
+          );
+        }
       }
     };
+
     const handleDeleteRequest = () => {
       // Instead of using global state, directly trigger the delete action
       if (confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
@@ -267,9 +282,47 @@ const ViewMode = ({ userData, isOwnProfile, onEdit }: ViewModeProps) => {
   const displayCompany = getDisplayCompany(userData);
 
   const isSeeking = userData.postGradType === PostGradType.seeking;
+  const isInternship = userData.postGradType === PostGradType.internship;
+  const isWork = userData.postGradType === PostGradType.work;
+  const isSchool = userData.postGradType === PostGradType.school;
 
   const renderProfileIcon = () => {
-    if (isSeeking) return null;
+    if (isSeeking) {
+      return (
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ delay: 0.2 }}
+          className="w-16 h-16 rounded-full bg-[#9E9E9E]/10 flex items-center justify-center"
+        >
+          <svg
+            className="h-8 w-8 text-[#9E9E9E]"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+            />
+          </svg>
+        </motion.div>
+      );
+    }
+    if (isInternship) {
+      return (
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ delay: 0.2 }}
+          className="w-16 h-16 rounded-full bg-[#F4B942]/10 flex items-center justify-center"
+        >
+          <MdWork className="text-[#F4B942] text-2xl" />
+        </motion.div>
+      );
+    }
     return userData.postGradType === 'work' ? (
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
@@ -321,12 +374,38 @@ const ViewMode = ({ userData, isOwnProfile, onEdit }: ViewModeProps) => {
             {userData.name}
           </motion.h1>
 
+          {/* Graduate type tag based on class year and type */}
+          <motion.div className="mb-4" variants={itemVariants}>
+            {isWork && userData.classYear === 2025 && (
+              <span className="inline-block px-3 py-1 bg-[#F28B82]/10 text-[#F28B82] text-sm font-medium rounded-full">
+                Class of 2025 - Full-time role
+              </span>
+            )}
+            {isSchool && userData.classYear === 2025 && (
+              <span className="inline-block px-3 py-1 bg-[#A7D7F9]/10 text-[#A7D7F9] text-sm font-medium rounded-full">
+                Class of 2025 - Graduate school
+              </span>
+            )}
+            {isInternship && userData.classYear !== 2025 && (
+              <span className="inline-block px-3 py-1 bg-[#F4B942]/10 text-[#F4B942] text-sm font-medium rounded-full">
+                Class of {userData.classYear} - Internship
+              </span>
+            )}
+            {isSeeking && (
+              <span className="inline-block px-3 py-1 bg-[#9E9E9E]/10 text-[#9E9E9E] text-sm font-medium rounded-full">
+                Actively looking
+              </span>
+            )}
+          </motion.div>
+
           {/* Only show if the user is viewing their own profile or if at least one visibility setting is true */}
           {(showRole || showCompany) && !isSeeking && (
             <motion.div className="flex items-start space-x-2 mb-4" variants={itemVariants}>
               <div className="mt-1">
-                {userData.postGradType === 'work' ? (
+                {isWork ? (
                   <MdWork className="text-[#F28B82] text-xl" />
+                ) : isInternship ? (
+                  <MdWork className="text-[#F4B942] text-xl" />
                 ) : (
                   <HiOutlineAcademicCap className="text-[#A7D7F9] text-xl" />
                 )}
@@ -334,8 +413,18 @@ const ViewMode = ({ userData, isOwnProfile, onEdit }: ViewModeProps) => {
               <div>
                 <p className="text-lg text-[#333333]">
                   {showRole && <span className="font-medium">{capitalize(displayRole)}</span>}
-                  {showRole && showCompany && ' at '}
+                  {showRole && showCompany && isSchool && userData.discipline
+                    ? ' at '
+                    : showRole && showCompany
+                      ? ' at '
+                      : ''}
                   {showCompany && displayCompany}
+                  {showRole && isSchool && userData.discipline && (
+                    <span className="text-gray-600">
+                      {' '}
+                      ({capitalize(userData.discipline || '')})
+                    </span>
+                  )}
                 </p>
                 {isOwnProfile && !showRole && (
                   <p className="text-sm text-[#666666] italic">
@@ -344,15 +433,36 @@ const ViewMode = ({ userData, isOwnProfile, onEdit }: ViewModeProps) => {
                 )}
                 {isOwnProfile && !showCompany && (
                   <p className="text-sm text-[#666666] italic">
-                    Your {userData.postGradType === 'work' ? 'company' : 'school'} is hidden from
-                    other users
+                    Your {isWork || isInternship ? 'company' : 'school'} is hidden from other users
                   </p>
                 )}
               </div>
             </motion.div>
           )}
 
-          {!isSeeking && (
+          {isSeeking && (
+            <motion.div className="flex items-start space-x-2 mb-4" variants={itemVariants}>
+              <svg
+                className="text-[#9E9E9E] text-xl mt-1"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+              >
+                <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <div>
+                <p className="text-lg text-[#555555]">Just looking</p>
+                <p className="text-sm text-[#777777]">Exploring the platform for opportunities</p>
+              </div>
+            </motion.div>
+          )}
+
+          {userData.location && (
             <motion.div className="flex items-start space-x-2 mb-4" variants={itemVariants}>
               <BsGeoAlt className="text-[#F28B82] text-xl mt-1" />
               <div>
@@ -363,6 +473,16 @@ const ViewMode = ({ userData, isOwnProfile, onEdit }: ViewModeProps) => {
                     userData.location?.country !== 'USA' &&
                     `, ${userData.location?.country}`}
                 </p>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Class Year - Show for all types */}
+          {userData.classYear && (
+            <motion.div className="flex items-start space-x-2 mb-4" variants={itemVariants}>
+              <HiOutlineAcademicCap className="text-[#8A8A8A] text-xl mt-1" />
+              <div>
+                <p className="text-lg text-[#333333]">Class of {userData.classYear}</p>
               </div>
             </motion.div>
           )}
@@ -410,7 +530,7 @@ const ViewMode = ({ userData, isOwnProfile, onEdit }: ViewModeProps) => {
                 <h3 className="font-medium text-[#333333]">Visibility Settings</h3>
               </div>
               <ul className="space-y-2 text-[#666666] pl-4">
-                {userData.postGradType === 'work' ? (
+                {isWork || isInternship ? (
                   <>
                     <li className="flex items-center space-x-2">
                       <span className="w-1.5 h-1.5 rounded-full bg-[#F28B82]"></span>
@@ -468,8 +588,12 @@ interface EditFormProps {
 
 const EditForm = ({ userData, setUserData, onSave, onCancel, isSubmitting }: EditFormProps) => {
   // Determine which visibility labels to show based on user type
-  const roleLabel = userData.postGradType === 'work' ? 'Role' : 'Program';
-  const companyLabel = userData.postGradType === 'work' ? 'Company' : 'School';
+  const isWork = userData.postGradType === PostGradType.work;
+  const isInternship = userData.postGradType === PostGradType.internship;
+  const isSchool = userData.postGradType === PostGradType.school;
+
+  const roleLabel = isWork || isInternship ? 'Role' : 'Program';
+  const companyLabel = isWork || isInternship ? 'Company' : 'School';
 
   const [activeField, setActiveField] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -486,13 +610,13 @@ const EditForm = ({ userData, setUserData, onSave, onCancel, isSubmitting }: Edi
     const updatedVisibilityOptions = { ...userData.visibilityOptions };
 
     if (field === 'role') {
-      if (userData.postGradType === 'work') {
+      if (isWork || isInternship) {
         updatedVisibilityOptions.title = value;
       } else {
         updatedVisibilityOptions.program = value;
       }
     } else if (field === 'company') {
-      if (userData.postGradType === 'work') {
+      if (isWork || isInternship) {
         updatedVisibilityOptions.company = value;
       } else {
         updatedVisibilityOptions.school = value;
@@ -514,29 +638,22 @@ const EditForm = ({ userData, setUserData, onSave, onCancel, isSubmitting }: Edi
   };
 
   // Handle type change
-  const handleTypeChange = (type: 'work' | 'school') => {
-    // When changing type, we need to swap role/program and company/school
-    const newUserData = { ...userData, postGradType: type };
-
-    if (type === 'work') {
-      // Moving from school to work
-      if (userData.postGradType === 'school') {
-        newUserData.title = userData.program;
-        newUserData.program = null;
-        newUserData.company = userData.school;
-        newUserData.school = null;
-      }
+  const handleTypeChange = (type: PostGradType) => {
+    // When switching to 'seeking', clear work/school specific fields
+    if (type === 'seeking') {
+      setUserData({
+        ...userData,
+        postGradType: type,
+        title: null,
+        program: null,
+        company: null,
+        school: null,
+        discipline: null,
+        industry: null,
+      });
     } else {
-      // Moving from work to school
-      if (userData.postGradType === 'work') {
-        newUserData.program = userData.title;
-        newUserData.title = null;
-        newUserData.school = userData.company;
-        newUserData.company = null;
-      }
+      setUserData({ ...userData, postGradType: type });
     }
-
-    setUserData(newUserData);
   };
 
   // Scroll to the confirmation dialog when it appears
@@ -612,10 +729,26 @@ const EditForm = ({ userData, setUserData, onSave, onCancel, isSubmitting }: Edi
 
       <motion.div variants={itemVariants}>
         <label htmlFor="type" className={labelClasses}>
-          {userData.postGradType === 'work' ? (
+          {isWork ? (
             <BsBriefcase className="mr-2 text-[#F28B82]" />
-          ) : (
+          ) : isInternship ? (
+            <MdWork className="mr-2 text-[#F4B942]" />
+          ) : isSchool ? (
             <LuGraduationCap className="mr-2 text-[#A7D7F9]" />
+          ) : (
+            <svg
+              className="mr-2 h-4 w-4 text-[#9E9E9E]"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
+            </svg>
           )}
           Type
         </label>
@@ -623,74 +756,137 @@ const EditForm = ({ userData, setUserData, onSave, onCancel, isSubmitting }: Edi
           <select
             id="type"
             value={userData.postGradType}
-            onChange={(e) => handleTypeChange(e.target.value as 'work' | 'school')}
+            onChange={(e) => handleTypeChange(e.target.value as PostGradType)}
             onFocus={() => setActiveField('type')}
             onBlur={() => setActiveField(null)}
             className={inputClasses.replace('cursor-text', 'cursor-pointer')}
           >
             <option value="work">Working</option>
             <option value="school">Studying</option>
+            <option value="internship">Internship</option>
+            <option value="seeking">Just looking</option>
           </select>
         </motion.div>
       </motion.div>
 
-      <motion.div variants={itemVariants}>
-        <label htmlFor="role" className={labelClasses}>
-          {userData.postGradType === 'work' ? (
-            <MdWork className="mr-2 text-[#F28B82]" />
-          ) : (
-            <HiOutlineAcademicCap className="mr-2 text-[#A7D7F9]" />
-          )}
-          {roleLabel}
-        </label>
-        <motion.div variants={inputVariants} animate={activeField === 'role' ? 'focus' : 'blur'}>
-          <input
-            id="role"
-            type="text"
-            value={userData.postGradType === 'work' ? userData.title || '' : userData.program || ''}
-            onChange={(e) => {
-              if (userData.postGradType === 'work') {
-                setUserData({ ...userData, title: e.target.value });
-              } else {
-                setUserData({ ...userData, program: e.target.value });
-              }
-            }}
-            onFocus={() => setActiveField('role')}
-            onBlur={() => setActiveField(null)}
-            className={inputClasses}
-          />
-        </motion.div>
-      </motion.div>
+      {userData.postGradType !== 'seeking' && (
+        <>
+          <motion.div variants={itemVariants}>
+            <label htmlFor="role" className={labelClasses}>
+              {isWork || isInternship ? (
+                <MdWork className="mr-2 text-[#F28B82]" />
+              ) : (
+                <HiOutlineAcademicCap className="mr-2 text-[#A7D7F9]" />
+              )}
+              {roleLabel}
+            </label>
+            <motion.div
+              variants={inputVariants}
+              animate={activeField === 'role' ? 'focus' : 'blur'}
+            >
+              <input
+                id="role"
+                type="text"
+                value={isWork || isInternship ? userData.title || '' : userData.program || ''}
+                onChange={(e) => {
+                  if (isWork || isInternship) {
+                    setUserData({ ...userData, title: e.target.value });
+                  } else {
+                    setUserData({ ...userData, program: e.target.value });
+                  }
+                }}
+                onFocus={() => setActiveField('role')}
+                onBlur={() => setActiveField(null)}
+                className={inputClasses}
+              />
+            </motion.div>
+          </motion.div>
 
-      <motion.div variants={itemVariants}>
-        <label htmlFor="company" className={labelClasses}>
-          {userData.postGradType === 'work' ? (
-            <FaBuilding className="mr-2 text-[#F28B82]" />
-          ) : (
-            <FaUniversity className="mr-2 text-[#A7D7F9]" />
+          <motion.div variants={itemVariants}>
+            <label htmlFor="company" className={labelClasses}>
+              {isWork || isInternship ? (
+                <FaBuilding className="mr-2 text-[#F28B82]" />
+              ) : (
+                <FaUniversity className="mr-2 text-[#A7D7F9]" />
+              )}
+              {companyLabel}
+            </label>
+            <motion.div
+              variants={inputVariants}
+              animate={activeField === 'company' ? 'focus' : 'blur'}
+            >
+              <input
+                id="company"
+                type="text"
+                value={isWork || isInternship ? userData.company || '' : userData.school || ''}
+                onChange={(e) => {
+                  if (isWork || isInternship) {
+                    setUserData({ ...userData, company: e.target.value });
+                  } else {
+                    setUserData({ ...userData, school: e.target.value });
+                  }
+                }}
+                onFocus={() => setActiveField('company')}
+                onBlur={() => setActiveField(null)}
+                className={inputClasses}
+              />
+            </motion.div>
+          </motion.div>
+
+          {isSchool && (
+            <motion.div variants={itemVariants}>
+              <label htmlFor="discipline" className={labelClasses}>
+                <HiOutlineAcademicCap className="mr-2 text-[#A7D7F9]" />
+                Discipline
+              </label>
+              <motion.div
+                variants={inputVariants}
+                animate={activeField === 'discipline' ? 'focus' : 'blur'}
+              >
+                <input
+                  id="discipline"
+                  type="text"
+                  placeholder="e.g. Computer Science, Biology, Economics"
+                  value={userData.discipline || ''}
+                  onChange={(e) => setUserData({ ...userData, discipline: e.target.value })}
+                  onFocus={() => setActiveField('discipline')}
+                  onBlur={() => setActiveField(null)}
+                  className={inputClasses}
+                />
+              </motion.div>
+            </motion.div>
           )}
-          {companyLabel}
-        </label>
-        <motion.div variants={inputVariants} animate={activeField === 'company' ? 'focus' : 'blur'}>
-          <input
-            id="company"
-            type="text"
-            value={
-              userData.postGradType === 'work' ? userData.company || '' : userData.school || ''
-            }
-            onChange={(e) => {
-              if (userData.postGradType === 'work') {
-                setUserData({ ...userData, company: e.target.value });
-              } else {
-                setUserData({ ...userData, school: e.target.value });
-              }
-            }}
-            onFocus={() => setActiveField('company')}
-            onBlur={() => setActiveField(null)}
-            className={inputClasses}
-          />
-        </motion.div>
-      </motion.div>
+
+          {(isWork || isInternship) && (
+            <motion.div variants={itemVariants}>
+              <label htmlFor="industry" className={labelClasses}>
+                <BsBriefcase className="mr-2 text-[#F28B82]" />
+                Industry
+              </label>
+              <motion.div
+                variants={inputVariants}
+                animate={activeField === 'industry' ? 'focus' : 'blur'}
+              >
+                <select
+                  id="industry"
+                  value={userData.industry || ''}
+                  onChange={(e) => setUserData({ ...userData, industry: e.target.value })}
+                  onFocus={() => setActiveField('industry')}
+                  onBlur={() => setActiveField(null)}
+                  className={inputClasses.replace('cursor-text', 'cursor-pointer')}
+                >
+                  <option value="">Select an industry</option>
+                  {INDUSTRIES.map((industry) => (
+                    <option key={industry.value} value={industry.value}>
+                      {industry.label}
+                    </option>
+                  ))}
+                </select>
+              </motion.div>
+            </motion.div>
+          )}
+        </>
+      )}
 
       <motion.div variants={itemVariants}>
         <label htmlFor="location" className={labelClasses}>
@@ -745,55 +941,57 @@ const EditForm = ({ userData, setUserData, onSave, onCancel, isSubmitting }: Edi
       </motion.div>
 
       {/* Update visibility section */}
-      <motion.div
-        className="p-4 rounded-xl bg-[#FFF9F8] border border-[#F9C5D1]/10 space-y-3 mt-4"
-        variants={itemVariants}
-      >
-        <div className="flex items-center space-x-2">
-          <BsEyeFill className="text-[#F28B82]" />
-          <h3 className="text-sm font-medium text-[#333333]">Privacy Settings</h3>
-        </div>
-
-        <motion.label
-          className="flex items-center justify-between p-2 hover:bg-white/50 rounded-lg transition-all cursor-pointer"
-          whileHover={{ scale: 1.01, backgroundColor: 'rgba(249, 197, 209, 0.05)' }}
-          whileTap={{ scale: 0.99 }}
+      {userData.postGradType !== 'seeking' && (
+        <motion.div
+          className="p-4 rounded-xl bg-[#FFF9F8] border border-[#F9C5D1]/10 space-y-3 mt-4"
+          variants={itemVariants}
         >
-          <span className="text-sm text-[#666666]">Show {roleLabel.toLowerCase()}</span>
-          <motion.div whileTap={{ scale: 0.9 }}>
-            <input
-              type="checkbox"
-              checked={
-                userData.postGradType === 'work'
-                  ? (userData.visibilityOptions?.title ?? true)
-                  : (userData.visibilityOptions?.program ?? true)
-              }
-              onChange={(e) => handleVisibilityChange('role', e.target.checked)}
-              className="h-5 w-5 rounded-md border-gray-300 text-[#F28B82] focus:ring-[#F28B82]"
-            />
-          </motion.div>
-        </motion.label>
+          <div className="flex items-center space-x-2">
+            <BsEyeFill className="text-[#F28B82]" />
+            <h3 className="text-sm font-medium text-[#333333]">Privacy Settings</h3>
+          </div>
 
-        <motion.label
-          className="flex items-center justify-between p-2 hover:bg-white/50 rounded-lg transition-all cursor-pointer"
-          whileHover={{ scale: 1.01, backgroundColor: 'rgba(249, 197, 209, 0.05)' }}
-          whileTap={{ scale: 0.99 }}
-        >
-          <span className="text-sm text-[#666666]">Show {companyLabel.toLowerCase()}</span>
-          <motion.div whileTap={{ scale: 0.9 }}>
-            <input
-              type="checkbox"
-              checked={
-                userData.postGradType === 'work'
-                  ? (userData.visibilityOptions?.company ?? true)
-                  : (userData.visibilityOptions?.school ?? true)
-              }
-              onChange={(e) => handleVisibilityChange('company', e.target.checked)}
-              className="h-5 w-5 rounded-md border-gray-300 text-[#F28B82] focus:ring-[#F28B82]"
-            />
-          </motion.div>
-        </motion.label>
-      </motion.div>
+          <motion.label
+            className="flex items-center justify-between p-2 hover:bg-white/50 rounded-lg transition-all cursor-pointer"
+            whileHover={{ scale: 1.01, backgroundColor: 'rgba(249, 197, 209, 0.05)' }}
+            whileTap={{ scale: 0.99 }}
+          >
+            <span className="text-sm text-[#666666]">Show {roleLabel.toLowerCase()}</span>
+            <motion.div whileTap={{ scale: 0.9 }}>
+              <input
+                type="checkbox"
+                checked={
+                  isWork || isInternship
+                    ? (userData.visibilityOptions?.title ?? true)
+                    : (userData.visibilityOptions?.program ?? true)
+                }
+                onChange={(e) => handleVisibilityChange('role', e.target.checked)}
+                className="h-5 w-5 rounded-md border-gray-300 text-[#F28B82] focus:ring-[#F28B82]"
+              />
+            </motion.div>
+          </motion.label>
+
+          <motion.label
+            className="flex items-center justify-between p-2 hover:bg-white/50 rounded-lg transition-all cursor-pointer"
+            whileHover={{ scale: 1.01, backgroundColor: 'rgba(249, 197, 209, 0.05)' }}
+            whileTap={{ scale: 0.99 }}
+          >
+            <span className="text-sm text-[#666666]">Show {companyLabel.toLowerCase()}</span>
+            <motion.div whileTap={{ scale: 0.9 }}>
+              <input
+                type="checkbox"
+                checked={
+                  isWork || isInternship
+                    ? (userData.visibilityOptions?.company ?? true)
+                    : (userData.visibilityOptions?.school ?? true)
+                }
+                onChange={(e) => handleVisibilityChange('company', e.target.checked)}
+                className="h-5 w-5 rounded-md border-gray-300 text-[#F28B82] focus:ring-[#F28B82]"
+              />
+            </motion.div>
+          </motion.label>
+        </motion.div>
+      )}
 
       <motion.div variants={itemVariants} className="flex justify-end space-x-4 pt-4">
         <motion.button

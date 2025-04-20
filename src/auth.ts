@@ -14,6 +14,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   session: { strategy: 'jwt' },
   callbacks: {
     authorized: async ({ request, auth }) => {
+      // Forward users who aren't onboarded to onboarding step0
+      if (auth?.user && auth.user.isOnboarded === false) {
+        const path = request.nextUrl.pathname;
+        if (path !== '/onboarding/step0' && !path.startsWith('/api/')) {
+          return Response.redirect(new URL('/onboarding/step0', request.nextUrl));
+        }
+      }
       return !!auth;
     },
     signIn({ account, profile }) {
@@ -55,6 +62,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (token?.user) {
         session.user = token.user;
       }
+
+      // Ensure newly signed in users are redirected to onboarding
+      if (session?.user && session.user.isOnboarded === false) {
+        // Mark this session as needing onboarding
+        session.redirectToOnboarding = true;
+      }
+
       return session;
     },
   },

@@ -10,6 +10,7 @@ import type { PropertyValueSpecification } from 'maplibre-gl';
 import { Legend } from './Legend';
 import * as d3 from 'd3';
 import { getCustomBuckets } from '@/lib/utils';
+import { useSession } from 'next-auth/react';
 
 // Types
 interface LocationData {
@@ -60,10 +61,13 @@ const hoverLayerStyle: LayerProps = {
 
 interface FlockMapProps {
   onCitySelect: (city: string, state: string) => void;
+  showAllClassYears?: boolean;
 }
 
-export const FlockMap: React.FC<FlockMapProps> = ({ onCitySelect }) => {
+export const FlockMap: React.FC<FlockMapProps> = ({ onCitySelect, showAllClassYears = false }) => {
   const mapRef = React.useRef<MapRef>(null);
+  const { data: session } = useSession();
+  const userClassYear = session?.user?.classYear;
 
   const [viewState, setViewState] = React.useState({
     longitude: -97,
@@ -93,14 +97,22 @@ export const FlockMap: React.FC<FlockMapProps> = ({ onCitySelect }) => {
   const [cityCoordinates, setCityCoordinates] = React.useState<CityCoordinates>({});
 
   const { data: apiResponse, isLoading } = useQuery({
-    queryKey: ['locationData', selectedState],
+    queryKey: ['locationData', selectedState, showAllClassYears, userClassYear],
     queryFn: async () => {
+      const params = new URLSearchParams();
+
+      // Add class year filter if not showing all class years
+      if (!showAllClassYears && userClassYear) {
+        params.append('classYear', userClassYear.toString());
+      }
+
       if (!selectedState) {
-        const response = await fetch('/api/locations');
+        const response = await fetch(`/api/locations?${params.toString()}`);
         if (!response.ok) throw new Error('Failed to fetch location data');
         return response.json();
       } else {
-        const response = await fetch(`/api/locations?state=${STATE_NAME_TO_ABBREV[selectedState]}`);
+        params.append('state', STATE_NAME_TO_ABBREV[selectedState]);
+        const response = await fetch(`/api/locations?${params.toString()}`);
         if (!response.ok) throw new Error('Failed to fetch city data');
         return response.json();
       }
@@ -212,6 +224,9 @@ export const FlockMap: React.FC<FlockMapProps> = ({ onCitySelect }) => {
       });
     }
 
+    // Call the city select handler with the state abbreviation
+    // For state clicks, we pass empty string for city and the state abbreviation
+    console.log(`Clicking state: ${clickedState}, abbreviation: ${stateAbbrev}`);
     onCitySelect('', stateAbbrev);
   };
 
@@ -368,7 +383,9 @@ export const FlockMap: React.FC<FlockMapProps> = ({ onCitySelect }) => {
             }}
           >
             <div className="font-medium text-[#333]">{hoverInfo.name}</div>
-            <div className="text-gray-500">{hoverInfo.value} grads</div>
+            <div className="text-gray-500">
+              {hoverInfo.value} {hoverInfo.value === 1 ? 'grad' : 'grads'}
+            </div>
           </div>
         )}
         {hoveredCity && (
