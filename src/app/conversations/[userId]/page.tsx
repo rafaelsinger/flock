@@ -8,7 +8,7 @@ import { useEffect, useState, useRef, FormEvent } from 'react';
 import { useMessageStore } from '@/store/messageStore';
 import { ConversationWithMessages } from '@/types/conversations';
 import { usePathname } from 'next/navigation';
-import { ArrowLeft, Send, Loader2 } from 'lucide-react';
+import { ArrowLeft, Send, Loader2, User } from 'lucide-react';
 
 export default function ConversationPage() {
   const { data: session } = useSession();
@@ -121,7 +121,7 @@ export default function ConversationPage() {
     return (
       <div className="min-h-screen bg-[#FFF9F8] flex flex-col">
         <div className="container max-w-4xl mx-auto px-4 py-8 flex-grow">
-          <div className="bg-white rounded-xl shadow-sm p-6 h-[80vh] flex items-center justify-center">
+          <div className="bg-white rounded-xl shadow-md p-6 h-[80vh] flex items-center justify-center">
             <div className="flex flex-col items-center">
               <motion.div
                 animate={{
@@ -147,28 +147,43 @@ export default function ConversationPage() {
     <div className="min-h-screen bg-[#FFF9F8] flex flex-col">
       <div className="container max-w-4xl mx-auto px-4 py-8 flex-grow">
         <motion.div
-          className="bg-white rounded-xl shadow-sm overflow-hidden flex flex-col h-[80vh]"
+          className="bg-white rounded-xl shadow-md overflow-hidden flex flex-col h-[80vh]"
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.4 }}
         >
           {/* Header */}
-          <div className="border-b border-gray-100 p-4 flex items-center">
+          <div className="bg-white border-b border-gray-100 p-4 flex items-center sticky top-0 z-10 shadow-sm">
             <Link
               href="/conversations"
-              className="flex items-center mr-4 text-sm font-medium text-gray-600 hover:text-[#F28B82] transition-colors cursor-pointer"
+              className="flex items-center justify-center w-8 h-8 mr-3 text-gray-600 hover:text-[#F28B82] hover:bg-gray-50 rounded-full transition-all cursor-pointer"
             >
               <ArrowLeft className="w-5 h-5" />
             </Link>
             {otherUser && (
-              <h1 className="text-xl font-semibold text-[#333333] flex-grow">
-                {otherUser.name || 'Unknown User'}
-              </h1>
+              <div className="flex items-center flex-grow">
+                <div className="bg-[#F9C5D1]/10 w-10 h-10 rounded-full flex items-center justify-center mr-3">
+                  <User className="w-5 h-5 text-[#F28B82]" />
+                </div>
+                <div>
+                  <h1 className="text-lg font-semibold text-[#333333]">
+                    {otherUser.name || 'Unknown User'}
+                  </h1>
+                  <p className="text-xs text-gray-500">
+                    {conversation?.messages.length
+                      ? `Last active ${formatDate(new Date(conversation.lastMessageAt)).toLowerCase()}`
+                      : 'New conversation'}
+                  </p>
+                </div>
+              </div>
             )}
           </div>
 
           {/* Messages */}
-          <div ref={messageContainerRef} className="flex-grow p-4 overflow-y-auto space-y-4">
+          <div
+            ref={messageContainerRef}
+            className="flex-grow p-5 overflow-y-auto space-y-4 bg-gray-50/50"
+          >
             {!conversation || conversation.messages.length === 0 ? (
               <div className="h-full flex flex-col items-center justify-center text-gray-400">
                 <div className="w-16 h-16 bg-[#F9C5D1]/10 rounded-full flex items-center justify-center mb-4">
@@ -196,6 +211,12 @@ export default function ConversationPage() {
                       new Date(conversation.messages[index - 1].createdAt).toDateString() !==
                         messageDate.toDateString();
 
+                    // Check if this is a consecutive message from the same sender
+                    const isConsecutive =
+                      index > 0 &&
+                      conversation.messages[index - 1].senderId === message.senderId &&
+                      !showDateDivider;
+
                     return (
                       <div key={message.id}>
                         {showDateDivider && (
@@ -205,15 +226,15 @@ export default function ConversationPage() {
                             animate={{ opacity: 1 }}
                             transition={{ duration: 0.5 }}
                           >
-                            <div className="flex-grow border-t border-gray-100"></div>
-                            <div className="mx-4 text-xs font-medium text-gray-400 bg-white px-2">
+                            <div className="flex-grow border-t border-gray-200"></div>
+                            <div className="mx-4 text-xs font-medium text-gray-400 bg-gray-50/50 px-3 py-1 rounded-full">
                               {formatDate(messageDate)}
                             </div>
-                            <div className="flex-grow border-t border-gray-100"></div>
+                            <div className="flex-grow border-t border-gray-200"></div>
                           </motion.div>
                         )}
                         <motion.div
-                          className={`flex ${isCurrentUser ? 'justify-end' : 'justify-start'} mb-2`}
+                          className={`flex ${isCurrentUser ? 'justify-end' : 'justify-start'} ${isConsecutive ? 'mt-1' : 'mb-3 mt-3'}`}
                           variants={{
                             hidden: { opacity: 0, y: 10 },
                             visible: {
@@ -224,7 +245,7 @@ export default function ConversationPage() {
                           }}
                         >
                           <div
-                            className={`max-w-[85%] sm:max-w-[70%] p-3.5 rounded-2xl shadow-sm ${
+                            className={`max-w-[85%] sm:max-w-[70%] p-3.5 ${isConsecutive ? 'rounded-2xl' : isCurrentUser ? 'rounded-2xl rounded-tr-sm' : 'rounded-2xl rounded-tl-sm'} shadow-sm ${
                               isCurrentUser
                                 ? 'bg-gradient-to-br from-[#F28B82] to-[#F9C5D1] text-white'
                                 : 'bg-white border border-gray-100 text-[#333333]'
@@ -250,20 +271,20 @@ export default function ConversationPage() {
           </div>
 
           {/* Message input */}
-          <div className="border-t border-gray-100 p-3 sm:p-4">
-            <form onSubmit={handleSubmit} className="flex gap-2">
+          <div className="border-t border-gray-100 p-3 sm:p-4 bg-white">
+            <form onSubmit={handleSubmit} className="flex gap-2 items-center">
               <input
                 type="text"
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
                 placeholder="Type your message..."
-                className="flex-grow px-4 py-2 text-[#333] bg-gray-50 rounded-full border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#F9C5D1] focus:border-transparent transition-all"
+                className="flex-grow px-5 py-3 text-[#333] bg-gray-50 rounded-full border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#F9C5D1] focus:border-transparent transition-all"
                 disabled={isSending}
               />
               <motion.button
                 type="submit"
                 disabled={isSending || !newMessage.trim()}
-                className="p-3 rounded-full bg-[#F9C5D1] text-white hover:bg-[#F28B82] transition-colors disabled:opacity-50 disabled:pointer-events-none cursor-pointer flex items-center justify-center"
+                className="p-3.5 rounded-full bg-gradient-to-r from-[#F28B82] to-[#F9C5D1] text-white shadow-sm hover:shadow-md transition-all disabled:opacity-50 disabled:pointer-events-none cursor-pointer flex items-center justify-center"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >

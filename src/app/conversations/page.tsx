@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useMessageStore } from '@/store/messageStore';
 import { ConversationWithUsers } from '@/types/conversations';
-import { ArrowLeft, MessageCircle } from 'lucide-react';
+import { ArrowLeft, MessageCircle, User } from 'lucide-react';
 
 export default function ConversationsPage() {
   const { data: session } = useSession();
@@ -75,19 +75,18 @@ export default function ConversationsPage() {
     <div className="min-h-screen bg-[#FFF9F8] flex flex-col">
       <div className="container max-w-4xl mx-auto px-4 py-8 flex-grow">
         <motion.div
-          className="bg-white rounded-xl shadow-sm p-6 mb-8"
+          className="bg-white rounded-xl shadow-md overflow-hidden mb-8"
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.4 }}
         >
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-between p-5 border-b border-gray-100">
             <h1 className="text-2xl sm:text-3xl font-bold text-[#333333]">Messages</h1>
             <Link
               href="/"
-              className="flex items-center px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors cursor-pointer"
+              className="flex items-center justify-center w-10 h-10 text-gray-600 bg-gray-50 rounded-full hover:bg-gray-100 transition-all cursor-pointer"
             >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back
+              <ArrowLeft className="w-5 h-5" />
             </Link>
           </div>
 
@@ -105,22 +104,22 @@ export default function ConversationsPage() {
             </div>
           ) : (
             <AnimatePresence>
-              <motion.div
-                className="flex flex-col gap-3"
-                variants={containerVariants}
-                initial="hidden"
-                animate="visible"
-              >
-                {conversations.length === 0 ? (
-                  <motion.div variants={itemVariants} className="py-12 text-center">
-                    <div className="w-16 h-16 bg-[#F9C5D1]/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <MessageCircle className="w-8 h-8 text-[#F9C5D1]" />
-                    </div>
-                    <p className="text-gray-500 mb-1">No conversations yet</p>
-                    <p className="text-sm text-gray-400">Your messages will appear here</p>
-                  </motion.div>
-                ) : (
-                  conversations.map((conversation) => {
+              {conversations.length === 0 ? (
+                <motion.div variants={itemVariants} className="py-20 text-center">
+                  <div className="w-16 h-16 bg-[#F9C5D1]/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <MessageCircle className="w-8 h-8 text-[#F9C5D1]" />
+                  </div>
+                  <p className="text-gray-500 mb-1">No conversations yet</p>
+                  <p className="text-sm text-gray-400">Your messages will appear here</p>
+                </motion.div>
+              ) : (
+                <motion.div
+                  className="divide-y divide-gray-100"
+                  variants={containerVariants}
+                  initial="hidden"
+                  animate="visible"
+                >
+                  {conversations.map((conversation) => {
                     const isCurrentUserSender = conversation.senderId === session?.user?.id;
                     const otherUser = isCurrentUserSender
                       ? conversation.receiver
@@ -133,44 +132,53 @@ export default function ConversationsPage() {
                       <motion.div key={conversation.id} variants={itemVariants}>
                         <Link href={`/conversations/${otherUser.id}`} className="block w-full">
                           <motion.div
-                            className={`border ${unreadCount > 0 ? 'border-[#F9C5D1]/30 bg-[#F9C5D1]/5' : 'border-gray-100'} rounded-xl p-4 hover:shadow-md transition-all cursor-pointer`}
-                            whileHover={{
-                              scale: 1.01,
-                              boxShadow: '0 4px 12px rgba(249, 197, 209, 0.15)',
-                            }}
+                            className={`py-4 px-5 hover:bg-gray-50 transition-all cursor-pointer ${
+                              unreadCount > 0 ? 'bg-[#F9C5D1]/5' : ''
+                            }`}
+                            whileHover={{ x: 4 }}
                             whileTap={{ scale: 0.99 }}
                           >
-                            <div className="flex justify-between items-start mb-2">
+                            <div className="flex items-center gap-3">
+                              <div className="relative">
+                                <div className="w-12 h-12 bg-[#F9C5D1]/10 rounded-full flex items-center justify-center">
+                                  <User className="w-5 h-5 text-[#F28B82]" />
+                                </div>
+                                {unreadCount > 0 && (
+                                  <span className="absolute -top-1 -right-1 bg-[#F28B82] text-white text-xs w-5 h-5 flex items-center justify-center rounded-full border border-white">
+                                    {unreadCount}
+                                  </span>
+                                )}
+                              </div>
+
                               <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2">
+                                <div className="flex justify-between items-baseline mb-1">
                                   <p
-                                    className={`font-medium ${unreadCount > 0 ? 'text-[#333333]' : 'text-gray-700'} truncate`}
+                                    className={`font-medium ${
+                                      unreadCount > 0 ? 'text-[#333333]' : 'text-gray-700'
+                                    } truncate`}
                                   >
                                     {otherUser.name || 'Unknown User'}
                                   </p>
-                                  {unreadCount > 0 && (
-                                    <span className="bg-[#F28B82] text-white text-xs px-2 py-0.5 rounded-full">
-                                      {unreadCount}
-                                    </span>
-                                  )}
+                                  <p className="text-xs text-gray-400 whitespace-nowrap ml-2 flex-shrink-0">
+                                    {formatDate(conversation.lastMessageAt)}
+                                  </p>
                                 </div>
                                 <p
-                                  className={`text-sm ${unreadCount > 0 ? 'text-gray-700' : 'text-gray-500'} line-clamp-1 mt-0.5`}
+                                  className={`text-sm ${
+                                    unreadCount > 0 ? 'text-gray-800 font-medium' : 'text-gray-500'
+                                  } line-clamp-1`}
                                 >
                                   {conversation.lastMessagePreview}
                                 </p>
                               </div>
-                              <p className="text-xs text-gray-400 whitespace-nowrap ml-2">
-                                {formatDate(conversation.lastMessageAt)}
-                              </p>
                             </div>
                           </motion.div>
                         </Link>
                       </motion.div>
                     );
-                  })
-                )}
-              </motion.div>
+                  })}
+                </motion.div>
+              )}
             </AnimatePresence>
           )}
         </motion.div>
