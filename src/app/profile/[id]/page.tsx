@@ -24,6 +24,9 @@ import {
   User,
 } from '@/types/user';
 import { CitySelect } from '@/components/Select/CitySelect';
+import { SchoolSelect } from '@/components/Select/SchoolSelect';
+import { ProgramTypeSelect } from '@/components/Select/ProgramTypeSelect';
+import { DisciplineSelect } from '@/components/Select/DisciplineSelect';
 import { PostGradType } from '@prisma/client';
 import { INDUSTRIES } from '@/constants/industries';
 
@@ -251,6 +254,7 @@ const ProfilePage: FC = () => {
                 onSave={handleSave}
                 onCancel={() => setIsEditing(false)}
                 isSubmitting={isSubmitting}
+                userId={userId}
               />
             ) : (
               // View Mode
@@ -324,7 +328,7 @@ const ViewMode = ({ userData, isOwnProfile, onEdit }: ViewModeProps) => {
         </motion.div>
       );
     }
-    return userData.postGradType === 'work' ? (
+    return userData.postGradType === PostGradType.work ? (
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
@@ -608,9 +612,17 @@ interface EditFormProps {
   onSave: () => void;
   onCancel: () => void;
   isSubmitting: boolean;
+  userId: string;
 }
 
-const EditForm = ({ userData, setUserData, onSave, onCancel, isSubmitting }: EditFormProps) => {
+const EditForm = ({
+  userData,
+  setUserData,
+  onSave,
+  onCancel,
+  isSubmitting,
+  userId,
+}: EditFormProps) => {
   // Determine which visibility labels to show based on user type
   const isWork = userData.postGradType === PostGradType.work;
   const isInternship = userData.postGradType === PostGradType.internship;
@@ -621,7 +633,6 @@ const EditForm = ({ userData, setUserData, onSave, onCancel, isSubmitting }: Edi
 
   const [activeField, setActiveField] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const deleteButtonRef = useRef<HTMLButtonElement>(null);
 
   // Animation variants for input fields
   const inputVariants = {
@@ -664,7 +675,7 @@ const EditForm = ({ userData, setUserData, onSave, onCancel, isSubmitting }: Edi
   // Handle type change
   const handleTypeChange = (type: PostGradType) => {
     // When switching to 'seeking', clear work/school specific fields
-    if (type === 'seeking') {
+    if (type === PostGradType.seeking) {
       setUserData({
         ...userData,
         postGradType: type,
@@ -679,13 +690,6 @@ const EditForm = ({ userData, setUserData, onSave, onCancel, isSubmitting }: Edi
       setUserData({ ...userData, postGradType: type });
     }
   };
-
-  // Scroll to the confirmation dialog when it appears
-  useEffect(() => {
-    if (showDeleteConfirm && deleteButtonRef.current) {
-      deleteButtonRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-  }, [showDeleteConfirm]);
 
   return (
     <motion.form
@@ -793,7 +797,7 @@ const EditForm = ({ userData, setUserData, onSave, onCancel, isSubmitting }: Edi
         </motion.div>
       </motion.div>
 
-      {userData.postGradType !== 'seeking' && (
+      {userData.postGradType !== PostGradType.seeking && (
         <>
           <motion.div variants={itemVariants}>
             <label htmlFor="role" className={labelClasses}>
@@ -808,21 +812,19 @@ const EditForm = ({ userData, setUserData, onSave, onCancel, isSubmitting }: Edi
               variants={inputVariants}
               animate={activeField === 'role' ? 'focus' : 'blur'}
             >
-              <input
-                id="role"
-                type="text"
-                value={isWork || isInternship ? userData.title || '' : userData.program || ''}
-                onChange={(e) => {
-                  if (isWork || isInternship) {
+              {isWork || isInternship ? (
+                <input
+                  id="role"
+                  type="text"
+                  value={userData.title || ''}
+                  onChange={(e) => {
                     setUserData({ ...userData, title: e.target.value });
-                  } else {
-                    setUserData({ ...userData, program: e.target.value });
-                  }
-                }}
-                onFocus={() => setActiveField('role')}
-                onBlur={() => setActiveField(null)}
-                className={inputClasses}
-              />
+                  }}
+                  onFocus={() => setActiveField('role')}
+                  onBlur={() => setActiveField(null)}
+                  className={inputClasses}
+                />
+              ) : null}
             </motion.div>
           </motion.div>
 
@@ -839,46 +841,61 @@ const EditForm = ({ userData, setUserData, onSave, onCancel, isSubmitting }: Edi
               variants={inputVariants}
               animate={activeField === 'company' ? 'focus' : 'blur'}
             >
-              <input
-                id="company"
-                type="text"
-                value={isWork || isInternship ? userData.company || '' : userData.school || ''}
-                onChange={(e) => {
-                  if (isWork || isInternship) {
+              {isWork || isInternship ? (
+                <input
+                  id="company"
+                  type="text"
+                  value={userData.company || ''}
+                  onChange={(e) => {
                     setUserData({ ...userData, company: e.target.value });
-                  } else {
-                    setUserData({ ...userData, school: e.target.value });
-                  }
-                }}
-                onFocus={() => setActiveField('company')}
-                onBlur={() => setActiveField(null)}
-                className={inputClasses}
-              />
+                  }}
+                  onFocus={() => setActiveField('company')}
+                  onBlur={() => setActiveField(null)}
+                  className={inputClasses}
+                />
+              ) : (
+                <SchoolSelect
+                  value={userData.school || ''}
+                  onChange={(school) => setUserData({ ...userData, school })}
+                />
+              )}
             </motion.div>
           </motion.div>
 
           {isSchool && (
-            <motion.div variants={itemVariants}>
-              <label htmlFor="discipline" className={labelClasses}>
-                <HiOutlineAcademicCap className="mr-2 text-[#A7D7F9]" />
-                Discipline
-              </label>
-              <motion.div
-                variants={inputVariants}
-                animate={activeField === 'discipline' ? 'focus' : 'blur'}
-              >
-                <input
-                  id="discipline"
-                  type="text"
-                  placeholder="e.g. Computer Science, Biology, Economics"
-                  value={userData.discipline || ''}
-                  onChange={(e) => setUserData({ ...userData, discipline: e.target.value })}
-                  onFocus={() => setActiveField('discipline')}
-                  onBlur={() => setActiveField(null)}
-                  className={inputClasses}
-                />
+            <>
+              <motion.div variants={itemVariants}>
+                <label htmlFor="program" className={labelClasses}>
+                  <HiOutlineAcademicCap className="mr-2 text-[#A7D7F9]" />
+                  Program Type
+                </label>
+                <motion.div
+                  variants={inputVariants}
+                  animate={activeField === 'program' ? 'focus' : 'blur'}
+                >
+                  <ProgramTypeSelect
+                    value={userData.program || ''}
+                    onChange={(program) => setUserData({ ...userData, program })}
+                  />
+                </motion.div>
               </motion.div>
-            </motion.div>
+
+              <motion.div variants={itemVariants}>
+                <label htmlFor="discipline" className={labelClasses}>
+                  <HiOutlineAcademicCap className="mr-2 text-[#A7D7F9]" />
+                  Discipline
+                </label>
+                <motion.div
+                  variants={inputVariants}
+                  animate={activeField === 'discipline' ? 'focus' : 'blur'}
+                >
+                  <DisciplineSelect
+                    value={userData.discipline || ''}
+                    onChange={(discipline) => setUserData({ ...userData, discipline })}
+                  />
+                </motion.div>
+              </motion.div>
+            </>
           )}
 
           {(isWork || isInternship) && (
@@ -965,7 +982,7 @@ const EditForm = ({ userData, setUserData, onSave, onCancel, isSubmitting }: Edi
       </motion.div>
 
       {/* Update visibility section */}
-      {userData.postGradType !== 'seeking' && (
+      {userData.postGradType !== PostGradType.seeking && (
         <motion.div
           className="p-4 rounded-xl bg-[#FFF9F8] border border-[#F9C5D1]/10 space-y-3 mt-4"
           variants={itemVariants}
@@ -1074,54 +1091,67 @@ const EditForm = ({ userData, setUserData, onSave, onCancel, isSubmitting }: Edi
         <p className="text-sm text-gray-600 mb-4">
           Once you delete your account, there is no going back. Please be certain.
         </p>
-        <motion.button
-          ref={deleteButtonRef}
-          type="button"
-          onClick={() => setShowDeleteConfirm(true)}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 transition-all cursor-pointer"
-        >
-          <FaTrash className="text-sm" />
-          Delete Account
-        </motion.button>
+        {!showDeleteConfirm ? (
+          <motion.button
+            type="button"
+            onClick={() => setShowDeleteConfirm(true)}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 transition-all cursor-pointer"
+          >
+            <FaTrash className="text-sm" />
+            Delete Account
+          </motion.button>
+        ) : (
+          <motion.div
+            initial={{ opacity: 0.8 }}
+            animate={{ opacity: 1 }}
+            className="p-4 rounded-xl border border-red-200 bg-red-50"
+          >
+            <h4 className="font-medium text-red-700 mb-3">Are you sure?</h4>
+            <p className="text-sm text-gray-700 mb-4">
+              This action cannot be undone. All of your data will be permanently deleted.
+            </p>
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={async () => {
+                  try {
+                    // Call the API to delete the account
+                    const response = await fetch(`/api/users/${userId}`, {
+                      method: 'DELETE',
+                    });
 
-        {/* Inline Delete Confirmation */}
-        <AnimatePresence>
-          {showDeleteConfirm && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.3 }}
-              className="bg-white rounded-xl border border-red-200 p-6 mt-4 shadow-sm"
-            >
-              <h3 className="text-lg font-medium text-red-700 mb-3">Are you sure?</h3>
-              <p className="text-sm text-gray-600 mb-4">
-                This action cannot be undone. All of your data will be permanently deleted.
-              </p>
-              <div className="flex gap-3">
-                <button
-                  type="button"
-                  onClick={() => {
-                    const deleteAccountEvent = new CustomEvent('delete-account');
-                    window.dispatchEvent(deleteAccountEvent);
-                  }}
-                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-                >
-                  Yes, Delete My Account
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowDeleteConfirm(false)}
-                  className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
-                >
-                  Cancel
-                </button>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+                    if (!response.ok) {
+                      throw new Error(`Failed to delete account: ${response.statusText}`);
+                    }
+
+                    // Sign out and redirect to homepage after successful deletion
+                    signOut({ callbackUrl: '/' });
+                  } catch (error) {
+                    console.error('Error deleting account:', error);
+                    const errorMessage = error instanceof Error ? error.message : String(error);
+                    alert(
+                      `Failed to delete your account: ${errorMessage || 'Unknown error'}. Please try again later.`
+                    );
+                    setShowDeleteConfirm(false);
+                  }
+                }}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors focus:ring-2 focus:ring-red-500 focus:ring-opacity-50 flex items-center justify-center"
+              >
+                <FaTrash className="mr-2 text-sm" />
+                Delete My Account
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowDeleteConfirm(false)}
+                className="px-4 py-2 bg-white text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </motion.div>
+        )}
       </motion.div>
     </motion.form>
   );
