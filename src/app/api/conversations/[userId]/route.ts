@@ -2,14 +2,15 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
 
-export async function GET(request: Request, { params }: { params: { userId: string } }) {
+export async function GET(request: Request, context: { params: Promise<{ userId: string }> }) {
   const session = await auth();
+  const { params } = await context;
+  const { userId } = await params;
 
   if (!session?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const { userId } = await params;
   const currentUserId = session.user.id;
   const otherUserId = userId;
 
