@@ -26,7 +26,7 @@ export const CTASection = ({ handleSignIn }: CTASectionProps) => {
             Ready to find your flock?
           </h2>
           <p className="text-xl text-[#333333]/70 mb-8 max-w-2xl mx-auto">
-            Join your classmates and discover where Eagles land after graduation.
+            Join your classmates and discover where Eagles land for internships and careers.
           </p>
           <Button
             onClick={handleSignIn}

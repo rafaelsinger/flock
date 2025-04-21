@@ -175,7 +175,7 @@ export const LandingPage = () => {
                     <span className="bg-gradient-to-r from-[#F28B82] to-[#F9C5D1] bg-clip-text text-transparent animate-text-shimmer">
                       Eagles
                     </span>{' '}
-                    land after graduation.
+                    are landing.
                   </h1>
                 </div>
 
@@ -183,8 +183,8 @@ export const LandingPage = () => {
                   className={`opacity-0 transform translate-y-8 transition-all duration-700 delay-100 ease-out ${isVisible ? 'opacity-100 translate-y-0' : ''}`}
                 >
                   <p className="text-lg sm:text-xl md:text-2xl leading-relaxed text-[#333333]/70">
-                    Connect with classmates heading to your dream city, discover opportunities, and
-                    build your BC network worldwide.
+                    Connect with classmates heading to your dream city for summer internships,
+                    full-time roles, or grad school.
                   </p>
                 </div>
 

@@ -20,11 +20,11 @@ export const DemoSection = ({ isVisible, handleSignIn, demoRef }: DemoSectionPro
           className={`text-center mb-12 opacity-0 transform translate-y-8 transition-all duration-700 ease-out ${isVisible ? 'opacity-100 translate-y-0' : ''}`}
         >
           <h2 className="text-3xl md:text-5xl font-bold text-[#333333] mb-6 max-w-2xl mx-auto">
-            See where Eagles are landing after graduation
+            See where Eagles are landing for internships and careers
           </h2>
           <p className="text-lg md:text-xl text-[#333333]/70 max-w-2xl mx-auto">
-            Our interactive map shows you where BC grads are heading. Browse by location, company,
-            or field of study.
+            Our interactive map shows where BC students are heading. Browse by location, company, or
+            field of study.
           </p>
         </div>
 
@@ -85,8 +85,8 @@ export const DemoSection = ({ isVisible, handleSignIn, demoRef }: DemoSectionPro
                   </div>
                   <h3 className="text-3xl font-bold mb-3 text-[#333333]">Unlock Full Map Access</h3>
                   <p className="text-lg text-[#333333]/70 mb-6 max-w-md mx-auto">
-                    Sign in with your BC email to see exactly where your classmates are heading
-                    after graduation.
+                    Sign in with your BC email to see where your classmates are heading for
+                    internships and jobs.
                   </p>
 
                   {/* Interactive map stats with blur/hidden data */}
@@ -129,7 +129,7 @@ export const DemoSection = ({ isVisible, handleSignIn, demoRef }: DemoSectionPro
                 <Building className="w-16 h-16 text-[#F9C5D1] mx-auto mb-4" />
                 <h3 className="text-2xl font-bold mb-3 text-[#333333]">Top Companies</h3>
                 <p className="text-lg text-[#333333]/70 mb-10">
-                  See where BC grads are working at top companies after graduation.
+                  See where BC students are interning and working at top companies.
                 </p>
 
                 {/* Floating horizontal bar of blurred logos with animation */}
@@ -173,8 +173,8 @@ export const DemoSection = ({ isVisible, handleSignIn, demoRef }: DemoSectionPro
                 <Users className="w-16 h-16 text-[#A7D7F9] mx-auto mb-4" />
                 <h3 className="text-2xl font-bold mb-3 text-[#333333]">Find Classmates</h3>
                 <p className="text-lg text-[#333333]/70 mb-5">
-                  Sign in to browse the directory of BC grads and connect with classmates in your
-                  new city.
+                  Sign in to browse the directory of BC students and connect with classmates in your
+                  city.
                 </p>
 
                 {/* Search bar mockup - slightly smaller */}
