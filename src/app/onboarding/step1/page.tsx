@@ -214,7 +214,7 @@ const Step1: FC = () => {
   const getDescriptionText = () => {
     return isIntern
       ? 'Let us know your plans for the summer'
-      : "Let us know what you'll be doing after graduation";
+      : "Let us know what you'll be doing after graduation or during your internship";
   };
 
   return (

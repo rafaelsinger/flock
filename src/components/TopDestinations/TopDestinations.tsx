@@ -135,7 +135,7 @@ export const TopDestinations: React.FC<TopDestinationsProps> = ({ showAllClassYe
               <div>
                 <h2 className="text-2xl font-bold text-[#333333] pl-4">Top Destinations</h2>
                 <p className="text-[#666666] mt-1 pl-4">
-                  Where BC Eagles are heading after graduation
+                  Where BC Eagles are heading for jobs, grad school, and internships
                 </p>
               </div>
               {userClassYear && (

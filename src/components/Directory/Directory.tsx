@@ -187,11 +187,11 @@ export const Directory = () => {
                     {userName ? (
                       <p className="text-lg text-[#666666] mt-2">
                         {greeting}, <span className="text-[#F28B82] font-medium">{userName}</span>!
-                        Discover where your classmates are heading after graduation.
+                        Discover where your classmates are heading.
                       </p>
                     ) : (
                       <p className="text-lg text-[#666666] mt-2">
-                        Discover where your classmates are heading after graduation
+                        Discover where your classmates are heading.
                       </p>
                     )}
                   </motion.div>

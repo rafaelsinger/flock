@@ -582,7 +582,7 @@ export const DirectoryContent: React.FC<DirectoryContentProps> = ({ filters, onF
         {/* Stats Bar */}
         <motion.div className="flex justify-between items-center px-2" variants={itemVariants}>
           <div className="text-sm font-medium text-[#666666]">
-            <span className="text-[#F28B82]">{totalUsers}</span> graduates found
+            <span className="text-[#F28B82]">{totalUsers}</span> students found
             {hasFiltersActive && ' with current filters'}
           </div>
 

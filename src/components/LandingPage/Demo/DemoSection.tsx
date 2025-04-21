@@ -107,7 +107,7 @@ export const DemoSection = ({ isVisible, handleSignIn, demoRef }: DemoSectionPro
                       <div className="text-2xl font-bold text-[#F9C5D1]">
                         <span className="blur-sm">000</span>
                       </div>
-                      <div className="text-sm text-[#333333]/70">BC Grads</div>
+                      <div className="text-sm text-[#333333]/70">BC Students</div>
                     </div>
                   </div>
 

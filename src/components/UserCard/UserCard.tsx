@@ -66,20 +66,20 @@ export const UserCard: React.FC<UserCardProps> = ({ user, prefetch = false }) =>
     },
   };
 
-  // Determine status and styling based on post-grad type and class year
+  // Determine status and styling based on career/education path and class year
   const getPostGradStatus = () => {
-    // For users not in class of 2025, use a gold/yellow theme regardless of post-grad type
+    // For users not in class of 2025, use a gold/yellow theme regardless of career/education path
     if (user.classYear !== 2025) {
       return {
         Icon: user.postGradType === 'school' ? GraduationCap : Briefcase,
         color: '#F4B942', // Gold/yellow color
         bgColor: 'bg-[#F4B942]/10',
         borderColor: 'border-[#F4B942]',
-        status: user.classYear < 2025 ? 'graduate' : 'intern',
+        status: user.classYear < 2025 ? 'alumni' : 'intern',
       };
     }
 
-    // For class of 2025 users, use existing post-grad type logic
+    // For class of 2025 users, use existing career/education path logic
     switch (user.postGradType) {
       case 'work':
         return {
