@@ -135,10 +135,10 @@ export const UserCard: React.FC<UserCardProps> = ({ user, prefetch = false }) =>
       <div className="h-2 w-full" style={{ backgroundColor: color }}></div>
 
       <div className="p-4 sm:p-5 flex-grow flex flex-col">
-        <div className="flex items-start justify-between">
+        <div className="flex items-start">
           {/* User Icon and Status Badge */}
-          <div className="flex items-center gap-2 sm:gap-3">
-            <div className="relative">
+          <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+            <div className="relative flex-shrink-0">
               <div
                 className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center ${bgColor}`}
               >
@@ -157,7 +157,7 @@ export const UserCard: React.FC<UserCardProps> = ({ user, prefetch = false }) =>
               )}
             </div>
 
-            <div className="overflow-hidden">
+            <div className="overflow-hidden min-w-0">
               <h3 className="font-medium text-[#333333] text-base sm:text-lg transition-colors truncate">
                 {user.name}
               </h3>
@@ -167,7 +167,7 @@ export const UserCard: React.FC<UserCardProps> = ({ user, prefetch = false }) =>
 
           {/* Class year indicator */}
           {user.classYear && (
-            <div className="px-2 py-1 bg-gray-100 rounded-md text-xs font-medium text-gray-600 ml-2 flex-shrink-0">
+            <div className="px-2 py-1 bg-gray-100 rounded-md text-xs font-medium text-gray-600 ml-2 flex-shrink-0 whitespace-nowrap">
               Class of {user.classYear}
             </div>
           )}
@@ -182,7 +182,7 @@ export const UserCard: React.FC<UserCardProps> = ({ user, prefetch = false }) =>
 
           {company ? (
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600 overflow-hidden">
+              <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600 overflow-hidden max-w-[70%]">
                 <Building className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" style={{ color }} />
                 <span className="truncate">{company}</span>
               </div>
