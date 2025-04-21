@@ -98,11 +98,14 @@ export const UserGrid: React.FC<UserGridProps> = ({
                   animate={{
                     opacity: 1,
                     y: 0,
-                    transition: { delay: index * 0.05 },
+                    transition: {
+                      delay: index * 0.05,
+                      type: 'spring',
+                      stiffness: 100,
+                      damping: 15,
+                    },
                   }}
-                  whileHover={{ scale: 1.02 }}
-                  transition={{ duration: 0.2 }}
-                  className="h-full"
+                  className="h-full transform"
                 >
                   <UserCard user={user} prefetch={prefetchUserData} />
                 </motion.div>

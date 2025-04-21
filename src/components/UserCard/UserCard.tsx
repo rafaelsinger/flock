@@ -61,8 +61,8 @@ export const UserCard: React.FC<UserCardProps> = ({ user, prefetch = false }) =>
   const cardVariants = {
     hover: {
       y: -8,
-      boxShadow: '0 10px 25px -5px rgba(249, 197, 209, 0.3)',
-      transition: { duration: 0.3 },
+      boxShadow: '0 15px 30px -5px rgba(249, 197, 209, 0.3), 0 5px 15px -5px rgba(0, 0, 0, 0.05)',
+      transition: { duration: 0.3, ease: 'easeOut' },
     },
   };
 
@@ -74,7 +74,6 @@ export const UserCard: React.FC<UserCardProps> = ({ user, prefetch = false }) =>
         Icon: user.postGradType === 'school' ? GraduationCap : Briefcase,
         color: '#F4B942', // Gold/yellow color
         bgColor: 'bg-[#F4B942]/10',
-        borderColor: 'border-[#F4B942]',
         status: user.classYear < 2025 ? 'alumni' : 'intern',
       };
     }
@@ -86,7 +85,6 @@ export const UserCard: React.FC<UserCardProps> = ({ user, prefetch = false }) =>
           Icon: Briefcase,
           color: '#F28B82',
           bgColor: 'bg-[#F9C5D1]/10',
-          borderColor: 'border-[#F9C5D1]',
           status: 'graduate',
         };
       case 'school':
@@ -94,7 +92,6 @@ export const UserCard: React.FC<UserCardProps> = ({ user, prefetch = false }) =>
           Icon: GraduationCap,
           color: '#A7D7F9',
           bgColor: 'bg-[#A7D7F9]/10',
-          borderColor: 'border-[#A7D7F9]',
           status: 'student',
         };
       default:
@@ -116,31 +113,28 @@ export const UserCard: React.FC<UserCardProps> = ({ user, prefetch = false }) =>
           ),
           color: '#9E9E9E',
           bgColor: 'bg-[#9E9E9E]/10',
-          borderColor: 'border-[#9E9E9E]',
           status: 'seeking',
         };
     }
   };
 
-  const { Icon, color, bgColor, borderColor } = getPostGradStatus();
+  const { Icon, color, bgColor } = getPostGradStatus();
 
   return (
     <motion.div
-      className={`bg-white rounded-xl overflow-hidden hover:border-[#F9C5D1]/30 shadow-sm border-2 ${borderColor} h-full flex flex-col`}
+      className="bg-white rounded-xl overflow-hidden shadow-[0_4px_12px_-2px_rgba(249,197,209,0.15),0_2px_6px_-1px_rgba(0,0,0,0.02)] h-full flex flex-col transition-all"
       whileHover="hover"
       variants={cardVariants}
       onMouseEnter={handleMouseEnter}
     >
-      {/* Card header with status indicator */}
-      <div className="h-2 w-full" style={{ backgroundColor: color }}></div>
-
-      <div className="p-4 sm:p-5 flex-grow flex flex-col">
+      <div className="p-5 sm:p-6 flex-grow flex flex-col bg-gradient-to-b from-white to-gray-50/30">
         <div className="flex items-start">
           {/* User Icon and Status Badge */}
           <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
             <div className="relative flex-shrink-0">
               <div
-                className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center ${bgColor}`}
+                className={`w-11 h-11 sm:w-14 sm:h-14 rounded-full flex items-center justify-center ${bgColor} transition-all`}
+                style={{ boxShadow: `0 2px 8px -1px ${color}30, 0 1px 3px -1px ${color}10` }}
               >
                 <Icon
                   className={
@@ -151,7 +145,7 @@ export const UserCard: React.FC<UserCardProps> = ({ user, prefetch = false }) =>
 
               {/* Roommate indicator */}
               {user.lookingForRoommate && (
-                <div className="absolute -bottom-1 -right-1 w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-[#8FC9A9]/10 flex items-center justify-center border border-white">
+                <div className="absolute -bottom-1 -right-1 w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-[#8FC9A9]/10 flex items-center justify-center border border-white shadow-sm">
                   <Home className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-[#8FC9A9]" />
                 </div>
               )}
@@ -167,14 +161,14 @@ export const UserCard: React.FC<UserCardProps> = ({ user, prefetch = false }) =>
 
           {/* Class year indicator */}
           {user.classYear && (
-            <div className="px-2 py-1 bg-gray-100 rounded-md text-xs font-medium text-gray-600 ml-2 flex-shrink-0 whitespace-nowrap">
+            <div className="px-2 py-1 bg-gray-50 shadow-[0_1px_2px_0_rgba(0,0,0,0.03)] rounded-md text-xs font-medium text-gray-600 ml-2 flex-shrink-0 whitespace-nowrap">
               Class of {user.classYear}
             </div>
           )}
         </div>
 
         {/* Basic info section */}
-        <div className="mt-3 sm:mt-4 space-y-2 sm:space-y-3 flex-grow">
+        <div className="mt-4 sm:mt-5 space-y-3 flex-grow">
           <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
             <MapPin className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" style={{ color }} />
             <span className="truncate">{location}</span>
@@ -188,9 +182,12 @@ export const UserCard: React.FC<UserCardProps> = ({ user, prefetch = false }) =>
               </div>
               <motion.button
                 onClick={handleClick}
-                className="ml-2 flex-shrink-0 px-2 py-1 rounded-md flex items-center text-white text-xs cursor-pointer"
-                style={{ background: `linear-gradient(90deg, ${color}, ${color}CC)` }}
-                whileHover={{ scale: 1.05 }}
+                className="ml-2 flex-shrink-0 px-2 py-1 rounded-md flex items-center text-white text-xs cursor-pointer shadow-sm"
+                style={{
+                  background: `linear-gradient(135deg, ${color}, ${color}CC)`,
+                  boxShadow: `0 2px 4px -1px ${color}40`,
+                }}
+                whileHover={{ scale: 1.05, boxShadow: `0 3px 6px -1px ${color}50` }}
                 whileTap={{ scale: 0.95 }}
               >
                 <span className="hidden sm:inline mr-1">View</span>
@@ -202,9 +199,12 @@ export const UserCard: React.FC<UserCardProps> = ({ user, prefetch = false }) =>
               <div className="flex-1" />
               <motion.button
                 onClick={handleClick}
-                className="ml-2 flex-shrink-0 px-2 py-1 rounded-md flex items-center text-white text-xs cursor-pointer"
-                style={{ background: `linear-gradient(90deg, ${color}, ${color}CC)` }}
-                whileHover={{ scale: 1.05 }}
+                className="ml-2 flex-shrink-0 px-2 py-1 rounded-md flex items-center text-white text-xs cursor-pointer shadow-sm"
+                style={{
+                  background: `linear-gradient(135deg, ${color}, ${color}CC)`,
+                  boxShadow: `0 2px 4px -1px ${color}40`,
+                }}
+                whileHover={{ scale: 1.05, boxShadow: `0 3px 6px -1px ${color}50` }}
                 whileTap={{ scale: 0.95 }}
               >
                 <span className="hidden sm:inline mr-1">View</span>

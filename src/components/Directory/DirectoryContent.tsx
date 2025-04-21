@@ -631,7 +631,7 @@ export const DirectoryContent: React.FC<DirectoryContentProps> = ({ filters, onF
                 </motion.button>
               </motion.div>
             ) : (
-              <div className="p-6">
+              <div className="p-6 bg-gradient-to-b from-white to-gray-50/30">
                 <UserGrid
                   users={users}
                   loading={isLoading}
