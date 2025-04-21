@@ -7,7 +7,7 @@ import { INDUSTRIES } from '@/constants/industries';
 import { IncompleteUserOnboarding } from '@/types/user';
 import { motion } from 'framer-motion';
 import { BsBriefcase, BsBuilding, BsPerson } from 'react-icons/bs';
-import { OnboardingProgress } from '@/components';
+import { OnboardingProgress, OnboardingButton } from '@/components';
 import { PostGradType } from '@prisma/client';
 
 const Step2Work: FC = () => {
@@ -225,32 +225,17 @@ const Step2Work: FC = () => {
             className="flex flex-col md:flex-row justify-between space-y-4 md:space-y-0 md:space-x-4"
             variants={itemVariants}
           >
-            <motion.button
-              type="button"
-              onClick={() => router.back()}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="px-6 py-3 md:py-4 rounded-xl border border-[#F9C5D1] text-[#F28B82] font-medium transition-all hover:bg-[#F9C5D1]/5 flex-1 max-w-[200px] mx-auto md:mx-0"
-            >
+            <OnboardingButton type="button" variant="secondary" onClick={() => router.back()}>
               Back
-            </motion.button>
-            <motion.button
+            </OnboardingButton>
+            <OnboardingButton
               type="submit"
+              variant="primary"
               disabled={!isFormValid || isSubmitting}
-              whileHover={{ scale: isFormValid && !isSubmitting ? 1.02 : 1 }}
-              whileTap={{ scale: isFormValid && !isSubmitting ? 0.98 : 1 }}
-              className={`px-6 py-3 md:py-4 rounded-xl font-medium bg-gradient-to-r from-[#F9C5D1] to-[#F28B82] text-white cursor-pointer flex-1 max-w-[200px] mx-auto md:mx-0 ${
-                !isFormValid || isSubmitting ? 'opacity-70 cursor-not-allowed' : ''
-              }`}
+              isLoading={isSubmitting}
             >
-              {isSubmitting ? (
-                <div className="flex items-center justify-center">
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                </div>
-              ) : (
-                'Continue'
-              )}
-            </motion.button>
+              Continue
+            </OnboardingButton>
           </motion.div>
         </form>
       </motion.div>

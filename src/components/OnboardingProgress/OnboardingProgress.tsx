@@ -12,7 +12,7 @@ export const OnboardingProgress: React.FC<OnboardingProgressProps> = ({
 }) => {
   const steps = Array.from({ length: totalSteps }, (_, i) => i + 1);
 
-  const stepLabels = ['Class Year', 'About You', 'Details', 'Location', 'Privacy', 'Review'];
+  const stepLabels = ['Year', 'You', 'Details', 'Location', 'Privacy', 'Review'];
 
   return (
     <div className="w-full my-6 md:my-8">
@@ -32,14 +32,10 @@ export const OnboardingProgress: React.FC<OnboardingProgressProps> = ({
           }}
         />
 
-        {/* Step indicators with their labels */}
+        {/* Step indicators */}
         <div className="flex justify-between items-center relative">
           {steps.map((step, index) => (
-            <div
-              key={step}
-              className="flex flex-col items-center relative z-10"
-              style={{ width: `${100 / (totalSteps - 1)}%` }}
-            >
+            <div key={step} className="flex flex-col items-center relative z-10">
               <motion.div
                 className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center text-xs md:text-sm font-medium shadow-sm ${
                   step < currentStep
@@ -60,8 +56,9 @@ export const OnboardingProgress: React.FC<OnboardingProgressProps> = ({
                 {step < currentStep ? '✓' : step}
               </motion.div>
 
+              {/* Labels only visible on md screens and above */}
               <motion.div
-                className="absolute top-10 md:top-12 w-24 text-center"
+                className="absolute top-12 w-24 text-center hidden md:block"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{
@@ -71,7 +68,7 @@ export const OnboardingProgress: React.FC<OnboardingProgressProps> = ({
                 }}
               >
                 <span
-                  className={`text-xs md:text-sm font-medium ${
+                  className={`text-sm font-medium ${
                     step <= currentStep ? 'text-[#333333]' : 'text-[#666666]'
                   }`}
                 >
@@ -82,7 +79,9 @@ export const OnboardingProgress: React.FC<OnboardingProgressProps> = ({
           ))}
         </div>
       </div>
-      <div className="h-10"></div> {/* Spacer for the labels */}
+
+      {/* Spacer for labels on md screens */}
+      <div className="h-0 md:h-6"></div>
     </div>
   );
 };

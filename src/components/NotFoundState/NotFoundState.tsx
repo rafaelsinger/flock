@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from 'next/link';
 
 interface NotFoundStateProps {
   title?: string;
@@ -8,10 +8,10 @@ interface NotFoundStateProps {
 }
 
 export const NotFoundState: React.FC<NotFoundStateProps> = ({
-  title = "Page Not Found",
+  title = 'Page Not Found',
   message = "The page you're looking for doesn't exist or has been moved.",
-  linkText = "Return Home",
-  linkHref = "/",
+  linkText = 'Return Home',
+  linkHref = '/',
 }) => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#FFF9F8]">
@@ -20,7 +20,7 @@ export const NotFoundState: React.FC<NotFoundStateProps> = ({
         <p className="mt-2 text-lg text-[#666666]">{message}</p>
         <Link
           href={linkHref}
-          className="mt-4 inline-block text-[#F28B82] hover:text-[#E67C73]"
+          className="mt-4 inline-block text-[#F28B82] hover:text-[#E67C73] cursor-pointer"
         >
           {linkText}
         </Link>

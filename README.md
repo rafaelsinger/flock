@@ -14,13 +14,13 @@
 
 ## 🚀 Overview
 
-Flock is a platform for Boston College students to connect and find their classmates after graduation. Whether you're pursuing a career or further education, Flock helps you maintain your BC connections wherever life takes you.
+Flock is a platform for Boston College students to connect and find their classmates after graduation or during summer internships. Whether you're pursuing a career, an internship, or further education, Flock helps you maintain your BC connections wherever life takes you.
 
 ## ✨ Features
 
-- **Alumni Directory** - Find classmates by location, industry, school, or company
+- **Student Directory** - Find classmates by location, industry, school, or company
 - **Smart Profile Management** - Create and control your professional presence
-- **Location Mapping** - See where fellow Eagles have landed post-graduation
+- **Location Mapping** - See where fellow Eagles have landed for jobs, internships, and continuing education
 - **Roommate Matching** - Indicate if you're looking for roommates in your area
 - **Privacy Controls** - Granular visibility settings for your information
 
@@ -65,7 +65,7 @@ Current version: **1.0.0**
 
 - ✅ User authentication
 - ✅ Profile management
-- ✅ Alumni directory
+- ✅ Student directory
 - ✅ Search & filtering
 - ✅ Location services
 - ✅ Roommate indicators

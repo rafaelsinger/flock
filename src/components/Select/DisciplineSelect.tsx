@@ -20,7 +20,7 @@ export const DisciplineSelect: React.FC<DisciplineSelectProps> = ({ value, onCha
       <Combobox value={value} onChange={onChange}>
         <div className="relative w-full">
           <ComboboxInput
-            className="w-full text-[#333] border border-gray-200 px-4 py-3 rounded-lg focus:border-[#A7D7F9] focus:ring-2 focus:ring-[#A7D7F9]/20 outline-none"
+            className="w-full text-[#333] border border-gray-200 px-4 py-3 rounded-lg focus:border-[#A7D7F9] focus:ring-2 focus:ring-[#A7D7F9]/20 outline-none cursor-text"
             placeholder="Select or type a discipline"
             onChange={(event) => setQuery(event.target.value)}
             autoComplete="off"

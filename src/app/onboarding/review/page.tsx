@@ -11,7 +11,7 @@ import { HiOutlineAcademicCap } from 'react-icons/hi';
 import { useSession } from 'next-auth/react';
 import { UserOnboarding, UserWithLocation } from '@/types/user';
 import { motion } from 'framer-motion';
-import { OnboardingProgress } from '@/components';
+import { OnboardingProgress, OnboardingButton } from '@/components';
 import { PostGradType } from '@prisma/client';
 
 const ReviewPage: FC = () => {
@@ -420,55 +420,21 @@ const ReviewPage: FC = () => {
             </motion.div>
           </motion.div>
 
-          <motion.div className="flex justify-between items-center pt-4" variants={itemVariants}>
-            <motion.button
-              type="button"
-              onClick={() => router.back()}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="px-6 py-3 rounded-xl border-2 border-gray-200 text-[#666666] hover:text-[#333333] hover:border-gray-300 transition-all font-medium"
-            >
+          <motion.div
+            className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0 md:space-x-4 pt-4"
+            variants={itemVariants}
+          >
+            <OnboardingButton type="button" variant="secondary" onClick={() => router.back()}>
               Back
-            </motion.button>
-            <motion.button
+            </OnboardingButton>
+            <OnboardingButton
               type="submit"
+              variant="primary"
               disabled={isSubmitting}
-              whileHover={!isSubmitting ? { scale: 1.03 } : {}}
-              whileTap={!isSubmitting ? { scale: 0.98 } : {}}
-              className={`px-8 py-3 rounded-xl transition-all text-base md:text-lg font-medium min-w-[120px] ${
-                !isSubmitting
-                  ? 'bg-gradient-to-r from-[#F28B82] to-[#E67C73] text-white shadow-md hover:shadow-lg'
-                  : 'bg-[#F9C5D1]/50 cursor-not-allowed text-white/70'
-              }`}
+              isLoading={isSubmitting}
             >
-              {isSubmitting ? (
-                <span className="flex items-center justify-center">
-                  <svg
-                    className="animate-spin -ml-1 mr-2 h-5 w-5 text-white"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    ></circle>
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    ></path>
-                  </svg>
-                  Processing...
-                </span>
-              ) : (
-                'Complete Onboarding'
-              )}
-            </motion.button>
+              Complete
+            </OnboardingButton>
           </motion.div>
         </motion.form>
       </motion.div>

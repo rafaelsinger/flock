@@ -34,7 +34,7 @@ export const Privacy = () => {
             <ul className="list-none pl-0 mb-3 space-y-2.5">
               {[
                 'Authentication information (Boston College email through Google authentication)',
-                'Profile details (name, graduation year, post-graduation plans)',
+                'Profile details (name, graduation year, post-graduation plans or internship details)',
                 'Location information (city, state, country, and optionally borough)',
                 'Career or education information (company/school, role/program)',
                 'User preferences and settings (visibility preferences)',
@@ -55,7 +55,7 @@ export const Privacy = () => {
             <p className="mb-3 leading-relaxed">We use your information to:</p>
             <ul className="list-none pl-0 mb-3 space-y-2.5">
               {[
-                'Provide our core service of connecting BC graduates based on location',
+                'Provide our core service of connecting BC graduates and interns based on location',
                 'Customize and improve your user experience',
                 'Ensure only BC students and alumni can access the platform',
                 'Understand how users interact with Flock to improve our service',

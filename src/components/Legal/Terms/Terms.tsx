@@ -16,8 +16,9 @@ export const Terms = () => {
             </h2>
             <p className="mb-3 leading-relaxed">
               Welcome to Flock (&quot;we,&quot; &quot;our,&quot; or &quot;us&quot;). Flock is a web
-              application that connects graduating Boston College students by showing where their
-              classmates are moving after graduation.
+              application that connects graduating Boston College students and summer interns by
+              showing where their classmates are moving after graduation or for summer
+              opportunities.
             </p>
             <p className="mb-3 leading-relaxed">
               By accessing or using our services, you agree to be bound by these Terms of Service
@@ -76,7 +77,7 @@ export const Terms = () => {
             <p className="mb-3 leading-relaxed">When using Flock, you agree to:</p>
             <ul className="list-none pl-0 mb-3 space-y-2.5">
               {[
-                'Provide truthful information about your post-graduation plans',
+                'Provide truthful information about your post-graduation plans or summer internship',
                 'Respect the privacy and rights of other users',
                 'Not use the platform to harass, bully, or discriminate against others',
                 'Not use Flock for any illegal, harmful, or unauthorized purposes',
