@@ -188,7 +188,7 @@ export const UserCard: React.FC<UserCardProps> = ({ user, prefetch = false }) =>
               </div>
               <motion.button
                 onClick={handleClick}
-                className="ml-2 flex-shrink-0 px-2 py-1 rounded-md flex items-center text-white text-xs"
+                className="ml-2 flex-shrink-0 px-2 py-1 rounded-md flex items-center text-white text-xs cursor-pointer"
                 style={{ background: `linear-gradient(90deg, ${color}, ${color}CC)` }}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -202,7 +202,7 @@ export const UserCard: React.FC<UserCardProps> = ({ user, prefetch = false }) =>
               <div className="flex-1" />
               <motion.button
                 onClick={handleClick}
-                className="ml-2 flex-shrink-0 px-2 py-1 rounded-md flex items-center text-white text-xs"
+                className="ml-2 flex-shrink-0 px-2 py-1 rounded-md flex items-center text-white text-xs cursor-pointer"
                 style={{ background: `linear-gradient(90deg, ${color}, ${color}CC)` }}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}

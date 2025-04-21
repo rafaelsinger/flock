@@ -122,7 +122,7 @@ export const UserGrid: React.FC<UserGridProps> = ({
           <button
             onClick={() => onPageChange(Math.max(1, page - 1))}
             disabled={page === 1}
-            className="px-3 py-1.5 rounded-md border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:border-[#F28B82] hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-[#F28B82] focus:ring-opacity-30"
+            className="px-3 py-1.5 rounded-md border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:border-[#F28B82] hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-[#F28B82] focus:ring-opacity-30 cursor-pointer"
             aria-label="Previous page"
           >
             ←
@@ -151,7 +151,7 @@ export const UserGrid: React.FC<UserGridProps> = ({
           <button
             onClick={() => onPageChange(Math.min(totalPages, page + 1))}
             disabled={page === totalPages}
-            className="px-3 py-1.5 rounded-md border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:border-[#F28B82] hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-[#F28B82] focus:ring-opacity-30"
+            className="px-3 py-1.5 rounded-md border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:border-[#F28B82] hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-[#F28B82] focus:ring-opacity-30 cursor-pointer"
             aria-label="Next page"
           >
             →

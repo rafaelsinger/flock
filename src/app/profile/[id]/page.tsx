@@ -1091,7 +1091,7 @@ const EditForm = ({
               id="looking-for-roommate"
               checked={userData.lookingForRoommate || false}
               onChange={(e) => handleRoommateStatusChange(e.target.checked)}
-              className="w-4 h-4 text-[#8FC9A9] border-gray-300 rounded focus:ring-[#8FC9A9]/80"
+              className="w-4 h-4 text-[#8FC9A9] border-gray-300 rounded focus:ring-[#8FC9A9]/80 cursor-pointer"
             />
             <label htmlFor="looking-for-roommate" className="flex items-center cursor-pointer">
               <FaHome className="text-[#8FC9A9] mr-2" />
@@ -1132,7 +1132,7 @@ const EditForm = ({
                     : (userData.visibilityOptions?.program ?? true)
                 }
                 onChange={(e) => handleVisibilityChange('role', e.target.checked)}
-                className="h-5 w-5 rounded-md border-gray-300 text-[#F28B82] focus:ring-[#F28B82]"
+                className="h-5 w-5 rounded-md border-gray-300 text-[#F28B82] focus:ring-[#F28B82] cursor-pointer"
               />
             </motion.div>
           </motion.label>
@@ -1152,7 +1152,7 @@ const EditForm = ({
                     : (userData.visibilityOptions?.school ?? true)
                 }
                 onChange={(e) => handleVisibilityChange('company', e.target.checked)}
-                className="h-5 w-5 rounded-md border-gray-300 text-[#F28B82] focus:ring-[#F28B82]"
+                className="h-5 w-5 rounded-md border-gray-300 text-[#F28B82] focus:ring-[#F28B82] cursor-pointer"
               />
             </motion.div>
           </motion.label>
@@ -1252,17 +1252,25 @@ const EditForm = ({
                     }
 
                     // Sign out and redirect to homepage after successful deletion
+                    alert(
+                      'Your account has been successfully deleted. You will now be signed out.'
+                    );
                     signOut({ callbackUrl: '/' });
                   } catch (error) {
                     console.error('Error deleting account:', error);
                     const errorMessage = error instanceof Error ? error.message : String(error);
-                    alert(
-                      `Failed to delete your account: ${errorMessage || 'Unknown error'}. Please try again later.`
-                    );
-                    setShowDeleteConfirm(false);
+
+                    if (errorMessage.includes('not found')) {
+                      alert('Account not found or already deleted. You will be signed out.');
+                      signOut({ callbackUrl: '/' });
+                    } else {
+                      alert(
+                        `Failed to delete your account: ${errorMessage || 'Unknown error'}. Please try again later.`
+                      );
+                    }
                   }
                 }}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors focus:ring-2 focus:ring-red-500 focus:ring-opacity-50 flex items-center justify-center"
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors focus:ring-2 focus:ring-red-500 focus:ring-opacity-50 flex items-center justify-center cursor-pointer"
               >
                 <FaTrash className="mr-2 text-sm" />
                 Delete My Account
@@ -1270,7 +1278,7 @@ const EditForm = ({
               <button
                 type="button"
                 onClick={() => setShowDeleteConfirm(false)}
-                className="px-4 py-2 bg-white text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                className="px-4 py-2 bg-white text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
               >
                 Cancel
               </button>

@@ -33,7 +33,7 @@ export const DemoSection = ({ isVisible, handleSignIn, demoRef }: DemoSectionPro
           <div className="inline-flex bg-[#F9F9F9] p-1.5 rounded-xl shadow-sm">
             <button
               onClick={() => setActiveTab('map')}
-              className={`flex items-center gap-2 px-5 py-3 rounded-lg text-sm font-medium transition-all ${
+              className={`flex items-center gap-2 px-5 py-3 rounded-lg text-sm font-medium transition-all cursor-pointer ${
                 activeTab === 'map'
                   ? 'bg-white shadow-sm text-[#F28B82] scale-105'
                   : 'text-[#333333]/70 hover:text-[#333333]'
@@ -44,7 +44,7 @@ export const DemoSection = ({ isVisible, handleSignIn, demoRef }: DemoSectionPro
             </button>
             <button
               onClick={() => setActiveTab('companies')}
-              className={`flex items-center gap-2 px-5 py-3 rounded-lg text-sm font-medium transition-all ${
+              className={`flex items-center gap-2 px-5 py-3 rounded-lg text-sm font-medium transition-all cursor-pointer ${
                 activeTab === 'companies'
                   ? 'bg-white shadow-sm text-[#F28B82] scale-105'
                   : 'text-[#333333]/70 hover:text-[#333333]'
@@ -55,7 +55,7 @@ export const DemoSection = ({ isVisible, handleSignIn, demoRef }: DemoSectionPro
             </button>
             <button
               onClick={() => setActiveTab('classmates')}
-              className={`flex items-center gap-2 px-5 py-3 rounded-lg text-sm font-medium transition-all ${
+              className={`flex items-center gap-2 px-5 py-3 rounded-lg text-sm font-medium transition-all cursor-pointer ${
                 activeTab === 'classmates'
                   ? 'bg-white shadow-sm text-[#F28B82] scale-105'
                   : 'text-[#333333]/70 hover:text-[#333333]'

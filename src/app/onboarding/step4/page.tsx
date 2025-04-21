@@ -299,7 +299,7 @@ const Step4: FC = () => {
               onClick={() => router.back()}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="px-6 py-3 md:py-4 rounded-xl border border-[#F9C5D1] text-[#F28B82] font-medium transition-all hover:bg-[#F9C5D1]/5 flex-1 max-w-[200px] mx-auto md:mx-0"
+              className="px-6 py-3 md:py-4 rounded-xl border border-[#F9C5D1] text-[#F28B82] font-medium transition-all hover:bg-[#F9C5D1]/5 flex-1 max-w-[200px] mx-auto md:mx-0 cursor-pointer"
             >
               Back
             </motion.button>

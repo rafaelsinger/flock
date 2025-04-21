@@ -20,7 +20,7 @@ export const SchoolSelect: React.FC<SchoolSelectProps> = ({ value, onChange }) =
       <Combobox value={value} onChange={onChange}>
         <div className="relative w-full">
           <ComboboxInput
-            className="w-full text-[#333] border border-gray-200 px-4 py-3 rounded-lg focus:border-[#A7D7F9] focus:ring-2 focus:ring-[#A7D7F9]/20 outline-none"
+            className="w-full text-[#333] border border-gray-200 px-4 py-3 rounded-lg focus:border-[#A7D7F9] focus:ring-2 focus:ring-[#A7D7F9]/20 outline-none cursor-text"
             placeholder="Start typing to search for a school"
             onChange={(event) => setQuery(event.target.value)}
             autoComplete="off"

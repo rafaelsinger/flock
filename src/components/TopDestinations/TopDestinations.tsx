@@ -151,7 +151,7 @@ export const TopDestinations: React.FC<TopDestinationsProps> = ({ showAllClassYe
             <div className="flex flex-wrap gap-2">
               <motion.button
                 onClick={() => setActiveTab('companies')}
-                className={`px-4 py-2 rounded-full border transition-all flex items-center gap-2 ${getTabStyle('companies')}`}
+                className={`px-4 py-2 rounded-full border transition-all flex items-center gap-2 ${getTabStyle('companies')} cursor-pointer`}
                 variants={tabVariants}
                 initial="inactive"
                 animate={activeTab === 'companies' ? 'active' : 'inactive'}
@@ -164,7 +164,7 @@ export const TopDestinations: React.FC<TopDestinationsProps> = ({ showAllClassYe
 
               <motion.button
                 onClick={() => setActiveTab('schools')}
-                className={`px-4 py-2 rounded-full border transition-all flex items-center gap-2 ${getTabStyle('schools')}`}
+                className={`px-4 py-2 rounded-full border transition-all flex items-center gap-2 ${getTabStyle('schools')} cursor-pointer`}
                 variants={tabVariants}
                 initial="inactive"
                 animate={activeTab === 'schools' ? 'active' : 'inactive'}
@@ -177,7 +177,7 @@ export const TopDestinations: React.FC<TopDestinationsProps> = ({ showAllClassYe
 
               <motion.button
                 onClick={() => setActiveTab('cities')}
-                className={`px-4 py-2 rounded-full border transition-all flex items-center gap-2 ${getTabStyle('cities')}`}
+                className={`px-4 py-2 rounded-full border transition-all flex items-center gap-2 ${getTabStyle('cities')} cursor-pointer`}
                 variants={tabVariants}
                 initial="inactive"
                 animate={activeTab === 'cities' ? 'active' : 'inactive'}
@@ -275,7 +275,7 @@ export const TopDestinations: React.FC<TopDestinationsProps> = ({ showAllClassYe
           <div className="p-4 bg-gray-50 border-t border-gray-100">
             <button
               onClick={toggleExpanded}
-              className="text-sm text-[#333333]/70 hover:text-[#F28B82] transition-colors flex items-center justify-center gap-1 group w-full"
+              className="text-sm text-[#333333]/70 hover:text-[#F28B82] transition-colors flex items-center justify-center gap-1 group w-full cursor-pointer"
             >
               <span>{isExpanded ? 'Show Less' : `View all ${activeTab}`}</span>
               {isExpanded ? (

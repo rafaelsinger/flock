@@ -146,7 +146,7 @@ const Step0: FC = () => {
               whileTap={selectedYear && !isSubmitting ? { scale: 0.98 } : {}}
               className={`px-8 py-3 rounded-xl transition-all text-base md:text-lg font-medium w-full sm:w-auto sm:min-w-[180px] ${
                 selectedYear && !isSubmitting
-                  ? 'bg-gradient-to-r from-[#F28B82] to-[#E67C73] text-white shadow-md hover:shadow-lg'
+                  ? 'bg-gradient-to-r from-[#F28B82] to-[#E67C73] text-white shadow-md hover:shadow-lg cursor-pointer'
                   : 'bg-[#F9C5D1]/50 cursor-not-allowed text-white/70'
               }`}
             >

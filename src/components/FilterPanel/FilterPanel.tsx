@@ -60,11 +60,14 @@ const SavedFilter = ({
     >
       <button
         onClick={onSelect}
-        className="flex-1 text-left text-sm font-medium text-[#333333] hover:text-[#F28B82] transition-colors"
+        className="flex-1 text-left text-sm font-medium text-[#333333] hover:text-[#F28B82] transition-colors cursor-pointer"
       >
         {name}
       </button>
-      <button onClick={onDelete} className="text-gray-400 hover:text-[#F28B82] transition-colors">
+      <button
+        onClick={onDelete}
+        className="text-gray-400 hover:text-[#F28B82] transition-colors cursor-pointer"
+      >
         <Trash2 className="h-4 w-4" />
       </button>
     </motion.div>
@@ -201,7 +204,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
                 </h3>
                 <motion.button
                   onClick={() => setIsOpen(false)}
-                  className="text-gray-400 hover:text-[#F28B82] transition-colors rounded-full p-1 hover:bg-[#F9C5D1]/10"
+                  className="text-gray-400 hover:text-[#F28B82] transition-colors rounded-full p-1 hover:bg-[#F9C5D1]/10 cursor-pointer"
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
                 >
@@ -272,7 +275,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
                           state: '', // Reset state when country changes
                         })
                       }
-                      className={inputClasses}
+                      className={inputClasses + ' cursor-pointer'}
                     >
                       <option value="">All Countries</option>
                       {COUNTRIES.map(({ value, label }) => (
@@ -304,7 +307,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
                             state: e.target.value,
                           });
                         }}
-                        className={inputClasses}
+                        className={inputClasses + ' cursor-pointer'}
                       >
                         <option value="">All States</option>
                         {US_STATES.map(({ value, label }) => (
@@ -363,7 +366,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
                         <motion.button
                           onClick={handleSaveFilter}
                           disabled={!filterName}
-                          className={`px-4 py-2 rounded-lg ${!filterName ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-[#F28B82] text-white hover:bg-[#F28B82]/90 shadow-sm'}`}
+                          className={`px-4 py-2 rounded-lg ${!filterName ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-[#F28B82] text-white hover:bg-[#F28B82]/90 shadow-sm cursor-pointer'}`}
                           whileHover={filterName ? { scale: 1.03 } : {}}
                           whileTap={filterName ? { scale: 0.97 } : {}}
                         >
@@ -377,7 +380,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
                 <div className="pt-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 border-t border-gray-100">
                   <motion.button
                     onClick={() => setShowSaveForm(!showSaveForm)}
-                    className="flex items-center gap-2 text-sm text-[#F28B82] hover:text-[#E67C73] transition-colors"
+                    className="flex items-center gap-2 text-sm text-[#F28B82] hover:text-[#E67C73] transition-colors cursor-pointer"
                     whileHover={{ scale: 1.03 }}
                     whileTap={{ scale: 0.97 }}
                   >
@@ -400,7 +403,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
                         lookingForRoommate: currentFilters.lookingForRoommate,
                       });
                     }}
-                    className="flex items-center gap-2 text-sm text-gray-500 hover:text-[#333333] transition-colors"
+                    className="flex items-center gap-2 text-sm text-gray-500 hover:text-[#333333] transition-colors cursor-pointer"
                     whileHover={{ scale: 1.03 }}
                     whileTap={{ scale: 0.97 }}
                   >
@@ -425,7 +428,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
                   });
                   setIsOpen(false);
                 }}
-                className="w-full bg-gradient-to-r from-[#F9C5D1] to-[#F28B82] text-white py-3 rounded-lg font-medium flex items-center justify-center gap-2 shadow-sm hover:shadow-md transition-shadow"
+                className="w-full bg-gradient-to-r from-[#F9C5D1] to-[#F28B82] text-white py-3 rounded-lg font-medium flex items-center justify-center gap-2 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >

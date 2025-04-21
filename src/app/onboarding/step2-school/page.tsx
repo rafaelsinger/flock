@@ -190,7 +190,7 @@ const Step2School: FC = () => {
               onClick={() => router.back()}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="px-6 py-3 rounded-xl border-2 border-gray-200 text-[#666666] hover:text-[#333333] hover:border-gray-300 transition-all font-medium"
+              className="px-6 py-3 rounded-xl border-2 border-gray-200 text-[#666666] hover:text-[#333333] hover:border-gray-300 transition-all font-medium cursor-pointer"
             >
               Back
             </motion.button>
@@ -201,7 +201,7 @@ const Step2School: FC = () => {
               whileTap={isFormValid && !isSubmitting ? { scale: 0.98 } : {}}
               className={`px-8 py-3 rounded-xl transition-all text-base md:text-lg font-medium min-w-[120px] ${
                 isFormValid && !isSubmitting
-                  ? 'bg-gradient-to-r from-[#7BC0F5] to-[#5BAAE7] text-white shadow-md hover:shadow-lg'
+                  ? 'bg-gradient-to-r from-[#7BC0F5] to-[#5BAAE7] text-white shadow-md hover:shadow-lg cursor-pointer'
                   : 'bg-[#A7D7F9]/50 cursor-not-allowed text-white/70'
               }`}
             >

@@ -447,7 +447,7 @@ export const FlockMap: React.FC<FlockMapProps> = ({ onCitySelect, showAllClassYe
               });
             }
           }}
-          className={`absolute top-4 right-16 p-2 bg-white rounded-lg shadow-md border hover:bg-gray-50 transition z-10 text-[#333]`}
+          className={`absolute top-4 right-16 p-2 bg-white rounded-lg shadow-md border hover:bg-gray-50 transition z-10 text-[#333] cursor-pointer`}
         >
           Back to USA
         </button>
@@ -455,7 +455,7 @@ export const FlockMap: React.FC<FlockMapProps> = ({ onCitySelect, showAllClassYe
 
       <button
         onClick={toggleFullscreen}
-        className={`absolute top-4 p-2 bg-white rounded-lg shadow-md border hover:bg-gray-50 transition z-10 text-[#333] right-4`}
+        className={`absolute top-4 p-2 bg-white rounded-lg shadow-md border hover:bg-gray-50 transition z-10 text-[#333] right-4 cursor-pointer`}
       >
         {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
       </button>

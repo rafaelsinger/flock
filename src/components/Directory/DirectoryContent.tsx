@@ -268,7 +268,7 @@ export const DirectoryContent: React.FC<DirectoryContentProps> = ({ filters, onF
               />
               {searchQuery && (
                 <button
-                  className="absolute inset-y-0 right-4 flex items-center"
+                  className="absolute inset-y-0 right-4 flex items-center cursor-pointer"
                   onClick={() => setSearchQuery('')}
                 >
                   <MdClear className="h-5 w-5 text-gray-400 hover:text-[#F28B82]" />
@@ -286,7 +286,7 @@ export const DirectoryContent: React.FC<DirectoryContentProps> = ({ filters, onF
                     activeTypeFilter === 'all'
                       ? 'bg-[#F9C5D1]/10 text-[#F28B82] font-medium'
                       : 'text-gray-600 hover:bg-gray-100'
-                  } transition-all text-sm`}
+                  } transition-all text-sm cursor-pointer`}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
@@ -299,7 +299,7 @@ export const DirectoryContent: React.FC<DirectoryContentProps> = ({ filters, onF
                     activeTypeFilter === 'work'
                       ? 'bg-[#F9C5D1]/10 text-[#F28B82] font-medium'
                       : 'text-gray-600 hover:bg-gray-100'
-                  } transition-all text-sm flex items-center gap-1.5`}
+                  } transition-all text-sm flex items-center gap-1.5 cursor-pointer`}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
@@ -313,7 +313,7 @@ export const DirectoryContent: React.FC<DirectoryContentProps> = ({ filters, onF
                     activeTypeFilter === 'school'
                       ? 'bg-[#A7D7F9]/10 text-[#A7D7F9] font-medium'
                       : 'text-gray-600 hover:bg-gray-100'
-                  } transition-all text-sm flex items-center gap-1.5`}
+                  } transition-all text-sm flex items-center gap-1.5 cursor-pointer`}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
@@ -327,7 +327,7 @@ export const DirectoryContent: React.FC<DirectoryContentProps> = ({ filters, onF
                     activeTypeFilter === 'internship'
                       ? 'bg-[#A7D7F9]/10 text-[#A7D7F9] font-medium'
                       : 'text-gray-600 hover:bg-gray-100'
-                  } transition-all text-sm flex items-center gap-1.5`}
+                  } transition-all text-sm flex items-center gap-1.5 cursor-pointer`}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
@@ -344,7 +344,7 @@ export const DirectoryContent: React.FC<DirectoryContentProps> = ({ filters, onF
                     showRoommateOnly
                       ? 'bg-[#8FC9A9]/10 text-[#8FC9A9] font-medium'
                       : 'text-gray-600 hover:bg-gray-100'
-                  } transition-all text-sm flex items-center gap-1.5`}
+                  } transition-all text-sm flex items-center gap-1.5 cursor-pointer`}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
@@ -359,7 +359,7 @@ export const DirectoryContent: React.FC<DirectoryContentProps> = ({ filters, onF
                       isMyCityActive
                         ? 'bg-[#A7D7F9]/10 text-[#A7D7F9] font-medium'
                         : 'text-gray-600 hover:bg-gray-100'
-                    } transition-all text-sm flex items-center gap-1.5`}
+                    } transition-all text-sm flex items-center gap-1.5 cursor-pointer`}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
@@ -376,7 +376,7 @@ export const DirectoryContent: React.FC<DirectoryContentProps> = ({ filters, onF
                       !filters.showAllClassYears
                         ? 'bg-[#F9C5D1]/10 text-[#F28B82] font-medium'
                         : 'text-gray-600 hover:bg-gray-100'
-                    } transition-all text-sm flex items-center gap-1.5`}
+                    } transition-all text-sm flex items-center gap-1.5 cursor-pointer`}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
@@ -413,7 +413,7 @@ export const DirectoryContent: React.FC<DirectoryContentProps> = ({ filters, onF
                           setActiveTypeFilter('all');
                           onFiltersChange({ ...filters, postGradType: undefined });
                         }}
-                        className="ml-1 text-gray-500 hover:text-[#F28B82]"
+                        className="ml-1 text-gray-500 hover:text-[#F28B82] cursor-pointer"
                       >
                         <MdClear size={14} />
                       </button>
@@ -432,7 +432,7 @@ export const DirectoryContent: React.FC<DirectoryContentProps> = ({ filters, onF
                       {searchQuery.length > 15 ? `${searchQuery.substring(0, 15)}...` : searchQuery}
                       <button
                         onClick={() => setSearchQuery('')}
-                        className="ml-1 text-gray-500 hover:text-[#F28B82]"
+                        className="ml-1 text-gray-500 hover:text-[#F28B82] cursor-pointer"
                       >
                         <MdClear size={14} />
                       </button>
@@ -458,7 +458,7 @@ export const DirectoryContent: React.FC<DirectoryContentProps> = ({ filters, onF
                             city: undefined,
                           })
                         }
-                        className="ml-1 text-gray-500 hover:text-[#F28B82]"
+                        className="ml-1 text-gray-500 hover:text-[#F28B82] cursor-pointer"
                       >
                         <MdClear size={14} />
                       </button>
@@ -484,7 +484,7 @@ export const DirectoryContent: React.FC<DirectoryContentProps> = ({ filters, onF
                             city: undefined,
                           })
                         }
-                        className="ml-1 text-gray-500 hover:text-[#F28B82]"
+                        className="ml-1 text-gray-500 hover:text-[#F28B82] cursor-pointer"
                       >
                         <MdClear size={14} />
                       </button>
@@ -504,7 +504,7 @@ export const DirectoryContent: React.FC<DirectoryContentProps> = ({ filters, onF
                         onClick={() =>
                           onFiltersChange({ ...filters, state: undefined, city: undefined })
                         }
-                        className="ml-1 text-gray-500 hover:text-[#F28B82]"
+                        className="ml-1 text-gray-500 hover:text-[#F28B82] cursor-pointer"
                       >
                         <MdClear size={14} />
                       </button>
@@ -522,7 +522,7 @@ export const DirectoryContent: React.FC<DirectoryContentProps> = ({ filters, onF
                       City: {filters.city}
                       <button
                         onClick={() => onFiltersChange({ ...filters, city: undefined })}
-                        className="ml-1 text-gray-500 hover:text-[#F28B82]"
+                        className="ml-1 text-gray-500 hover:text-[#F28B82] cursor-pointer"
                       >
                         <MdClear size={14} />
                       </button>
@@ -544,7 +544,7 @@ export const DirectoryContent: React.FC<DirectoryContentProps> = ({ filters, onF
                           setShowRoommateOnly(false);
                           onFiltersChange({ ...filters, lookingForRoommate: undefined });
                         }}
-                        className="ml-1 text-gray-500 hover:text-[#F28B82]"
+                        className="ml-1 text-gray-500 hover:text-[#F28B82] cursor-pointer"
                       >
                         <MdClear size={14} />
                       </button>
@@ -553,7 +553,7 @@ export const DirectoryContent: React.FC<DirectoryContentProps> = ({ filters, onF
 
                   <button
                     onClick={handleClearFilters}
-                    className="ml-auto text-xs px-3 py-1 text-[#F28B82] hover:text-[#E67C73] transition-colors flex items-center gap-1"
+                    className="ml-auto text-xs px-3 py-1 text-[#F28B82] hover:text-[#E67C73] transition-colors flex items-center gap-1 cursor-pointer"
                   >
                     <MdClear size={14} />
                     Clear all
@@ -588,7 +588,7 @@ export const DirectoryContent: React.FC<DirectoryContentProps> = ({ filters, onF
 
           <motion.button
             onClick={() => refetch()}
-            className="text-sm flex items-center gap-1 text-[#666666] hover:text-[#F28B82] transition-colors px-3 py-2 rounded-lg hover:bg-white"
+            className="text-sm flex items-center gap-1 text-[#666666] hover:text-[#F28B82] transition-colors px-3 py-2 rounded-lg hover:bg-white cursor-pointer"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
@@ -620,7 +620,7 @@ export const DirectoryContent: React.FC<DirectoryContentProps> = ({ filters, onF
                 </p>
                 <motion.button
                   onClick={() => refetch()}
-                  className="px-4 py-2 bg-[#F9C5D1]/10 text-[#F28B82] rounded-lg hover:bg-[#F9C5D1]/20 transition-all"
+                  className="px-4 py-2 bg-[#F9C5D1]/10 text-[#F28B82] rounded-lg hover:bg-[#F9C5D1]/20 transition-all cursor-pointer"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
