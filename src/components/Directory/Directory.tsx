@@ -4,12 +4,15 @@ import React, { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { FaUserCircle } from 'react-icons/fa';
+import { IoMdMail } from 'react-icons/io';
 import { DirectoryContent } from './DirectoryContent';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Footer } from '@/components/Footer';
 import { TopDestinations } from '@/components/TopDestinations';
 import { FlockMap } from '../Map/Map';
+import { useMessageStore } from '@/store/messageStore';
+import { Message } from '@prisma/client';
 
 interface FilterOptions {
   postGradType?: 'work' | 'school' | 'internship' | 'all';
@@ -30,6 +33,15 @@ export const Directory = () => {
   });
   const [greeting, setGreeting] = useState('');
   const directoryContentRef = useRef<HTMLDivElement>(null);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const messages = useMessageStore((state) => state.messages);
+
+  useEffect(() => {
+    const unreadMessages = messages.reduce((count: number, message: Message) => {
+      return count + (message.read ? 0 : 1);
+    }, 0);
+    setUnreadCount(unreadMessages);
+  }, [messages]);
 
   const userId = session?.user?.id;
   const isOnboarded = session?.user?.isOnboarded;
@@ -185,14 +197,25 @@ export const Directory = () => {
                   </motion.div>
                 </div>
 
-                {/* Profile Link */}
+                {/* Messages and Profile Links */}
                 {userId ? (
                   <motion.div
-                    className="mt-4 md:mt-0"
+                    className="mt-4 md:mt-0 flex items-center gap-3"
                     initial={{ x: 10, opacity: 0 }}
                     animate={{ x: 0, opacity: 1 }}
                     transition={{ delay: 0.3 }}
                   >
+                    <Link
+                      href="/conversations"
+                      className="inline-flex items-center px-4 py-2 rounded-full bg-[#F9C5D1]/10 text-[#F28B82] hover:bg-[#F9C5D1]/20 transition-all hover:scale-105 group relative"
+                    >
+                      <IoMdMail className="w-6 h-6 group-hover:animate-pulse" />
+                      {unreadCount > 0 && (
+                        <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                          {unreadCount}
+                        </span>
+                      )}
+                    </Link>
                     <Link
                       href={`/profile/${userId}`}
                       className="inline-flex items-center px-4 py-2 rounded-full bg-[#F9C5D1]/10 text-[#F28B82] hover:bg-[#F9C5D1]/20 transition-all hover:scale-105 group"

@@ -55,6 +55,10 @@ model User {
   isOnboarded       Boolean      @default(false) @map("is_onboarded")
   industry          Industry?    @relation(fields: [industryId], references: [id])
   location          Location?    @relation(fields: [locationId], references: [id])
+  sentMessages      Message[]    @relation("SentMessages")
+  receivedMessages  Message[]    @relation("ReceivedMessages")
+  conversationsAsSender    Conversation[] @relation("ConversationSender")
+  conversationsAsReceiver  Conversation[] @relation("ConversationReceiver")
 
   @@map("users")
 }
@@ -96,6 +100,44 @@ model VerificationToken {
 
   @@id([identifier, token])
   @@map("verification_tokens")
+}
+
+model Conversation {
+  id                 String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  senderId          String        @map("sender_id") @db.Uuid
+  receiverId        String        @map("receiver_id") @db.Uuid
+  sender            User          @relation("ConversationSender", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver          User          @relation("ConversationReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+  messages           Message[]
+  createdAt          DateTime      @default(now()) @map("created_at")
+  lastMessageAt      DateTime      @default(now()) @map("last_message_at")
+  lastMessagePreview String?       @map("last_message_preview") @db.Text
+  senderUnreadCount Int           @default(0) @map("sender_unread_count")
+  receiverUnreadCount Int           @default(0) @map("receiver_unread_count")
+
+  @@unique([senderId, receiverId])
+  @@index([senderId])
+  @@index([receiverId])
+  @@map("conversations")
+}
+
+model Message {
+  id             String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  conversationId String       @map("conversation_id") @db.Uuid
+  senderId       String       @map("sender_id") @db.Uuid
+  receiverId     String       @map("receiver_id") @db.Uuid
+  content        String       @db.Text
+  read           Boolean      @default(false)
+  createdAt      DateTime     @default(now()) @map("created_at")
+
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender         User         @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver       User         @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+  @@index([senderId])
+  @@index([receiverId])
+  @@map("messages")
 }
 
 enum PostGradType {

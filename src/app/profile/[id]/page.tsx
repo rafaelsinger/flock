@@ -21,6 +21,7 @@ import {
   isRoleVisible,
   isCompanyVisible,
   UpdateUser,
+  User,
 } from '@/types/user';
 import { CitySelect } from '@/components/Select/CitySelect';
 import { PostGradType } from '@prisma/client';
@@ -268,7 +269,7 @@ const ProfilePage: FC = () => {
 };
 
 interface ViewModeProps {
-  userData: UpdateUser;
+  userData: User;
   isOwnProfile: boolean;
   onEdit: () => void;
 }
@@ -352,8 +353,31 @@ const ViewMode = ({ userData, isOwnProfile, onEdit }: ViewModeProps) => {
       animate="visible"
       exit="exit"
     >
-      {isOwnProfile && (
-        <div className="absolute top-0 right-0">
+      {/* Action buttons container */}
+      <div className="absolute top-0 right-0 flex space-x-3">
+        {!isOwnProfile && (
+          <Link
+            href={`/conversations/${userData.id}`}
+            className="inline-flex items-center px-4 py-2 rounded-lg bg-[#F9C5D1]/10 text-[#F28B82] hover:bg-[#F9C5D1]/20 transition-all cursor-pointer"
+          >
+            <svg
+              className="w-4 h-4 mr-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
+              />
+            </svg>
+            Message
+          </Link>
+        )}
+        {isOwnProfile && (
           <motion.button
             onClick={onEdit}
             whileHover={{ scale: 1.05 }}
@@ -363,8 +387,8 @@ const ViewMode = ({ userData, isOwnProfile, onEdit }: ViewModeProps) => {
             <FaEdit className="mr-2" />
             Edit Profile
           </motion.button>
-        </div>
-      )}
+        )}
+      </div>
 
       <div className="flex flex-col md:flex-row md:items-start gap-6 pt-16 sm:pt-0">
         {renderProfileIcon()}
