@@ -633,6 +633,68 @@ const EditForm = ({
 
   const [activeField, setActiveField] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Form validation
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+
+    // Required for all users
+    if (!userData.name?.trim()) {
+      newErrors.name = 'Name is required';
+    }
+
+    if (!userData.email?.trim()) {
+      newErrors.email = 'Email is required';
+    }
+
+    // For working or internship users
+    if ((isWork || isInternship) && userData.postGradType !== PostGradType.seeking) {
+      if (!userData.title?.trim()) {
+        newErrors.title = 'Role is required';
+      }
+      if (!userData.company?.trim()) {
+        newErrors.company = 'Company is required';
+      }
+    }
+
+    // For students
+    if (isSchool && userData.postGradType !== PostGradType.seeking) {
+      if (!userData.school?.trim()) {
+        newErrors.school = 'School is required';
+      }
+      if (!userData.program?.trim()) {
+        newErrors.program = 'Program type is required';
+      }
+      if (!userData.discipline?.trim()) {
+        newErrors.discipline = 'Discipline is required';
+      }
+    }
+
+    // Location check for all types except "seeking"
+    if (userData.postGradType !== PostGradType.seeking && !userData.location?.city) {
+      newErrors.location = 'Location is required';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  // Handle form submit with validation
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (validateForm()) {
+      onSave();
+    } else {
+      // Scroll to first error
+      const firstErrorField = Object.keys(errors)[0];
+      const errorElement = document.getElementById(firstErrorField);
+      if (errorElement) {
+        errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        errorElement.focus();
+      }
+    }
+  };
 
   // Animation variants for input fields
   const inputVariants = {
@@ -693,10 +755,7 @@ const EditForm = ({
 
   return (
     <motion.form
-      onSubmit={(e) => {
-        e.preventDefault();
-        onSave();
-      }}
+      onSubmit={handleSubmit}
       className="space-y-6"
       variants={containerVariants}
       initial="hidden"
@@ -717,11 +776,17 @@ const EditForm = ({
             id="name"
             type="text"
             value={userData.name || ''}
-            onChange={(e) => setUserData({ ...userData, name: e.target.value })}
+            onChange={(e) => {
+              setUserData({ ...userData, name: e.target.value });
+              if (errors.name) {
+                setErrors({ ...errors, name: '' });
+              }
+            }}
             onFocus={() => setActiveField('name')}
             onBlur={() => setActiveField(null)}
-            className={inputClasses}
+            className={`${inputClasses} ${errors.name ? 'border-red-400 bg-red-50' : ''}`}
           />
+          {errors.name && <p className="mt-1 text-sm text-red-500">{errors.name}</p>}
         </motion.div>
       </motion.div>
 
@@ -747,11 +812,17 @@ const EditForm = ({
             id="email"
             type="email"
             value={userData.email || ''}
-            onChange={(e) => setUserData({ ...userData, email: e.target.value })}
+            onChange={(e) => {
+              setUserData({ ...userData, email: e.target.value });
+              if (errors.email) {
+                setErrors({ ...errors, email: '' });
+              }
+            }}
             onFocus={() => setActiveField('email')}
             onBlur={() => setActiveField(null)}
-            className={inputClasses}
+            className={`${inputClasses} ${errors.email ? 'border-red-400 bg-red-50' : ''}`}
           />
+          {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email}</p>}
         </motion.div>
       </motion.div>
 
@@ -813,17 +884,23 @@ const EditForm = ({
               animate={activeField === 'role' ? 'focus' : 'blur'}
             >
               {isWork || isInternship ? (
-                <input
-                  id="role"
-                  type="text"
-                  value={userData.title || ''}
-                  onChange={(e) => {
-                    setUserData({ ...userData, title: e.target.value });
-                  }}
-                  onFocus={() => setActiveField('role')}
-                  onBlur={() => setActiveField(null)}
-                  className={inputClasses}
-                />
+                <>
+                  <input
+                    id="title"
+                    type="text"
+                    value={userData.title || ''}
+                    onChange={(e) => {
+                      setUserData({ ...userData, title: e.target.value });
+                      if (errors.title) {
+                        setErrors({ ...errors, title: '' });
+                      }
+                    }}
+                    onFocus={() => setActiveField('role')}
+                    onBlur={() => setActiveField(null)}
+                    className={`${inputClasses} ${errors.title ? 'border-red-400 bg-red-50' : ''}`}
+                  />
+                  {errors.title && <p className="mt-1 text-sm text-red-500">{errors.title}</p>}
+                </>
               ) : null}
             </motion.div>
           </motion.div>
@@ -842,22 +919,40 @@ const EditForm = ({
               animate={activeField === 'company' ? 'focus' : 'blur'}
             >
               {isWork || isInternship ? (
-                <input
-                  id="company"
-                  type="text"
-                  value={userData.company || ''}
-                  onChange={(e) => {
-                    setUserData({ ...userData, company: e.target.value });
-                  }}
-                  onFocus={() => setActiveField('company')}
-                  onBlur={() => setActiveField(null)}
-                  className={inputClasses}
-                />
+                <>
+                  <input
+                    id="company"
+                    type="text"
+                    value={userData.company || ''}
+                    onChange={(e) => {
+                      setUserData({ ...userData, company: e.target.value });
+                      if (errors.company) {
+                        setErrors({ ...errors, company: '' });
+                      }
+                    }}
+                    onFocus={() => setActiveField('company')}
+                    onBlur={() => setActiveField(null)}
+                    className={`${inputClasses} ${errors.company ? 'border-red-400 bg-red-50' : ''}`}
+                  />
+                  {errors.company && <p className="mt-1 text-sm text-red-500">{errors.company}</p>}
+                </>
               ) : (
-                <SchoolSelect
-                  value={userData.school || ''}
-                  onChange={(school) => setUserData({ ...userData, school })}
-                />
+                <>
+                  <div
+                    className={errors.school ? 'border border-red-400 rounded-lg bg-red-50' : ''}
+                  >
+                    <SchoolSelect
+                      value={userData.school || ''}
+                      onChange={(school) => {
+                        setUserData({ ...userData, school });
+                        if (errors.school) {
+                          setErrors({ ...errors, school: '' });
+                        }
+                      }}
+                    />
+                  </div>
+                  {errors.school && <p className="mt-1 text-sm text-red-500">{errors.school}</p>}
+                </>
               )}
             </motion.div>
           </motion.div>
@@ -873,10 +968,20 @@ const EditForm = ({
                   variants={inputVariants}
                   animate={activeField === 'program' ? 'focus' : 'blur'}
                 >
-                  <ProgramTypeSelect
-                    value={userData.program || ''}
-                    onChange={(program) => setUserData({ ...userData, program })}
-                  />
+                  <div
+                    className={errors.program ? 'border border-red-400 rounded-lg bg-red-50' : ''}
+                  >
+                    <ProgramTypeSelect
+                      value={userData.program || ''}
+                      onChange={(program) => {
+                        setUserData({ ...userData, program });
+                        if (errors.program) {
+                          setErrors({ ...errors, program: '' });
+                        }
+                      }}
+                    />
+                  </div>
+                  {errors.program && <p className="mt-1 text-sm text-red-500">{errors.program}</p>}
                 </motion.div>
               </motion.div>
 
@@ -889,10 +994,24 @@ const EditForm = ({
                   variants={inputVariants}
                   animate={activeField === 'discipline' ? 'focus' : 'blur'}
                 >
-                  <DisciplineSelect
-                    value={userData.discipline || ''}
-                    onChange={(discipline) => setUserData({ ...userData, discipline })}
-                  />
+                  <div
+                    className={
+                      errors.discipline ? 'border border-red-400 rounded-lg bg-red-50' : ''
+                    }
+                  >
+                    <DisciplineSelect
+                      value={userData.discipline || ''}
+                      onChange={(discipline) => {
+                        setUserData({ ...userData, discipline });
+                        if (errors.discipline) {
+                          setErrors({ ...errors, discipline: '' });
+                        }
+                      }}
+                    />
+                  </div>
+                  {errors.discipline && (
+                    <p className="mt-1 text-sm text-red-500">{errors.discipline}</p>
+                  )}
                 </motion.div>
               </motion.div>
             </>
@@ -935,25 +1054,31 @@ const EditForm = ({
           Location
         </label>
         <motion.div variants={inputVariants} animate={activeField === 'city' ? 'focus' : 'blur'}>
-          <CitySelect
-            value={`${userData.location?.city}${userData.location?.state ? `, ${userData.location?.state}` : ''}${
-              userData.location?.country && userData.location?.country !== 'USA'
-                ? `, ${userData.location?.country}`
-                : ''
-            }`}
-            onChange={(location) => {
-              setUserData({
-                ...userData,
-                location: {
-                  city: location.city,
-                  state: location.state,
-                  country: location.country,
-                  lat: location.lat,
-                  lon: location.lon,
-                },
-              });
-            }}
-          />
+          <div className={errors.location ? 'border border-red-400 rounded-lg bg-red-50' : ''}>
+            <CitySelect
+              value={`${userData.location?.city}${userData.location?.state ? `, ${userData.location?.state}` : ''}${
+                userData.location?.country && userData.location?.country !== 'USA'
+                  ? `, ${userData.location?.country}`
+                  : ''
+              }`}
+              onChange={(location) => {
+                setUserData({
+                  ...userData,
+                  location: {
+                    city: location.city,
+                    state: location.state,
+                    country: location.country,
+                    lat: location.lat,
+                    lon: location.lon,
+                  },
+                });
+                if (errors.location) {
+                  setErrors({ ...errors, location: '' });
+                }
+              }}
+            />
+          </div>
+          {errors.location && <p className="mt-1 text-sm text-red-500">{errors.location}</p>}
         </motion.div>
       </motion.div>
 
