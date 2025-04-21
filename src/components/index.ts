@@ -7,6 +7,6 @@ export { FilterPanel } from './FilterPanel/FilterPanel';
 export { Hero } from './Hero';
 export { LandingPage } from './LandingPage';
 export { Map } from './Map';
-export { OnboardingProgress } from './OnboardingProgress';
+export { OnboardingProgress, OnboardingButton } from './OnboardingProgress';
 export { SearchBar } from './SearchBar';
 export { UserGrid } from './UserGrid';

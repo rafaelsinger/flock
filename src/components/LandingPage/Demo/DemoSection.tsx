@@ -114,7 +114,7 @@ export const DemoSection = ({ isVisible, handleSignIn, demoRef }: DemoSectionPro
                   <Button
                     onClick={handleSignIn}
                     size="large"
-                    className="bg-[#F28B82] hover:bg-[#F28B82]/90 text-white shadow-md w-full sm:w-auto px-10 py-4 text-lg hover:translate-y-[-2px] transition-all"
+                    className="bg-[#F28B82] hover:bg-[#F28B82]/90 text-white shadow-md px-10 py-4 text-lg hover:translate-y-[-2px] transition-all"
                   >
                     Sign in to unlock
                   </Button>
