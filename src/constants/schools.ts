@@ -3995,7 +3995,6 @@ export const schools: School[] = [
 ];
 
 export const programTypes = [
-  "Bachelor's",
   "Master's",
   'Ph.D.',
   'J.D.', // Law degree
