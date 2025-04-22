@@ -35,8 +35,7 @@ export default function ConversationsPage() {
     fetchConversations();
   }, [messages, session]);
 
-  const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr);
+  const formatDate = (date: Date) => {
     const now = new Date();
     const yesterday = new Date(now);
     yesterday.setDate(now.getDate() - 1);
