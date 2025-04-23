@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react';
 import { useMessageStore } from '@/store/messageStore';
 import { ConversationWithUsers } from '@/types/conversations';
 import { ArrowLeft, MessageCircle, User } from 'lucide-react';
+import { conversationWithUserSchema } from '@/schemas/conversations';
 
 export default function ConversationsPage() {
   const { data: session } = useSession();
@@ -24,7 +25,10 @@ export default function ConversationsPage() {
         const response = await fetch(`/api/conversations`);
         if (!response.ok) throw new Error('Failed to fetch conversations');
         const conversations = await response.json();
-        setConversations(conversations);
+        const parsedConversations = conversations.map((convo: unknown) =>
+          conversationWithUserSchema.parse(convo)
+        );
+        setConversations(parsedConversations);
       } catch (error) {
         console.error('Error fetching conversations:', error);
       } finally {
