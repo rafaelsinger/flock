@@ -48,6 +48,7 @@ const mobileFilterVariants = {
   visible: {
     height: 'auto',
     opacity: 1,
+    overflow: 'visible',
     transition: {
       height: { type: 'spring', stiffness: 300, damping: 30 },
       opacity: { duration: 0.2 },
@@ -253,7 +254,7 @@ export const DirectoryContent: React.FC<DirectoryContentProps> = ({ filters, onF
         ...filters,
         city: userCity,
         state: userState,
-        country: 'USA',
+        country: 'United States',
       });
     }
   };
