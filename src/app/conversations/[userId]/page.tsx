@@ -16,7 +16,6 @@ export default function ConversationPage() {
   const [conversation, setConversation] = useState<ConversationWithMessages | null>(null);
   const [newMessage, setNewMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messageContainerRef = useRef<HTMLDivElement>(null);
   const userId = usePathname().split('/')[2];
@@ -29,7 +28,6 @@ export default function ConversationPage() {
     if (!session?.user?.id) return;
 
     const fetchConversation = async () => {
-      setIsLoading(true);
       try {
         const response = await fetch(`/api/conversations/${userId}`);
         if (!response.ok) throw new Error('Failed to fetch conversation');
@@ -37,8 +35,6 @@ export default function ConversationPage() {
         setConversation(data);
       } catch (error) {
         console.error('Error fetching conversation:', error);
-      } finally {
-        setIsLoading(false);
       }
     };
 
@@ -117,7 +113,7 @@ export default function ConversationPage() {
     });
   };
 
-  if (isLoading) {
+  if (!conversation) {
     return (
       <div className="min-h-screen bg-[#FFF9F8] flex flex-col">
         <div className="container max-w-4xl mx-auto px-4 py-8 flex-grow">
