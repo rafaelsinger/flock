@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import { UserWithLocation, getDisplayCompany, getDisplayRole } from '@/types/user';
 import { motion } from 'framer-motion';
+import { CURRENT_CLASS_YEAR } from '@/constants/general';
 
 interface UserCardProps {
   user: UserWithLocation;
@@ -69,12 +70,12 @@ export const UserCard: React.FC<UserCardProps> = ({ user, prefetch = false }) =>
   // Determine status and styling based on career/education path and class year
   const getPostGradStatus = () => {
     // For users not in class of 2025, use a gold/yellow theme regardless of career/education path
-    if (user.classYear !== 2025) {
+    if (user.classYear !== CURRENT_CLASS_YEAR) {
       return {
         Icon: user.postGradType === 'school' ? GraduationCap : Briefcase,
         color: '#F4B942', // Gold/yellow color
         bgColor: 'bg-[#F4B942]/10',
-        status: user.classYear < 2025 ? 'alumni' : 'intern',
+        status: user.classYear < CURRENT_CLASS_YEAR ? 'alumni' : 'intern',
       };
     }
 

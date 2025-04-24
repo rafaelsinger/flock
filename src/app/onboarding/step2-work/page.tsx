@@ -9,12 +9,13 @@ import { motion } from 'framer-motion';
 import { BsBriefcase, BsBuilding, BsPerson } from 'react-icons/bs';
 import { OnboardingProgress, OnboardingButton } from '@/components';
 import { PostGradType } from '@prisma/client';
+import { CURRENT_CLASS_YEAR } from '@/constants/general';
 
 const Step2Work: FC = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
   const previousData = queryClient.getQueryData(['onboardingData']) as IncompleteUserOnboarding;
-  const isIntern = previousData?.classYear != 2025;
+  const isIntern = previousData?.classYear != CURRENT_CLASS_YEAR;
 
   // Adjust form fields based on user type - now we use the same fields for both
   const [formData, setFormData] = useState({

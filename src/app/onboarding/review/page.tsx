@@ -13,6 +13,7 @@ import { UserOnboarding, UserWithLocation } from '@/types/user';
 import { motion } from 'framer-motion';
 import { OnboardingProgress, OnboardingButton } from '@/components';
 import { PostGradType } from '@prisma/client';
+import { CURRENT_CLASS_YEAR } from '@/constants/general';
 
 const ReviewPage: FC = () => {
   const router = useRouter();
@@ -21,7 +22,7 @@ const ReviewPage: FC = () => {
   const isFinalizingRef = useRef(false);
   const { data: sessionStorage, update } = useSession();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const isIntern = data?.classYear != 2025;
+  const isIntern = data?.classYear != CURRENT_CLASS_YEAR;
 
   const finalizeOnboarding = useMutation({
     mutationFn: async (finalData: UserOnboarding) => {

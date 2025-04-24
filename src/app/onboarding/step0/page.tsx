@@ -6,6 +6,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { IncompleteUserOnboarding } from '@/types/user';
 import { motion } from 'framer-motion';
 import { OnboardingProgress, OnboardingButton } from '@/components';
+import { CURRENT_CLASS_YEAR } from '@/constants/general';
 
 const Step0: FC = () => {
   const router = useRouter();
@@ -50,7 +51,7 @@ const Step0: FC = () => {
   // Helper to display a role indicator for each year option
   const getUserTypeIndicator = (year: string) => {
     const yearNum = parseInt(year);
-    return yearNum === 2025 ? 'New Grad' : 'Intern';
+    return yearNum === CURRENT_CLASS_YEAR ? 'New Grad' : 'Intern';
   };
 
   const containerVariants = {
@@ -125,7 +126,7 @@ const Step0: FC = () => {
                   </span>
                   <span
                     className={`text-xs mt-1 px-2 py-0.5 rounded-full ${
-                      year === '2025'
+                      year === CURRENT_CLASS_YEAR.toString()
                         ? 'bg-[#A7D7F9]/20 text-[#4A90E2]'
                         : 'bg-[#F9C5D1]/20 text-[#E67C73]'
                     }`}

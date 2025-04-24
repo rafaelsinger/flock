@@ -8,6 +8,7 @@ import { motion } from 'framer-motion';
 import { OnboardingProgress, OnboardingButton } from '@/components';
 import { BsEyeSlash, BsEye } from 'react-icons/bs';
 import { PostGradType } from '@prisma/client';
+import { CURRENT_CLASS_YEAR } from '@/constants/general';
 
 // Type definitions
 type SchoolFormData = {
@@ -31,7 +32,7 @@ const Step4: FC = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
   const previousData = queryClient.getQueryData(['onboardingData']) as IncompleteUserOnboarding;
-  const isIntern = previousData?.classYear != 2025;
+  const isIntern = previousData?.classYear != CURRENT_CLASS_YEAR;
 
   const getInitialVisibilityOptions = (): FormData => {
     if (isIntern) {

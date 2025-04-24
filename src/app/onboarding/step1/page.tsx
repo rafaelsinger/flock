@@ -8,8 +8,9 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { PostGradType } from '@prisma/client';
 import { IncompleteUserOnboarding, UserWithLocation } from '@/types/user';
 import { motion } from 'framer-motion';
-import { OnboardingProgress } from '@/components';
+import { OnboardingProgress, OnboardingButton } from '@/components';
 import { useSession } from 'next-auth/react';
+import { CURRENT_CLASS_YEAR } from '@/constants/general';
 
 const Step1: FC = () => {
   const router = useRouter();
@@ -17,52 +18,9 @@ const Step1: FC = () => {
   const [selectedOption, setSelectedOption] = useState<PostGradType | null>(null);
   const { data: sessionStorage, update } = useSession();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
   const previousData = queryClient.getQueryData(['onboardingData']) as IncompleteUserOnboarding;
   const isFinalizingRef = useRef(false);
-  const [localClassYear, setLocalClassYear] = useState<number | null>(null);
-  const isIntern = previousData?.classYear != 2025;
-
-  // Check immediately if classYear exists, before rendering content
-  useEffect(() => {
-    console.log('Checking onboarding data:', previousData);
-
-    // Try to get classYear from session storage if not in query client
-    const loadClassYearFromStorage = () => {
-      try {
-        const savedData = localStorage.getItem('onboardingClassYear');
-        if (savedData) {
-          const classYear = parseInt(savedData, 10);
-          console.log('Retrieved classYear from localStorage:', classYear);
-          setLocalClassYear(classYear);
-          return true;
-        }
-      } catch (e) {
-        console.error('Error accessing localStorage:', e);
-      }
-      return false;
-    };
-
-    if (!previousData || !previousData.classYear) {
-      // Try to recover from localStorage
-      if (loadClassYearFromStorage()) {
-        setIsLoading(false);
-      } else {
-        console.error('Missing required classYear data:', previousData);
-        router.replace('/onboarding/step0');
-      }
-    } else {
-      console.log('Valid onboarding data found:', previousData);
-      // Save to localStorage as backup
-      try {
-        localStorage.setItem('onboardingClassYear', previousData.classYear.toString());
-      } catch (e) {
-        console.error('Error saving to localStorage:', e);
-      }
-      setLocalClassYear(previousData.classYear);
-      setIsLoading(false);
-    }
-  }, [previousData, router]);
+  const isIntern = previousData?.classYear != CURRENT_CLASS_YEAR;
 
   const updateOnboardingData = useMutation({
     mutationFn: (type: PostGradType) => {
@@ -103,8 +61,6 @@ const Step1: FC = () => {
         throw new Error('No user ID found in session');
       }
 
-      console.log('Sending onboarding data to API:', finalData);
-
       const response = await fetch(`/api/users/${sessionStorage.user.id}`, {
         method: 'PUT',
         headers: {
@@ -122,7 +78,6 @@ const Step1: FC = () => {
       return response.json();
     },
     onSuccess: async (user: UserWithLocation) => {
-      console.log('Successfully finalized onboarding:', user);
       try {
         await update({ user });
         queryClient.removeQueries({ queryKey: ['onboardingData'] });
@@ -144,13 +99,13 @@ const Step1: FC = () => {
 
   const handleSelection = (type: PostGradType) => {
     setSelectedOption(type);
-    console.log(`Selected option: ${type}`);
+  };
 
-    if (type === PostGradType.seeking) {
-      console.log('Processing "just looking" option...');
+  const handleContinue = () => {
+    if (!selectedOption) return;
 
-      // Use either previously stored data or local class year
-      const classYear = previousData?.classYear || localClassYear;
+    if (selectedOption === PostGradType.seeking) {
+      const classYear = previousData?.classYear;
 
       if (!classYear) {
         console.error('Missing classYear data. Redirecting to step0');
@@ -158,22 +113,18 @@ const Step1: FC = () => {
         return;
       }
 
-      // Create data object with classYear from either source
       const dataToSubmit: IncompleteUserOnboarding = {
         ...(previousData || {}),
         classYear,
-        postGradType: type,
+        postGradType: selectedOption,
         isOnboarded: true,
       };
 
-      console.log('Finalizing onboarding with seeking option', dataToSubmit);
       finalizeOnboarding.mutate(dataToSubmit);
       return;
     }
 
-    setTimeout(() => {
-      updateOnboardingData.mutate(type);
-    }, 400); // Slight delay for animation
+    updateOnboardingData.mutate(selectedOption);
   };
 
   useEffect(() => {
@@ -183,11 +134,6 @@ const Step1: FC = () => {
     }
     router.prefetch('/');
   }, [router, isIntern]);
-
-  // If loading, return either null or a simple loading indicator to prevent flash
-  if (isLoading) {
-    return null;
-  }
 
   const containerVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -373,6 +319,20 @@ const Step1: FC = () => {
               </motion.div>
             </div>
           )}
+        </div>
+
+        <div className="flex flex-col md:flex-row justify-between mt-6 space-y-4 md:space-y-0 md:space-x-4">
+          <OnboardingButton variant="secondary" onClick={() => router.back()}>
+            Back
+          </OnboardingButton>
+          <OnboardingButton
+            variant="primary"
+            onClick={handleContinue}
+            disabled={!selectedOption || isSubmitting}
+            isLoading={isSubmitting}
+          >
+            Continue
+          </OnboardingButton>
         </div>
       </motion.div>
     </motion.div>

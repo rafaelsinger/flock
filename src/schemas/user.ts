@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { PostGradType } from '@prisma/client';
+import { CURRENT_CLASS_YEAR } from '@/constants/general';
 
 // Location schema
 export const locationSchema = z.object({
@@ -47,7 +48,7 @@ export const graduateFormSchema = z.object({
 
 // Schema for incomplete user onboarding
 export const incompleteUserOnboardingSchema = z.object({
-  classYear: z.number().int().min(2025).max(2035).optional(),
+  classYear: z.number().int().min(CURRENT_CLASS_YEAR).max(2035).optional(),
   postGradType: z.nativeEnum(PostGradType).optional(),
   company: z.string().optional(),
   title: z.string().optional(),

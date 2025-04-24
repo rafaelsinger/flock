@@ -29,6 +29,7 @@ import { ProgramTypeSelect } from '@/components/Select/ProgramTypeSelect';
 import { DisciplineSelect } from '@/components/Select/DisciplineSelect';
 import { PostGradType } from '@prisma/client';
 import { INDUSTRIES } from '@/constants/industries';
+import { CURRENT_CLASS_YEAR } from '@/constants/general';
 
 // Common input classes for consistency with onboarding flow
 const inputClasses =
@@ -413,17 +414,17 @@ const ViewMode = ({ userData, isOwnProfile, onEdit }: ViewModeProps) => {
 
           {/* Graduate type tag based on class year and type */}
           <motion.div className="mb-4" variants={itemVariants}>
-            {isWork && userData.classYear === 2025 && (
+            {isWork && userData.classYear === CURRENT_CLASS_YEAR && (
               <span className="inline-block px-3 py-1 bg-[#F28B82]/10 text-[#F28B82] text-sm font-medium rounded-full">
-                Class of 2025 - Full-time role
+                Class of {CURRENT_CLASS_YEAR} - Full-time role
               </span>
             )}
-            {isSchool && userData.classYear === 2025 && (
+            {isSchool && userData.classYear === CURRENT_CLASS_YEAR && (
               <span className="inline-block px-3 py-1 bg-[#A7D7F9]/10 text-[#A7D7F9] text-sm font-medium rounded-full">
-                Class of 2025 - Graduate school
+                Class of {CURRENT_CLASS_YEAR} - Graduate school
               </span>
             )}
-            {isInternship && userData.classYear !== 2025 && (
+            {isInternship && userData.classYear !== CURRENT_CLASS_YEAR && (
               <span className="inline-block px-3 py-1 bg-[#F4B942]/10 text-[#F4B942] text-sm font-medium rounded-full">
                 Class of {userData.classYear} - Internship
               </span>
@@ -1100,7 +1101,8 @@ const EditForm = ({
             <label htmlFor="looking-for-roommate" className="flex items-center cursor-pointer">
               <FaHome className="text-[#8FC9A9] mr-2" />
               <span className="text-[#333]">
-                I&apos;m looking for roommates in my post-grad destination
+                I&apos;m looking for roommates in my{' '}
+                {userData.classYear !== CURRENT_CLASS_YEAR ? 'summer' : 'post-grad'} destination
               </span>
             </label>
           </div>
