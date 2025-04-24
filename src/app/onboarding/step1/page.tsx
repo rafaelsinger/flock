@@ -20,7 +20,7 @@ const Step1: FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const previousData = queryClient.getQueryData(['onboardingData']) as IncompleteUserOnboarding;
   const isFinalizingRef = useRef(false);
-  const isIntern = previousData?.classYear != CURRENT_CLASS_YEAR;
+  const isIntern = previousData?.classYear ? previousData.classYear !== CURRENT_CLASS_YEAR : false;
 
   const updateOnboardingData = useMutation({
     mutationFn: (type: PostGradType) => {
