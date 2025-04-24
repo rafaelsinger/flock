@@ -13,6 +13,7 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const type = searchParams.get('type') || 'companies';
     const limit = parseInt(searchParams.get('limit') || '6'); // Support for expanded view
+    const classYear = searchParams.get('classYear');
 
     let destinations = [];
 
@@ -27,6 +28,7 @@ export async function GET(request: NextRequest) {
             postGradType: {
               in: ['work', 'internship'],
             },
+            classYear: classYear ? parseInt(classYear) : undefined,
           },
           select: {
             company: true,
@@ -79,6 +81,7 @@ export async function GET(request: NextRequest) {
               not: null,
             },
             postGradType: 'school',
+            classYear: classYear ? parseInt(classYear) : undefined,
           },
           _count: {
             id: true,
@@ -112,6 +115,13 @@ export async function GET(request: NextRequest) {
             _count: {
               select: {
                 users: true,
+              },
+            },
+          },
+          where: {
+            users: {
+              every: {
+                classYear: classYear ? parseInt(classYear) : undefined,
               },
             },
           },

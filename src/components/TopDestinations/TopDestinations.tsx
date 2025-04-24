@@ -55,6 +55,10 @@ export const TopDestinations: React.FC<TopDestinationsProps> = ({ showAllClassYe
         limit: limit.toString(),
       });
 
+      if (!showAllClassYears && userClassYear) {
+        params.append('classYear', userClassYear.toString());
+      }
+
       const response = await fetch(`/api/stats/top-destinations?${params.toString()}`);
       if (!response.ok) {
         throw new Error('Failed to fetch top destinations');
@@ -138,9 +142,13 @@ export const TopDestinations: React.FC<TopDestinationsProps> = ({ showAllClassYe
                   Where BC Eagles are heading for jobs, grad school, and internships
                 </p>
               </div>
-              {userClassYear && (
+              {showAllClassYears ? (
                 <div className="bg-gray-100 px-3 py-1 rounded-full text-xs text-gray-700">
                   {'All class years'}
+                </div>
+              ) : (
+                <div className="bg-gray-100 px-3 py-1 rounded-full text-xs text-gray-700">
+                  {`Class of ${userClassYear}`}
                 </div>
               )}
             </div>
