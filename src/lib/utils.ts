@@ -1,3 +1,5 @@
+import { CURRENT_CLASS_YEAR } from '@/constants/general';
+
 export const capitalize = (text: string): string => {
   if (!text) return text;
   return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
@@ -76,4 +78,9 @@ export function getCustomBuckets(max: number): number[] {
   if (max <= 25) return [5, 10, 15, 25]; // 4 bins
   if (max <= 100) return [10, 25, 50, 100]; // 4 bins
   return [10, 50, 100, 250, max]; // 5 bins
+}
+
+export function getAvailableYears(): number[] {
+  const currentYear = CURRENT_CLASS_YEAR;
+  return Array.from({ length: 4 }, (_, i) => currentYear + i);
 }

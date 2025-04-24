@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Briefcase, GraduationCap, MapPin, Users, ChevronDown, ChevronUp } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
-import { useSession } from 'next-auth/react';
 
 // Define types for destination data from API
 interface Destination {
@@ -15,12 +14,10 @@ interface Destination {
 }
 
 interface TopDestinationsProps {
-  showAllClassYears?: boolean;
+  selectedClassYear?: number | null;
 }
 
-export const TopDestinations: React.FC<TopDestinationsProps> = ({ showAllClassYears = false }) => {
-  const { data: session } = useSession();
-  const userClassYear = session?.user?.classYear;
+export const TopDestinations: React.FC<TopDestinationsProps> = ({ selectedClassYear = null }) => {
   const [activeTab, setActiveTab] = useState<'companies' | 'schools' | 'cities'>('companies');
   const [isExpanded, setIsExpanded] = useState(false);
   const [limit, setLimit] = useState(6);
@@ -48,15 +45,19 @@ export const TopDestinations: React.FC<TopDestinationsProps> = ({ showAllClassYe
     isLoading,
     error,
   } = useQuery<Destination[]>({
-    queryKey: ['topDestinations', activeTab, limit, showAllClassYears, userClassYear],
+    queryKey: ['topDestinations', activeTab, limit, selectedClassYear],
     queryFn: async () => {
       const params = new URLSearchParams({
         type: activeTab,
         limit: limit.toString(),
       });
 
-      if (!showAllClassYears && userClassYear) {
-        params.append('classYear', userClassYear.toString());
+      // If a specific class year is selected, use it in the API query
+      if (selectedClassYear) {
+        params.append('classYear', selectedClassYear.toString());
+      } else {
+        // Otherwise, show data for all class years
+        params.append('showAllClassYears', 'true');
       }
 
       const response = await fetch(`/api/stats/top-destinations?${params.toString()}`);
@@ -66,6 +67,14 @@ export const TopDestinations: React.FC<TopDestinationsProps> = ({ showAllClassYe
       return response.json();
     },
   });
+
+  // Get class year display label based on selection
+  const getClassYearLabel = () => {
+    if (selectedClassYear) {
+      return `Class of ${selectedClassYear}`;
+    }
+    return 'All class years';
+  };
 
   // Animation variants for tabs
   const tabVariants = {
@@ -142,15 +151,9 @@ export const TopDestinations: React.FC<TopDestinationsProps> = ({ showAllClassYe
                   Where BC Eagles are heading for jobs, grad school, and internships
                 </p>
               </div>
-              {showAllClassYears ? (
-                <div className="bg-gray-100 px-3 py-1 rounded-full text-xs text-gray-700">
-                  {'All class years'}
-                </div>
-              ) : (
-                <div className="bg-gray-100 px-3 py-1 rounded-full text-xs text-gray-700">
-                  {`Class of ${userClassYear}`}
-                </div>
-              )}
+              <div className="bg-gray-100 px-3 py-1 rounded-full text-xs text-gray-700">
+                {getClassYearLabel()}
+              </div>
             </div>
           </div>
 

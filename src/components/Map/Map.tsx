@@ -10,7 +10,6 @@ import type { PropertyValueSpecification } from 'maplibre-gl';
 import { Legend } from './Legend';
 import * as d3 from 'd3';
 import { getCustomBuckets } from '@/lib/utils';
-import { useSession } from 'next-auth/react';
 
 // Types
 interface LocationData {
@@ -61,13 +60,11 @@ const hoverLayerStyle: LayerProps = {
 
 interface FlockMapProps {
   onCitySelect: (city: string, state: string) => void;
-  showAllClassYears?: boolean;
+  selectedClassYear?: number | null;
 }
 
-export const FlockMap: React.FC<FlockMapProps> = ({ onCitySelect, showAllClassYears = false }) => {
+export const FlockMap: React.FC<FlockMapProps> = ({ onCitySelect, selectedClassYear = null }) => {
   const mapRef = React.useRef<MapRef>(null);
-  const { data: session } = useSession();
-  const userClassYear = session?.user?.classYear;
 
   const [viewState, setViewState] = React.useState({
     longitude: -97,
@@ -97,13 +94,16 @@ export const FlockMap: React.FC<FlockMapProps> = ({ onCitySelect, showAllClassYe
   const [cityCoordinates, setCityCoordinates] = React.useState<CityCoordinates>({});
 
   const { data: apiResponse, isLoading } = useQuery({
-    queryKey: ['locationData', selectedState, showAllClassYears, userClassYear],
+    queryKey: ['locationData', selectedState, selectedClassYear],
     queryFn: async () => {
       const params = new URLSearchParams();
 
-      // Add class year filter if not showing all class years
-      if (!showAllClassYears && userClassYear) {
-        params.append('classYear', userClassYear.toString());
+      // Add class year filter if a specific class year is selected
+      if (selectedClassYear) {
+        params.append('classYear', selectedClassYear.toString());
+      } else {
+        // If no class year is selected, show data for all class years
+        params.append('showAllClassYears', 'true');
       }
 
       if (!selectedState) {

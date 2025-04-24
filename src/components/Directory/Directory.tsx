@@ -20,8 +20,7 @@ interface FilterOptions {
   state?: string;
   city?: string;
   lookingForRoommate?: boolean;
-  showAllClassYears?: boolean;
-  classYear?: number;
+  classYear?: number | null;
 }
 
 export const Directory = () => {
@@ -29,7 +28,7 @@ export const Directory = () => {
   const router = useRouter();
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [filters, setFilters] = useState<FilterOptions>({
-    showAllClassYears: false, // Default to showing only user's class year
+    classYear: null, // Default to showing all class years
   });
   const [greeting, setGreeting] = useState('');
   const directoryContentRef = useRef<HTMLDivElement>(null);
@@ -70,7 +69,6 @@ export const Directory = () => {
       setFilters((prev) => ({
         ...prev,
         classYear: session.user.classYear,
-        showAllClassYears: false,
       }));
     }
   }, [session]);
@@ -245,10 +243,7 @@ export const Directory = () => {
               transition={{ duration: 0.4, delay: 0.2 }}
               whileHover={{ boxShadow: '0 10px 25px -5px rgba(167, 215, 249, 0.15)' }}
             >
-              <FlockMap
-                onCitySelect={handleCitySelect}
-                showAllClassYears={filters.showAllClassYears}
-              />
+              <FlockMap onCitySelect={handleCitySelect} selectedClassYear={filters.classYear} />
             </motion.div>
 
             {/* Directory Content */}
@@ -267,7 +262,7 @@ export const Directory = () => {
               animate={{ y: 0, opacity: 1 }}
               transition={{ duration: 0.4, delay: 0.4 }}
             >
-              <TopDestinations showAllClassYears={filters.showAllClassYears} />
+              <TopDestinations selectedClassYear={filters.classYear} />
             </motion.div>
           </main>
         </div>

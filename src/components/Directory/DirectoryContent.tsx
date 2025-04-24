@@ -7,7 +7,6 @@ import {
   FaBriefcase,
   FaHome,
   FaMapMarkerAlt,
-  FaUserGraduate,
   FaChevronDown,
   FaChevronUp,
 } from 'react-icons/fa';
@@ -15,7 +14,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useSession } from 'next-auth/react';
 import { PostGradType } from '@prisma/client';
-import { FilterButton, FilterGroup } from './FilterOptions';
+import { FilterButton, FilterGroup, ClassYearSelector } from './FilterOptions';
 
 interface FilterOptions {
   postGradType?: 'work' | 'school' | 'internship' | 'all';
@@ -24,7 +23,7 @@ interface FilterOptions {
   city?: string;
   lookingForRoommate?: boolean;
   showAllClassYears?: boolean;
-  classYear?: number;
+  classYear?: number | null;
 }
 
 const ITEMS_PER_PAGE = 12;
@@ -122,16 +121,17 @@ export const DirectoryContent: React.FC<DirectoryContentProps> = ({ filters, onF
         params.lookingForRoommate = 'true';
       }
 
-      // Add class year filter if user is not showing all class years
-      if (filters.showAllClassYears) {
+      // Add class year filter if specified
+      if (filters.classYear) {
+        params.classYear = filters.classYear.toString();
+      } else {
+        // If classYear is explicitly null, show all classes
         params.showAllClassYears = 'true';
-      } else if (userClassYear) {
-        params.classYear = userClassYear.toString();
       }
 
       return new URLSearchParams(params);
     },
-    [debouncedSearchQuery, filters, activeTypeFilter, showRoommateOnly, userClassYear]
+    [debouncedSearchQuery, filters, activeTypeFilter, showRoommateOnly]
   );
 
   // Reset to page 1 when search or filters change
@@ -191,8 +191,7 @@ export const DirectoryContent: React.FC<DirectoryContentProps> = ({ filters, onF
   const totalPages = data ? Math.ceil(data.total / ITEMS_PER_PAGE) : 1;
   const hasFiltersActive =
     Object.entries(filters).some(
-      ([key, value]) =>
-        key !== 'showAllClassYears' && key !== 'classYear' && value && value !== 'all'
+      ([key, value]) => value && (key === 'classYear' ? value !== null : true) && value !== 'all'
     ) ||
     searchQuery ||
     activeTypeFilter !== 'all' ||
@@ -205,8 +204,7 @@ export const DirectoryContent: React.FC<DirectoryContentProps> = ({ filters, onF
   const handleClearFilters = () => {
     setSearchQuery('');
     onFiltersChange({
-      showAllClassYears: filters.showAllClassYears,
-      classYear: filters.classYear,
+      classYear: null,
     });
     setActiveTypeFilter('all');
     setShowRoommateOnly(false);
@@ -260,11 +258,10 @@ export const DirectoryContent: React.FC<DirectoryContentProps> = ({ filters, onF
     }
   };
 
-  const handleClassYearFilterChange = () => {
-    // If showing all class years, toggle to just my class year
+  const handleClassYearChange = (year: number | null) => {
     onFiltersChange({
       ...filters,
-      showAllClassYears: !filters.showAllClassYears,
+      classYear: year,
     });
   };
 
@@ -363,14 +360,10 @@ export const DirectoryContent: React.FC<DirectoryContentProps> = ({ filters, onF
                     icon={<FaMapMarkerAlt className="text-xs" />}
                   />
                 )}
-                {userClassYear && (
-                  <FilterButton
-                    isActive={!filters.showAllClassYears}
-                    onClick={handleClassYearFilterChange}
-                    label={`Class of ${userClassYear}`}
-                    icon={<FaUserGraduate className="text-xs" />}
-                  />
-                )}
+                <ClassYearSelector
+                  selectedYear={filters.classYear}
+                  onChange={handleClassYearChange}
+                />
               </FilterGroup>
             </div>
 
@@ -482,15 +475,11 @@ export const DirectoryContent: React.FC<DirectoryContentProps> = ({ filters, onF
                             isMobile={true}
                           />
                         )}
-                        {userClassYear && (
-                          <FilterButton
-                            isActive={!filters.showAllClassYears}
-                            onClick={handleClassYearFilterChange}
-                            label={`Class of ${userClassYear}`}
-                            icon={<FaUserGraduate className="text-xs" />}
-                            isMobile={true}
-                          />
-                        )}
+                        <ClassYearSelector
+                          selectedYear={filters.classYear}
+                          onChange={handleClassYearChange}
+                          isMobile={true}
+                        />
                       </div>
                     </FilterGroup>
                   </div>
@@ -661,6 +650,25 @@ export const DirectoryContent: React.FC<DirectoryContentProps> = ({ filters, onF
                           </motion.span>
                         )}
 
+                        {/* Class Year filter pill */}
+                        {filters.classYear && (
+                          <motion.span
+                            className="px-2 py-0.5 md:px-2.5 md:py-1 bg-gray-100 rounded-md text-xs md:text-sm text-gray-700 flex items-center"
+                            initial={{ scale: 0.8, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.8, opacity: 0 }}
+                            whileHover={{ scale: 1.05 }}
+                          >
+                            Class of {filters.classYear}
+                            <button
+                              onClick={() => handleClassYearChange(null)}
+                              className="ml-1 text-gray-500 hover:text-[#F28B82] cursor-pointer"
+                            >
+                              <MdClear size={12} className="md:h-4 md:w-4" />
+                            </button>
+                          </motion.span>
+                        )}
+
                         {/* Roommate filter pill */}
                         {(showRoommateOnly || filters.lookingForRoommate) && (
                           <motion.span
@@ -693,26 +701,6 @@ export const DirectoryContent: React.FC<DirectoryContentProps> = ({ filters, onF
                         <span className="hidden md:inline">Clear</span>
                       </button>
                     </>
-                  )}
-
-                  {/* Class Year Indicator - always visible if class year exists */}
-                  {userClassYear && !hasFiltersActive && (
-                    <motion.span
-                      className="px-2 py-0.5 md:px-2.5 md:py-1 bg-gray-100 rounded-md text-xs md:text-sm text-gray-700 flex items-center"
-                      initial={{ scale: 0.8, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      exit={{ scale: 0.8, opacity: 0 }}
-                      whileHover={{ scale: 1.05 }}
-                    >
-                      <span className="md:hidden">
-                        {!filters.showAllClassYears
-                          ? `Showing only class of ${userClassYear}`
-                          : `Showing all class years`}
-                      </span>
-                      <span className="hidden md:inline">
-                        {!filters.showAllClassYears ? `Class of ${userClassYear}` : `All classes`}
-                      </span>
-                    </motion.span>
                   )}
                 </div>
               </motion.div>
