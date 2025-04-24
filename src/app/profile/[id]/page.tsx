@@ -628,7 +628,7 @@ const EditForm = ({
   const isInternship = userData.postGradType === PostGradType.internship;
   const isSchool = userData.postGradType === PostGradType.school;
 
-  const roleLabel = isWork || isInternship ? 'Role' : 'Program';
+  const roleLabel = 'Role';
   const companyLabel = isWork || isInternship ? 'Company' : 'School';
 
   const [activeField, setActiveField] = useState<string | null>(null);
@@ -870,20 +870,16 @@ const EditForm = ({
 
       {userData.postGradType !== PostGradType.seeking && (
         <>
-          <motion.div variants={itemVariants}>
-            <label htmlFor="role" className={labelClasses}>
-              {isWork || isInternship ? (
+          {!isSchool && (
+            <motion.div variants={itemVariants}>
+              <label htmlFor="role" className={labelClasses}>
                 <MdWork className="mr-2 text-[#F28B82]" />
-              ) : (
-                <HiOutlineAcademicCap className="mr-2 text-[#A7D7F9]" />
-              )}
-              {roleLabel}
-            </label>
-            <motion.div
-              variants={inputVariants}
-              animate={activeField === 'role' ? 'focus' : 'blur'}
-            >
-              {isWork || isInternship ? (
+                {roleLabel}
+              </label>
+              <motion.div
+                variants={inputVariants}
+                animate={activeField === 'role' ? 'focus' : 'blur'}
+              >
                 <>
                   <input
                     id="title"
@@ -901,9 +897,9 @@ const EditForm = ({
                   />
                   {errors.title && <p className="mt-1 text-sm text-red-500">{errors.title}</p>}
                 </>
-              ) : null}
+              </motion.div>
             </motion.div>
-          </motion.div>
+          )}
 
           <motion.div variants={itemVariants}>
             <label htmlFor="company" className={labelClasses}>
@@ -1035,7 +1031,6 @@ const EditForm = ({
                   onBlur={() => setActiveField(null)}
                   className={inputClasses.replace('cursor-text', 'cursor-pointer')}
                 >
-                  <option value="">Select an industry</option>
                   {INDUSTRIES.map((industry) => (
                     <option key={industry.value} value={industry.value}>
                       {industry.label}
