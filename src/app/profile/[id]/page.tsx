@@ -121,7 +121,16 @@ const ProfilePage: FC = () => {
   // Initialize edit form when entering edit mode
   const handleEditClick = () => {
     if (userData) {
-      setEditedUserData({ ...userData });
+      // Normalize industry to ensure it's a string
+      const normalizedIndustry =
+        typeof userData.industry === 'object' && userData.industry !== null
+          ? (userData.industry as { name: string }).name
+          : userData.industry;
+
+      setEditedUserData({
+        ...userData,
+        industry: normalizedIndustry,
+      });
       setIsEditing(true);
     }
   };
