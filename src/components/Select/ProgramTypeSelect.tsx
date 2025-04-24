@@ -11,7 +11,7 @@ export const ProgramTypeSelect: React.FC<ProgramTypeSelectProps> = ({ value, onC
     <select
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="w-full text-[#333] border border-gray-200 px-4 py-3 rounded-lg focus:border-[#A7D7F9] focus:ring-2 focus:ring-[#A7D7F9]/20 outline-none transition-all"
+      className="w-full text-[#333] border border-gray-200 px-4 py-3 rounded-lg focus:border-[#A7D7F9] focus:ring-2 focus:ring-[#A7D7F9]/20 outline-none transition-all cursor-pointer"
     >
       <option value="">Select a program type</option>
       {programTypes.map((type) => (

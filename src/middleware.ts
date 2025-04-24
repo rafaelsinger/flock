@@ -22,9 +22,22 @@ export default auth((req) => {
   if (isApiAuthRoute || isPublicApiRoute) {
     return NextResponse.next();
   }
-  if (isApiAuthRoute || isPublicApiRoute) {
-    return NextResponse.next();
+
+  // Check if user is not onboarded and redirect to step0
+  if (isLoggedIn && req.auth?.user && req.auth.user.isOnboarded === false) {
+    const path = nextUrl.pathname;
+    if (path !== '/onboarding/step0' && !path.startsWith('/api/')) {
+      return Response.redirect(new URL('/onboarding/step0', nextUrl));
+    }
   }
+
+  // Redirect already onboarded users away from onboarding pages
+  if (isLoggedIn && req.auth?.user && req.auth.user.isOnboarded === true) {
+    if (nextUrl.pathname.startsWith('/onboarding')) {
+      return Response.redirect(new URL('/', nextUrl));
+    }
+  }
+
   if (isAuthRoute) {
     if (isLoggedIn) {
       return Response.redirect(new URL(DEFAULT_LOGIN_REDIRECT, nextUrl));

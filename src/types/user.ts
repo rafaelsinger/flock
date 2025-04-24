@@ -22,8 +22,18 @@ export type CreateUser = {
     company?: boolean;
     school?: boolean;
     program?: boolean;
+    internship?: boolean;
   };
 };
+
+// Type for graduate form data with specific visibility options
+export type GraduateFormData = {
+  visibilityOptions: {
+    company: boolean;
+    title: boolean;
+  };
+};
+
 export type UpdateUser = CreateUser;
 
 export type User = CreateUser & { id: string; createdAt: Date; updatedAt: Date };
@@ -40,16 +50,52 @@ export type Location = CreateLocation & { id: string; createdAt: Date; updatedAt
 
 export type UserWithLocation = User & { location: Location };
 
-export type IncompleteUserOnboarding = Partial<CreateUser & CreateLocation>;
+export interface IncompleteUserOnboarding {
+  classYear?: number;
+  postGradType?: PostGradType;
+  company?: string;
+  title?: string;
+  industry?: string;
+  school?: string;
+  program?: string;
+  discipline?: string;
+  country?: string;
+  state?: string;
+  city?: string;
+  lat?: number;
+  lon?: number;
+  lookingForRoommate?: boolean;
+  visibilityOptions?: {
+    company?: boolean;
+    title?: boolean;
+    school?: boolean;
+    program?: boolean;
+    internship?: boolean;
+  };
+  isOnboarded?: boolean;
+}
+
 export type UserOnboarding = CreateUser & CreateLocation;
 
 // Helper functions for common transformations
 export const getDisplayRole = (user: User | CreateUser): string => {
-  return user.postGradType === PostGradType.work ? user.title || '' : user.program || '';
+  if (user.postGradType === PostGradType.school) {
+    return user.program || '';
+  }
+  if (user.postGradType === PostGradType.work || user.postGradType === PostGradType.internship) {
+    return user.title || '';
+  }
+  return '';
 };
 
 export const getDisplayCompany = (user: User | CreateUser): string => {
-  return user.postGradType === PostGradType.work ? user.company || '' : user.school || '';
+  if (user.postGradType === PostGradType.school) {
+    return user.school || '';
+  }
+  if (user.postGradType === PostGradType.work || user.postGradType === PostGradType.internship) {
+    return user.company || '';
+  }
+  return '';
 };
 
 export const getLocation = (user: User | CreateUser): string => {
@@ -59,19 +105,21 @@ export const getLocation = (user: User | CreateUser): string => {
 };
 
 export const isRoleVisible = (user: User | CreateUser, isOwnProfile: boolean): boolean => {
-  return (
-    isOwnProfile ||
-    (user.postGradType === PostGradType.work
-      ? (user.visibilityOptions.title ?? true)
-      : (user.visibilityOptions.program ?? true))
-  );
+  if (user.postGradType === PostGradType.school) {
+    return isOwnProfile || (user.visibilityOptions.program ?? true);
+  }
+  if (user.postGradType === PostGradType.work || user.postGradType === PostGradType.internship) {
+    return isOwnProfile || (user.visibilityOptions.title ?? true);
+  }
+  return isOwnProfile;
 };
 
 export const isCompanyVisible = (user: User | CreateUser, isOwnProfile: boolean): boolean => {
-  return (
-    isOwnProfile ||
-    (user.postGradType === PostGradType.work
-      ? (user.visibilityOptions.company ?? true)
-      : (user.visibilityOptions.school ?? true))
-  );
+  if (user.postGradType === PostGradType.school) {
+    return isOwnProfile || (user.visibilityOptions.school ?? true);
+  }
+  if (user.postGradType === PostGradType.work || user.postGradType === PostGradType.internship) {
+    return isOwnProfile || (user.visibilityOptions.company ?? true);
+  }
+  return isOwnProfile;
 };

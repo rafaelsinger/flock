@@ -7,14 +7,17 @@ import { INDUSTRIES } from '@/constants/industries';
 import { IncompleteUserOnboarding } from '@/types/user';
 import { motion } from 'framer-motion';
 import { BsBriefcase, BsBuilding, BsPerson } from 'react-icons/bs';
-import { OnboardingProgress } from '@/components';
+import { OnboardingProgress, OnboardingButton } from '@/components';
 import { PostGradType } from '@prisma/client';
+import { CURRENT_CLASS_YEAR } from '@/constants/general';
 
 const Step2Work: FC = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
   const previousData = queryClient.getQueryData(['onboardingData']) as IncompleteUserOnboarding;
+  const isIntern = previousData?.classYear != CURRENT_CLASS_YEAR;
 
+  // Adjust form fields based on user type - now we use the same fields for both
   const [formData, setFormData] = useState({
     company: '',
     title: '',
@@ -23,15 +26,18 @@ const Step2Work: FC = () => {
 
   const [isFormValid, setIsFormValid] = useState(false);
   const [activeField, setActiveField] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Different validation based on user type
   useEffect(() => {
     setIsFormValid(
-      formData.company.trim() !== '' && formData.title.trim() !== '' && formData.industry !== ''
+      formData.company?.trim() !== '' && formData.title?.trim() !== '' && formData.industry !== ''
     );
   }, [formData]);
 
   const updateOnboardingData = useMutation({
     mutationFn: (workData: IncompleteUserOnboarding) => {
+      // Prepare data differently based on user type
       const data: IncompleteUserOnboarding = {
         ...previousData,
         company: workData.company,
@@ -47,21 +53,24 @@ const Step2Work: FC = () => {
   });
 
   useEffect(() => {
-    if (!previousData || previousData.postGradType !== PostGradType.work) {
+    const validPostGradType = isIntern ? 'internship' : PostGradType.work;
+    if (!previousData || previousData.postGradType !== validPostGradType) {
       router.push('/onboarding/step1');
     }
-  }, [previousData, router]);
+  }, [previousData, router, isIntern]);
 
   useEffect(() => {
     router.prefetch('/onboarding/step3');
   }, [router]);
 
-  if (!previousData || previousData.postGradType !== PostGradType.work) {
+  const validPostGradType = isIntern ? 'internship' : PostGradType.work;
+  if (!previousData || previousData.postGradType !== validPostGradType) {
     return null;
   }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
     updateOnboardingData.mutate(formData);
   };
 
@@ -70,13 +79,13 @@ const Step2Work: FC = () => {
     blur: { scale: 1, boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)' },
   };
 
-  const pageVariants = {
-    hidden: { opacity: 0, x: -20 },
+  const containerVariants = {
+    hidden: { opacity: 0, y: 20 },
     visible: {
       opacity: 1,
-      x: 0,
+      y: 0,
       transition: {
-        duration: 0.4,
+        duration: 0.5,
         staggerChildren: 0.1,
       },
     },
@@ -88,127 +97,149 @@ const Step2Work: FC = () => {
   };
 
   return (
-    <motion.div className="space-y-8" variants={pageVariants} initial="hidden" animate="visible">
-      <OnboardingProgress currentStep={2} totalSteps={5} />
+    <motion.div
+      className="min-h-[calc(100vh-100px)] flex flex-col justify-center px-4 py-12 max-w-4xl mx-auto"
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+    >
+      {/* Card container */}
+      <motion.div
+        className="w-full bg-white rounded-2xl shadow-lg p-8 md:p-12 overflow-hidden relative"
+        variants={itemVariants}
+      >
+        {/* Top decoration pattern */}
+        <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-[#F9C5D1] via-[#F28B82] to-[#C06C84]"></div>
 
-      <motion.div className="text-center" variants={itemVariants}>
-        <h1 className="text-3xl font-semibold text-[#333333] mb-3">Tell us about your job</h1>
-        <p className="text-lg text-[#666666]">Share details about your upcoming role</p>
-      </motion.div>
+        <OnboardingProgress currentStep={3} totalSteps={6} />
 
-      <form onSubmit={handleSubmit} className="space-y-8">
-        <div className="space-y-6">
-          <motion.div variants={itemVariants}>
-            <label
-              htmlFor="company"
-              className="flex items-center text-sm font-medium text-[#333333] mb-2"
-            >
-              <BsBuilding className="mr-2 text-[#F28B82]" />
-              Company
-            </label>
-            <motion.div
-              variants={inputVariants}
-              animate={activeField === 'company' ? 'focus' : 'blur'}
-            >
-              <input
-                type="text"
-                id="company"
-                value={formData.company}
-                onChange={(e) => setFormData((prev) => ({ ...prev, company: e.target.value }))}
-                onFocus={() => setActiveField('company')}
-                onBlur={() => setActiveField(null)}
-                className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-[#F9C5D1] focus:ring-2 focus:ring-[#F9C5D1]/20 outline-none transition-all text-[#333333]"
-                placeholder="e.g. Stripe"
-                required
-              />
-            </motion.div>
-          </motion.div>
+        <motion.div className="text-center mb-10 mt-4" variants={itemVariants}>
+          <h1 className="text-3xl md:text-4xl font-bold text-[#333333] mb-4">
+            {isIntern ? 'Tell us about your internship' : 'Tell us about your job'}
+          </h1>
+          <p className="text-lg md:text-xl text-[#666666]">
+            {isIntern
+              ? 'Share details about your upcoming summer experience'
+              : 'Share details about your upcoming role'}
+          </p>
+        </motion.div>
 
-          <motion.div variants={itemVariants}>
-            <label
-              htmlFor="role"
-              className="flex items-center text-sm font-medium text-[#333333] mb-2"
-            >
-              <BsPerson className="mr-2 text-[#F28B82]" />
-              Role
-            </label>
-            <motion.div
-              variants={inputVariants}
-              animate={activeField === 'role' ? 'focus' : 'blur'}
-            >
-              <input
-                type="text"
-                id="role"
-                value={formData.title}
-                onChange={(e) => setFormData((prev) => ({ ...prev, title: e.target.value }))}
-                onFocus={() => setActiveField('role')}
-                onBlur={() => setActiveField(null)}
-                className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-[#F9C5D1] focus:ring-2 focus:ring-[#F9C5D1]/20 outline-none transition-all text-[#333333]"
-                placeholder="e.g. Software Engineer"
-                required
-              />
-            </motion.div>
-          </motion.div>
-
-          <motion.div variants={itemVariants}>
-            <label
-              htmlFor="industry"
-              className="flex items-center text-sm font-medium text-[#333333] mb-2"
-            >
-              <BsBriefcase className="mr-2 text-[#F28B82]" />
-              Industry
-            </label>
-            <motion.div
-              variants={inputVariants}
-              animate={activeField === 'industry' ? 'focus' : 'blur'}
-            >
-              <select
-                id="industry"
-                value={formData.industry}
-                onChange={(e) => setFormData((prev) => ({ ...prev, industry: e.target.value }))}
-                onFocus={() => setActiveField('industry')}
-                onBlur={() => setActiveField(null)}
-                className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-[#F9C5D1] focus:ring-2 focus:ring-[#F9C5D1]/20 outline-none transition-all cursor-pointer hover:border-[#F9C5D1]/50 text-[#333333]"
-                required
+        <form onSubmit={handleSubmit} className="space-y-10 max-w-2xl mx-auto">
+          <div className="space-y-6">
+            <motion.div variants={itemVariants}>
+              <label
+                htmlFor="company"
+                className="flex items-center text-sm font-medium text-[#333333] mb-2"
               >
-                <option value="">Select an industry</option>
-                {INDUSTRIES.map((industry) => (
-                  <option key={industry.value} value={industry.value}>
-                    {industry.label}
-                  </option>
-                ))}
-              </select>
+                <BsBuilding className="mr-2 text-[#F28B82]" />
+                {isIntern ? 'Internship Company' : 'Company'}
+              </label>
+              <motion.div
+                variants={inputVariants}
+                animate={activeField === 'company' ? 'focus' : 'blur'}
+              >
+                <input
+                  type="text"
+                  id="company"
+                  value={formData.company}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      company: e.target.value,
+                    }))
+                  }
+                  onFocus={() => setActiveField('company')}
+                  onBlur={() => setActiveField(null)}
+                  className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-[#F9C5D1] focus:ring-2 focus:ring-[#F9C5D1]/20 outline-none transition-all text-[#333333]"
+                  placeholder={isIntern ? 'e.g. Google' : 'e.g. Stripe'}
+                  required
+                />
+              </motion.div>
             </motion.div>
-          </motion.div>
-        </div>
 
-        <motion.div className="flex justify-end" variants={itemVariants}>
-          <div className="flex space-x-4">
-            <motion.button
-              type="button"
-              onClick={() => router.back()}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="px-6 py-2.5 rounded-lg text-[#666666] hover:text-[#333333] transition-colors cursor-pointer hover:bg-gray-50 active:bg-gray-100"
-            >
+            <motion.div variants={itemVariants}>
+              <label
+                htmlFor="title"
+                className="flex items-center text-sm font-medium text-[#333333] mb-2"
+              >
+                <BsPerson className="mr-2 text-[#F28B82]" />
+                {isIntern ? 'Internship Title' : 'Role'}
+              </label>
+              <motion.div
+                variants={inputVariants}
+                animate={activeField === 'title' ? 'focus' : 'blur'}
+              >
+                <input
+                  type="text"
+                  id="title"
+                  value={formData.title}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      title: e.target.value,
+                    }))
+                  }
+                  onFocus={() => setActiveField('title')}
+                  onBlur={() => setActiveField(null)}
+                  className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-[#F9C5D1] focus:ring-2 focus:ring-[#F9C5D1]/20 outline-none transition-all text-[#333333]"
+                  placeholder={
+                    isIntern ? 'e.g. Software Engineering Intern' : 'e.g. Software Engineer'
+                  }
+                  required
+                />
+              </motion.div>
+            </motion.div>
+
+            <motion.div variants={itemVariants}>
+              <label
+                htmlFor="industry"
+                className="flex items-center text-sm font-medium text-[#333333] mb-2"
+              >
+                <BsBriefcase className="mr-2 text-[#F28B82]" />
+                Industry
+              </label>
+              <motion.div
+                variants={inputVariants}
+                animate={activeField === 'industry' ? 'focus' : 'blur'}
+              >
+                <select
+                  id="industry"
+                  value={formData.industry}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, industry: e.target.value }))}
+                  onFocus={() => setActiveField('industry')}
+                  onBlur={() => setActiveField(null)}
+                  className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-[#F9C5D1] focus:ring-2 focus:ring-[#F9C5D1]/20 outline-none transition-all cursor-pointer hover:border-[#F9C5D1]/50 text-[#333333]"
+                  required
+                >
+                  <option value="">Select an industry</option>
+                  {INDUSTRIES.map((industry) => (
+                    <option key={industry.value} value={industry.value}>
+                      {industry.label}
+                    </option>
+                  ))}
+                </select>
+              </motion.div>
+            </motion.div>
+          </div>
+
+          <motion.div
+            className="flex flex-col md:flex-row justify-between space-y-4 md:space-y-0 md:space-x-4"
+            variants={itemVariants}
+          >
+            <OnboardingButton type="button" variant="secondary" onClick={() => router.back()}>
               Back
-            </motion.button>
-            <motion.button
+            </OnboardingButton>
+            <OnboardingButton
               type="submit"
-              disabled={!isFormValid}
-              whileHover={isFormValid ? { scale: 1.02 } : {}}
-              whileTap={isFormValid ? { scale: 0.98 } : {}}
-              className={`px-6 py-2.5 rounded-lg transition-all cursor-pointer ${
-                isFormValid
-                  ? 'bg-[#F28B82] hover:bg-[#E67C73] text-white shadow-sm hover:shadow'
-                  : 'bg-[#F9C5D1]/50 cursor-not-allowed text-white/70'
-              }`}
+              variant="primary"
+              disabled={!isFormValid || isSubmitting}
+              isLoading={isSubmitting}
             >
               Continue
-            </motion.button>
-          </div>
-        </motion.div>
-      </form>
+            </OnboardingButton>
+          </motion.div>
+        </form>
+      </motion.div>
     </motion.div>
   );
 };

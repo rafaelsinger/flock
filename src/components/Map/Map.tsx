@@ -60,9 +60,10 @@ const hoverLayerStyle: LayerProps = {
 
 interface FlockMapProps {
   onCitySelect: (city: string, state: string) => void;
+  selectedClassYear?: number | null;
 }
 
-export const FlockMap: React.FC<FlockMapProps> = ({ onCitySelect }) => {
+export const FlockMap: React.FC<FlockMapProps> = ({ onCitySelect, selectedClassYear = null }) => {
   const mapRef = React.useRef<MapRef>(null);
 
   const [viewState, setViewState] = React.useState({
@@ -93,14 +94,25 @@ export const FlockMap: React.FC<FlockMapProps> = ({ onCitySelect }) => {
   const [cityCoordinates, setCityCoordinates] = React.useState<CityCoordinates>({});
 
   const { data: apiResponse, isLoading } = useQuery({
-    queryKey: ['locationData', selectedState],
+    queryKey: ['locationData', selectedState, selectedClassYear],
     queryFn: async () => {
+      const params = new URLSearchParams();
+
+      // Add class year filter if a specific class year is selected
+      if (selectedClassYear) {
+        params.append('classYear', selectedClassYear.toString());
+      } else {
+        // If no class year is selected, show data for all class years
+        params.append('showAllClassYears', 'true');
+      }
+
       if (!selectedState) {
-        const response = await fetch('/api/locations');
+        const response = await fetch(`/api/locations?${params.toString()}`);
         if (!response.ok) throw new Error('Failed to fetch location data');
         return response.json();
       } else {
-        const response = await fetch(`/api/locations?state=${STATE_NAME_TO_ABBREV[selectedState]}`);
+        params.append('state', STATE_NAME_TO_ABBREV[selectedState]);
+        const response = await fetch(`/api/locations?${params.toString()}`);
         if (!response.ok) throw new Error('Failed to fetch city data');
         return response.json();
       }
@@ -212,6 +224,8 @@ export const FlockMap: React.FC<FlockMapProps> = ({ onCitySelect }) => {
       });
     }
 
+    // Call the city select handler with the state abbreviation
+    // For state clicks, we pass empty string for city and the state abbreviation
     onCitySelect('', stateAbbrev);
   };
 
@@ -368,7 +382,9 @@ export const FlockMap: React.FC<FlockMapProps> = ({ onCitySelect }) => {
             }}
           >
             <div className="font-medium text-[#333]">{hoverInfo.name}</div>
-            <div className="text-gray-500">{hoverInfo.value} grads</div>
+            <div className="text-gray-500">
+              {hoverInfo.value} {hoverInfo.value === 1 ? 'person' : 'people'}
+            </div>
           </div>
         )}
         {hoveredCity && (
@@ -381,7 +397,7 @@ export const FlockMap: React.FC<FlockMapProps> = ({ onCitySelect }) => {
             }}
           >
             <div className="font-medium text-[#333]">{hoveredCity.city}</div>
-            <div className="text-gray-500">{hoveredCity.value} grads</div>
+            <div className="text-gray-500">{hoveredCity.value} people</div>
           </div>
         )}
       </MapGL>
@@ -405,7 +421,7 @@ export const FlockMap: React.FC<FlockMapProps> = ({ onCitySelect }) => {
       {/* Legend */}
       <div className="absolute top-4 left-4 bg-white rounded-lg shadow-md border border-gray-100 p-3 z-10">
         <div className="text-sm font-semibold text-[#111111] mb-3">
-          {selectedState ? `${selectedState} City Graduates` : 'State Graduates'}
+          {selectedState ? `${selectedState} City Students` : 'State Students'}
         </div>
         {showSkeleton ? renderLegendSkeleton() : <Legend colorScale={colorScale} />}
       </div>
@@ -430,7 +446,7 @@ export const FlockMap: React.FC<FlockMapProps> = ({ onCitySelect }) => {
               });
             }
           }}
-          className={`absolute top-4 right-16 p-2 bg-white rounded-lg shadow-md border hover:bg-gray-50 transition z-10 text-[#333]`}
+          className={`absolute top-4 right-16 p-2 bg-white rounded-lg shadow-md border hover:bg-gray-50 transition z-10 text-[#333] cursor-pointer`}
         >
           Back to USA
         </button>
@@ -438,7 +454,7 @@ export const FlockMap: React.FC<FlockMapProps> = ({ onCitySelect }) => {
 
       <button
         onClick={toggleFullscreen}
-        className={`absolute top-4 p-2 bg-white rounded-lg shadow-md border hover:bg-gray-50 transition z-10 text-[#333] right-4`}
+        className={`absolute top-4 p-2 bg-white rounded-lg shadow-md border hover:bg-gray-50 transition z-10 text-[#333] right-4 cursor-pointer`}
       >
         {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
       </button>

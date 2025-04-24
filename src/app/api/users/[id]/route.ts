@@ -109,9 +109,11 @@ export const PUT = async (request: NextRequest, context: { params: Promise<{ id:
         industryId: industryId,
         lookingForRoommate: userData.lookingForRoommate,
         visibilityOptions: userData.visibilityOptions,
+        classYear: userData.classYear,
       },
       include: {
         location: true,
+        industry: true,
       },
     });
 
@@ -144,6 +146,22 @@ export const DELETE = async (
       return new NextResponse('Unauthorized - Cannot delete another user account', { status: 401 });
     }
 
+    // First check if the user exists
+    const userExists = await prisma.user.findUnique({
+      where: {
+        id: id,
+      },
+    });
+
+    if (!userExists) {
+      return new NextResponse(JSON.stringify({ success: false, message: 'User not found' }), {
+        status: 404,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+    }
+
     // Delete user account (Prisma will cascade delete related data thanks to our schema setup)
     await prisma.user.delete({
       where: {
@@ -160,8 +178,38 @@ export const DELETE = async (
         },
       }
     );
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error deleting user account:', error);
-    return new NextResponse('Internal Server Error', { status: 500 });
+
+    // Check if it's a Prisma error (more detailed error handling)
+    if (typeof error === 'object' && error !== null && 'code' in error && error.code === 'P2025') {
+      return new NextResponse(
+        JSON.stringify({
+          success: false,
+          message: 'Account not found or already deleted',
+          error: error instanceof Error ? error.message : String(error),
+        }),
+        {
+          status: 404,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+    }
+
+    return new NextResponse(
+      JSON.stringify({
+        success: false,
+        message: 'Error deleting account',
+        error: error instanceof Error ? error.message : String(error),
+      }),
+      {
+        status: 500,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
   }
 };

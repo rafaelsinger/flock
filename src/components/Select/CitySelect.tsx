@@ -141,7 +141,7 @@ export const CitySelect: React.FC<CitySelectProps> = ({ value, onChange }) => {
         value={inputValue}
         onChange={handleInputChange}
         placeholder="Enter your city"
-        className="w-full text-[#333] border border-gray-200 px-4 py-3 rounded-lg focus:border-[#F9C5D1] focus:ring-2 focus:ring-[#F9C5D1]/20 outline-none transition-all"
+        className="w-full text-[#333] border border-gray-200 px-4 py-3 rounded-lg focus:border-[#F9C5D1] focus:ring-2 focus:ring-[#F9C5D1]/20 outline-none transition-all cursor-text"
       />
 
       {isLoading && (

@@ -20,11 +20,11 @@ export const DemoSection = ({ isVisible, handleSignIn, demoRef }: DemoSectionPro
           className={`text-center mb-12 opacity-0 transform translate-y-8 transition-all duration-700 ease-out ${isVisible ? 'opacity-100 translate-y-0' : ''}`}
         >
           <h2 className="text-3xl md:text-5xl font-bold text-[#333333] mb-6 max-w-2xl mx-auto">
-            See where Eagles are landing after graduation
+            See where Eagles are landing for internships and careers
           </h2>
           <p className="text-lg md:text-xl text-[#333333]/70 max-w-2xl mx-auto">
-            Our interactive map shows you where BC grads are heading. Browse by location, company,
-            or field of study.
+            Our interactive map shows where BC students are heading. Browse by location, company, or
+            field of study.
           </p>
         </div>
 
@@ -33,7 +33,7 @@ export const DemoSection = ({ isVisible, handleSignIn, demoRef }: DemoSectionPro
           <div className="inline-flex bg-[#F9F9F9] p-1.5 rounded-xl shadow-sm">
             <button
               onClick={() => setActiveTab('map')}
-              className={`flex items-center gap-2 px-5 py-3 rounded-lg text-sm font-medium transition-all ${
+              className={`flex items-center gap-2 px-5 py-3 rounded-lg text-sm font-medium transition-all cursor-pointer ${
                 activeTab === 'map'
                   ? 'bg-white shadow-sm text-[#F28B82] scale-105'
                   : 'text-[#333333]/70 hover:text-[#333333]'
@@ -44,7 +44,7 @@ export const DemoSection = ({ isVisible, handleSignIn, demoRef }: DemoSectionPro
             </button>
             <button
               onClick={() => setActiveTab('companies')}
-              className={`flex items-center gap-2 px-5 py-3 rounded-lg text-sm font-medium transition-all ${
+              className={`flex items-center gap-2 px-5 py-3 rounded-lg text-sm font-medium transition-all cursor-pointer ${
                 activeTab === 'companies'
                   ? 'bg-white shadow-sm text-[#F28B82] scale-105'
                   : 'text-[#333333]/70 hover:text-[#333333]'
@@ -55,7 +55,7 @@ export const DemoSection = ({ isVisible, handleSignIn, demoRef }: DemoSectionPro
             </button>
             <button
               onClick={() => setActiveTab('classmates')}
-              className={`flex items-center gap-2 px-5 py-3 rounded-lg text-sm font-medium transition-all ${
+              className={`flex items-center gap-2 px-5 py-3 rounded-lg text-sm font-medium transition-all cursor-pointer ${
                 activeTab === 'classmates'
                   ? 'bg-white shadow-sm text-[#F28B82] scale-105'
                   : 'text-[#333333]/70 hover:text-[#333333]'
@@ -85,8 +85,8 @@ export const DemoSection = ({ isVisible, handleSignIn, demoRef }: DemoSectionPro
                   </div>
                   <h3 className="text-3xl font-bold mb-3 text-[#333333]">Unlock Full Map Access</h3>
                   <p className="text-lg text-[#333333]/70 mb-6 max-w-md mx-auto">
-                    Sign in with your BC email to see exactly where your classmates are heading
-                    after graduation.
+                    Sign in with your BC email to see where your classmates are heading for
+                    internships and jobs.
                   </p>
 
                   {/* Interactive map stats with blur/hidden data */}
@@ -107,14 +107,14 @@ export const DemoSection = ({ isVisible, handleSignIn, demoRef }: DemoSectionPro
                       <div className="text-2xl font-bold text-[#F9C5D1]">
                         <span className="blur-sm">000</span>
                       </div>
-                      <div className="text-sm text-[#333333]/70">BC Grads</div>
+                      <div className="text-sm text-[#333333]/70">BC Students</div>
                     </div>
                   </div>
 
                   <Button
                     onClick={handleSignIn}
                     size="large"
-                    className="bg-[#F28B82] hover:bg-[#F28B82]/90 text-white shadow-md w-full sm:w-auto px-10 py-4 text-lg hover:translate-y-[-2px] transition-all"
+                    className="bg-[#F28B82] hover:bg-[#F28B82]/90 text-white shadow-md px-10 py-4 text-lg hover:translate-y-[-2px] transition-all"
                   >
                     Sign in to unlock
                   </Button>
@@ -129,7 +129,7 @@ export const DemoSection = ({ isVisible, handleSignIn, demoRef }: DemoSectionPro
                 <Building className="w-16 h-16 text-[#F9C5D1] mx-auto mb-4" />
                 <h3 className="text-2xl font-bold mb-3 text-[#333333]">Top Companies</h3>
                 <p className="text-lg text-[#333333]/70 mb-10">
-                  See where BC grads are working at top companies after graduation.
+                  See where BC students are interning and working at top companies.
                 </p>
 
                 {/* Floating horizontal bar of blurred logos with animation */}
@@ -173,8 +173,8 @@ export const DemoSection = ({ isVisible, handleSignIn, demoRef }: DemoSectionPro
                 <Users className="w-16 h-16 text-[#A7D7F9] mx-auto mb-4" />
                 <h3 className="text-2xl font-bold mb-3 text-[#333333]">Find Classmates</h3>
                 <p className="text-lg text-[#333333]/70 mb-5">
-                  Sign in to browse the directory of BC grads and connect with classmates in your
-                  new city.
+                  Sign in to browse the directory of BC students and connect with classmates in your
+                  city.
                 </p>
 
                 {/* Search bar mockup - slightly smaller */}

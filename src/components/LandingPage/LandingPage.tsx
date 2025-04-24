@@ -18,7 +18,7 @@ export const LandingPage = () => {
 
   // Handle sign in
   const handleSignIn = () => {
-    signIn('google');
+    signIn('google', { callbackUrl: '/onboarding/step0' });
   };
 
   // Handle mouse move for parallax effect
@@ -175,7 +175,7 @@ export const LandingPage = () => {
                     <span className="bg-gradient-to-r from-[#F28B82] to-[#F9C5D1] bg-clip-text text-transparent animate-text-shimmer">
                       Eagles
                     </span>{' '}
-                    land after graduation.
+                    are landing.
                   </h1>
                 </div>
 
@@ -183,8 +183,8 @@ export const LandingPage = () => {
                   className={`opacity-0 transform translate-y-8 transition-all duration-700 delay-100 ease-out ${isVisible ? 'opacity-100 translate-y-0' : ''}`}
                 >
                   <p className="text-lg sm:text-xl md:text-2xl leading-relaxed text-[#333333]/70">
-                    Connect with classmates heading to your dream city, discover opportunities, and
-                    build your BC network worldwide.
+                    Connect with classmates heading to your dream city for summer internships,
+                    full-time roles, or grad school.
                   </p>
                 </div>
 
@@ -238,51 +238,47 @@ export const LandingPage = () => {
                     </div>
 
                     {/* Boston marker - enhanced pulsing red dot with improved position */}
-                    <div className="absolute top-[32%] left-[22%] w-4 h-4 md:w-5 md:h-5">
+                    <div className="absolute top-[36%] left-[16%] w-4 h-4 md:w-5 md:h-5">
                       <div className="absolute inset-0 rounded-full bg-[#F28B82] animate-ping opacity-70"></div>
                       <div className="absolute inset-0 rounded-full bg-gradient-to-br from-[#F28B82] to-[#F9C5D1] shadow-lg"></div>
                     </div>
 
                     {/* Random dots representing people across countries */}
                     {/* North America dots */}
-                    <div className="absolute top-[25%] left-[18%] w-1.5 h-1.5 rounded-full bg-[#F9C5D1] opacity-80"></div>
-                    <div className="absolute top-[28%] left-[15%] w-2 h-2 rounded-full bg-[#A7D7F9] opacity-80"></div>
-                    <div className="absolute top-[33%] left-[16%] w-1.5 h-1.5 rounded-full bg-[#F9C5D1] opacity-80"></div>
-                    <div className="absolute top-[30%] left-[19%] w-1 h-1 rounded-full bg-[#A7D7F9] opacity-80"></div>
-                    <div className="absolute top-[36%] left-[14%] w-2 h-2 rounded-full bg-[#F9C5D1] opacity-80"></div>
-                    <div className="absolute top-[29%] left-[20%] w-1.5 h-1.5 rounded-full bg-[#A7D7F9] opacity-80 animate-pulse-slow"></div>
+                    <div className="absolute top-[27%] left-[10%] w-1.5 h-1.5 rounded-full bg-[#F9C5D1] opacity-80"></div>
+                    <div className="absolute top-[34%] left-[13%] w-2 h-2 rounded-full bg-[#A7D7F9] opacity-80"></div>
+                    <div className="absolute top-[40%] left-[14%] w-1.5 h-1.5 rounded-full bg-[#F9C5D1] opacity-80"></div>
+                    <div className="absolute top-[33%] left-[17%] w-1 h-1 rounded-full bg-[#A7D7F9] opacity-80"></div>
+                    <div className="absolute top-[37%] left-[12%] w-2 h-2 rounded-full bg-[#F9C5D1] opacity-80"></div>
+                    <div className="absolute top-[31%] left-[9%] w-1.5 h-1.5 rounded-full bg-[#A7D7F9] opacity-80"></div>
+                    <div className="absolute top-[44%] left-[12%] w-1.5 h-1.5 rounded-full bg-[#A7D7F9] opacity-80"></div>
+                    <div className="absolute top-[37%] left-[5%] w-1.5 h-1.5 rounded-full bg-[#A7D7F9] opacity-80"></div>
+                    <div className="absolute top-[42%] left-[9%] w-2 h-2 rounded-full bg-[#F9C5D1] opacity-80"></div>
+                    <div className="absolute top-[35%] left-[12%] w-1.5 h-1.5 rounded-full bg-[#A7D7F9] opacity-80"></div>
+                    <div className="absolute top-[38%] left-[3%] w-1.5 h-1.5 rounded-full bg-[#A7D7F9] opacity-80"></div>
+                    <div className="absolute top-[39%] left-[8%] w-1.5 h-1.5 rounded-full bg-[#A7D7F9] opacity-80"></div>
+                    <div className="absolute top-[32%] left-[4%] w-1.5 h-1.5 rounded-full bg-[#F9C5D1] opacity-80"></div>
 
                     {/* Europe dots */}
-                    <div className="absolute top-[26%] left-[40%] w-1.5 h-1.5 rounded-full bg-[#F9C5D1] opacity-80"></div>
-                    <div className="absolute top-[29%] left-[42%] w-1 h-1 rounded-full bg-[#A7D7F9] opacity-80"></div>
-                    <div className="absolute top-[25%] left-[45%] w-2 h-2 rounded-full bg-[#F9C5D1] opacity-80 animate-pulse-slow"></div>
-                    <div className="absolute top-[28%] left-[39%] w-1.5 h-1.5 rounded-full bg-[#A7D7F9] opacity-80"></div>
-                    <div className="absolute top-[30%] left-[44%] w-1 h-1 rounded-full bg-[#F9C5D1] opacity-80"></div>
+                    <div className="absolute top-[26%] left-[50%] w-1.5 h-1.5 rounded-full bg-[#F9C5D1] opacity-80"></div>
+                    <div className="absolute top-[39%] left-[52%] w-1 h-1 rounded-full bg-[#A7D7F9] opacity-80"></div>
+                    <div className="absolute top-[25%] left-[55%] w-2 h-2 rounded-full bg-[#F9C5D1] opacity-80"></div>
+                    <div className="absolute top-[38%] left-[59%] w-1.5 h-1.5 rounded-full bg-[#A7D7F9] opacity-80"></div>
+                    <div className="absolute top-[30%] left-[54%] w-1 h-1 rounded-full bg-[#F9C5D1] opacity-80"></div>
 
                     {/* Asia dots */}
                     <div className="absolute top-[28%] left-[60%] w-1.5 h-1.5 rounded-full bg-[#F9C5D1] opacity-80"></div>
                     <div className="absolute top-[32%] left-[65%] w-1 h-1 rounded-full bg-[#A7D7F9] opacity-80"></div>
                     <div className="absolute top-[34%] left-[70%] w-1.5 h-1.5 rounded-full bg-[#F9C5D1] opacity-80"></div>
-                    <div className="absolute top-[30%] left-[75%] w-2 h-2 rounded-full bg-[#A7D7F9] opacity-80 animate-pulse-slow"></div>
-                    <div className="absolute top-[33%] left-[80%] w-1 h-1 rounded-full bg-[#F9C5D1] opacity-80"></div>
-                    <div className="absolute top-[35%] left-[55%] w-1.5 h-1.5 rounded-full bg-[#A7D7F9] opacity-80"></div>
-
-                    {/* Australia dots */}
-                    <div className="absolute top-[65%] left-[75%] w-2 h-2 rounded-full bg-[#F9C5D1] opacity-80"></div>
-                    <div className="absolute top-[68%] left-[80%] w-1 h-1 rounded-full bg-[#A7D7F9] opacity-80 animate-pulse-slow"></div>
-                    <div className="absolute top-[67%] left-[77%] w-1.5 h-1.5 rounded-full bg-[#F9C5D1] opacity-80"></div>
 
                     {/* South America dots */}
-                    <div className="absolute top-[55%] left-[30%] w-1.5 h-1.5 rounded-full bg-[#F9C5D1] opacity-80"></div>
-                    <div className="absolute top-[60%] left-[28%] w-2 h-2 rounded-full bg-[#A7D7F9] opacity-80 animate-pulse-slow"></div>
-                    <div className="absolute top-[58%] left-[32%] w-1 h-1 rounded-full bg-[#F9C5D1] opacity-80"></div>
-                    <div className="absolute top-[63%] left-[30%] w-1.5 h-1.5 rounded-full bg-[#A7D7F9] opacity-80"></div>
+                    <div className="absolute top-[65%] left-[18%] w-1.5 h-1.5 rounded-full bg-[#F9C5D1] opacity-80"></div>
+                    <div className="absolute top-[70%] left-[15%] w-2 h-2 rounded-full bg-[#A7D7F9] opacity-80"></div>
+                    <div className="absolute top-[68%] left-[16%] w-1 h-1 rounded-full bg-[#F9C5D1] opacity-80"></div>
 
                     {/* Africa dots */}
                     <div className="absolute top-[42%] left-[48%] w-1.5 h-1.5 rounded-full bg-[#F9C5D1] opacity-80"></div>
                     <div className="absolute top-[45%] left-[45%] w-1 h-1 rounded-full bg-[#A7D7F9] opacity-80"></div>
-                    <div className="absolute top-[48%] left-[47%] w-2 h-2 rounded-full bg-[#F9C5D1] opacity-80 animate-pulse-slow"></div>
-                    <div className="absolute top-[46%] left-[50%] w-1.5 h-1.5 rounded-full bg-[#A7D7F9] opacity-80"></div>
 
                     {/* Interactive elements: pulse rings that follow cursor/touch position */}
                     <div

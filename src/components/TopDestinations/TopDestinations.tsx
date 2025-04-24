@@ -13,7 +13,11 @@ interface Destination {
   type: 'company' | 'school' | 'city';
 }
 
-export const TopDestinations = () => {
+interface TopDestinationsProps {
+  selectedClassYear?: number | null;
+}
+
+export const TopDestinations: React.FC<TopDestinationsProps> = ({ selectedClassYear = null }) => {
   const [activeTab, setActiveTab] = useState<'companies' | 'schools' | 'cities'>('companies');
   const [isExpanded, setIsExpanded] = useState(false);
   const [limit, setLimit] = useState(6);
@@ -24,7 +28,7 @@ export const TopDestinations = () => {
       setLimit(6);
       setIsExpanded(false);
     } else {
-      setLimit(30);
+      setLimit(60);
       setIsExpanded(true);
     }
   };
@@ -41,15 +45,36 @@ export const TopDestinations = () => {
     isLoading,
     error,
   } = useQuery<Destination[]>({
-    queryKey: ['topDestinations', activeTab, limit],
+    queryKey: ['topDestinations', activeTab, limit, selectedClassYear],
     queryFn: async () => {
-      const response = await fetch(`/api/stats/top-destinations?type=${activeTab}&limit=${limit}`);
+      const params = new URLSearchParams({
+        type: activeTab,
+        limit: limit.toString(),
+      });
+
+      // If a specific class year is selected, use it in the API query
+      if (selectedClassYear) {
+        params.append('classYear', selectedClassYear.toString());
+      } else {
+        // Otherwise, show data for all class years
+        params.append('showAllClassYears', 'true');
+      }
+
+      const response = await fetch(`/api/stats/top-destinations?${params.toString()}`);
       if (!response.ok) {
         throw new Error('Failed to fetch top destinations');
       }
       return response.json();
     },
   });
+
+  // Get class year display label based on selection
+  const getClassYearLabel = () => {
+    if (selectedClassYear) {
+      return `Class of ${selectedClassYear}`;
+    }
+    return 'All class years';
+  };
 
   // Animation variants for tabs
   const tabVariants = {
@@ -119,8 +144,17 @@ export const TopDestinations = () => {
           {/* Header with pink gradient accent */}
           <div className="relative p-6 border-b border-gray-100">
             <div className="absolute top-0 left-0 w-2 h-full bg-gradient-to-b from-[#F9C5D1] to-[#F28B82]"></div>
-            <h2 className="text-2xl font-bold text-[#333333] pl-4">Top Destinations</h2>
-            <p className="text-[#666666] mt-1 pl-4">Where BC Eagles are heading after graduation</p>
+            <div className="flex justify-between items-center">
+              <div>
+                <h2 className="text-2xl font-bold text-[#333333] pl-4">Top Destinations</h2>
+                <p className="text-[#666666] mt-1 pl-4">
+                  Where BC Eagles are heading for jobs, grad school, and internships
+                </p>
+              </div>
+              <div className="bg-gray-100 px-3 py-1 rounded-full text-xs text-gray-700">
+                {getClassYearLabel()}
+              </div>
+            </div>
           </div>
 
           {/* Tabs */}
@@ -128,7 +162,7 @@ export const TopDestinations = () => {
             <div className="flex flex-wrap gap-2">
               <motion.button
                 onClick={() => setActiveTab('companies')}
-                className={`px-4 py-2 rounded-full border transition-all flex items-center gap-2 ${getTabStyle('companies')}`}
+                className={`px-4 py-2 rounded-full border transition-all flex items-center gap-2 ${getTabStyle('companies')} cursor-pointer`}
                 variants={tabVariants}
                 initial="inactive"
                 animate={activeTab === 'companies' ? 'active' : 'inactive'}
@@ -141,7 +175,7 @@ export const TopDestinations = () => {
 
               <motion.button
                 onClick={() => setActiveTab('schools')}
-                className={`px-4 py-2 rounded-full border transition-all flex items-center gap-2 ${getTabStyle('schools')}`}
+                className={`px-4 py-2 rounded-full border transition-all flex items-center gap-2 ${getTabStyle('schools')} cursor-pointer`}
                 variants={tabVariants}
                 initial="inactive"
                 animate={activeTab === 'schools' ? 'active' : 'inactive'}
@@ -154,7 +188,7 @@ export const TopDestinations = () => {
 
               <motion.button
                 onClick={() => setActiveTab('cities')}
-                className={`px-4 py-2 rounded-full border transition-all flex items-center gap-2 ${getTabStyle('cities')}`}
+                className={`px-4 py-2 rounded-full border transition-all flex items-center gap-2 ${getTabStyle('cities')} cursor-pointer`}
                 variants={tabVariants}
                 initial="inactive"
                 animate={activeTab === 'cities' ? 'active' : 'inactive'}
@@ -252,7 +286,7 @@ export const TopDestinations = () => {
           <div className="p-4 bg-gray-50 border-t border-gray-100">
             <button
               onClick={toggleExpanded}
-              className="text-sm text-[#333333]/70 hover:text-[#F28B82] transition-colors flex items-center justify-center gap-1 group w-full"
+              className="text-sm text-[#333333]/70 hover:text-[#F28B82] transition-colors flex items-center justify-center gap-1 group w-full cursor-pointer"
             >
               <span>{isExpanded ? 'Show Less' : `View all ${activeTab}`}</span>
               {isExpanded ? (

@@ -22,7 +22,7 @@ export const Header = ({ transparent = false, showStatusBanner = false }: Header
 
   // Handle sign in
   const handleSignIn = () => {
-    signIn('google');
+    signIn('google', { callbackUrl: '/onboarding/step0' });
   };
 
   // Handle scroll behavior

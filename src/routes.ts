@@ -28,4 +28,4 @@ export const publicApiRoutes = [
 /**
  * The default redirect path after logging in
  */
-export const DEFAULT_LOGIN_REDIRECT = '/';
+export const DEFAULT_LOGIN_REDIRECT = '/onboarding/step0';

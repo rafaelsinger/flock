@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { IncompleteUserOnboarding } from '@/types/user';
 import { motion } from 'framer-motion';
-import { OnboardingProgress } from '@/components';
+import { OnboardingProgress, OnboardingButton } from '@/components';
 import { MdOutlineLocationCity } from 'react-icons/md';
 import { IoMdPeople } from 'react-icons/io';
 import { CitySelect } from '@/components/Select/CitySelect';
@@ -26,6 +26,7 @@ const Step3: FC = () => {
 
   const [isFormValid, setIsFormValid] = useState(false);
   const [activeField, setActiveField] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     setIsFormValid(
@@ -71,6 +72,7 @@ const Step3: FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
     updateOnboardingData.mutate(formData);
   };
 
@@ -79,13 +81,13 @@ const Step3: FC = () => {
     blur: { scale: 1, boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)' },
   };
 
-  const pageVariants = {
-    hidden: { opacity: 0, x: -20 },
+  const containerVariants = {
+    hidden: { opacity: 0, y: 20 },
     visible: {
       opacity: 1,
-      x: 0,
+      y: 0,
       transition: {
-        duration: 0.4,
+        duration: 0.5,
         staggerChildren: 0.1,
       },
     },
@@ -99,98 +101,109 @@ const Step3: FC = () => {
   const labelClasses = 'flex items-center text-sm font-medium text-[#333333] mb-2';
 
   return (
-    <motion.div className="space-y-8" variants={pageVariants} initial="hidden" animate="visible">
-      <OnboardingProgress currentStep={3} totalSteps={5} />
+    <motion.div
+      className="min-h-[calc(100vh-100px)] flex flex-col justify-center px-4 py-12 max-w-4xl mx-auto"
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+    >
+      {/* Card container */}
+      <motion.div
+        className="w-full bg-white rounded-2xl shadow-lg p-8 md:p-12 overflow-hidden relative"
+        variants={itemVariants}
+      >
+        {/* Top decoration pattern */}
+        <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-[#F9C5D1] via-[#F28B82] to-[#C06C84]"></div>
 
-      <motion.div className="text-center" variants={itemVariants}>
-        <h1 className="text-3xl font-semibold text-[#333333] mb-3">Where are you headed?</h1>
-        <p className="text-lg text-[#666666]">
-          Let your classmates know where you&apos;ll be living
-        </p>
-      </motion.div>
+        <OnboardingProgress currentStep={4} totalSteps={6} />
 
-      <form onSubmit={handleSubmit} className="space-y-8">
-        <div className="space-y-6">
-          <motion.div variants={itemVariants}>
-            <label htmlFor="city" className={labelClasses}>
-              <MdOutlineLocationCity className="mr-2 text-[#F28B82]" />
-              Location
-            </label>
-            <motion.div
-              variants={inputVariants}
-              animate={activeField === 'city' ? 'focus' : 'blur'}
-              onFocus={() => setActiveField('city')}
-              onBlur={() => setActiveField(null)}
-            >
-              <CitySelect
-                value={formData.city}
-                onChange={(location) => {
-                  setFormData((prev) => ({
-                    ...prev,
-                    city: location.city,
-                    state: location.state,
-                    country: location.country,
-                    lat: location.lat,
-                    lon: location.lon,
-                  }));
-                }}
-              />
-            </motion.div>
-          </motion.div>
+        <motion.div className="text-center mb-10 mt-4" variants={itemVariants}>
+          <h1 className="text-3xl md:text-4xl font-bold text-[#333333] mb-4">
+            Where are you headed?
+          </h1>
+          <p className="text-lg md:text-xl text-[#666666]">
+            Let your classmates know where you&apos;ll be living
+          </p>
+        </motion.div>
 
-          <motion.div variants={itemVariants}>
-            <label className={`${labelClasses} mb-3`}>
-              <IoMdPeople className="mr-2 text-[#F28B82]" />
-              Looking for Roommates
-            </label>
-            <motion.div className="flex items-center px-4 py-3 rounded-lg border border-gray-200 hover:border-[#F9C5D1]/50 cursor-pointer">
-              <input
-                type="checkbox"
-                id="lookingForRoommate"
-                checked={formData.lookingForRoommate}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    lookingForRoommate: e.target.checked,
-                  }))
-                }
-                className="w-5 h-5 text-[#F28B82] border-gray-300 rounded focus:ring-[#F9C5D1]"
-              />
-              <label
-                htmlFor="lookingForRoommate"
-                className="ml-2 text-sm text-[#333333] cursor-pointer"
+        <form onSubmit={handleSubmit} className="space-y-10 max-w-2xl mx-auto">
+          <div className="space-y-6">
+            <motion.div variants={itemVariants}>
+              <label htmlFor="city" className={labelClasses}>
+                <MdOutlineLocationCity className="mr-2 text-[#F28B82]" />
+                Location
+              </label>
+              <motion.div
+                variants={inputVariants}
+                animate={activeField === 'city' ? 'focus' : 'blur'}
+                onFocus={() => setActiveField('city')}
+                onBlur={() => setActiveField(null)}
               >
-                I&apos;m looking for roommate(s) in my postgrad destination
+                <CitySelect
+                  value={formData.city}
+                  onChange={(location) => {
+                    setFormData((prev) => ({
+                      ...prev,
+                      city: location.city,
+                      state: location.state,
+                      country: location.country,
+                      lat: location.lat,
+                      lon: location.lon,
+                    }));
+                  }}
+                />
+              </motion.div>
+            </motion.div>
+
+            <motion.div
+              variants={itemVariants}
+              whileHover={{ scale: 1.01 }}
+              className="rounded-xl border-2 border-gray-200 hover:border-[#F9C5D1]/40 transition-all"
+            >
+              <label className={`flex items-center p-4 cursor-pointer`}>
+                <input
+                  type="checkbox"
+                  id="lookingForRoommate"
+                  checked={formData.lookingForRoommate}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      lookingForRoommate: e.target.checked,
+                    }))
+                  }
+                  className="w-5 h-5 text-[#F28B82] border-gray-300 rounded focus:ring-[#F9C5D1]"
+                />
+                <div className="ml-3">
+                  <div className="flex items-center">
+                    <IoMdPeople className="mr-2 text-[#F28B82]" />
+                    <span className="font-medium text-[#333333]">Looking for Roommates</span>
+                  </div>
+                  <p className="text-sm text-[#666666] mt-1 ml-6">
+                    I&apos;m looking for roommate(s) in my postgrad destination
+                  </p>
+                </div>
               </label>
             </motion.div>
-          </motion.div>
-        </div>
+          </div>
 
-        <motion.div variants={itemVariants} className="flex justify-end space-x-4">
-          <motion.button
-            type="button"
-            onClick={() => router.back()}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            className="px-6 py-2.5 rounded-lg text-[#666666] hover:text-[#333333] transition-colors cursor-pointer hover:bg-gray-50 active:bg-gray-100"
+          <motion.div
+            className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0 md:space-x-4 pt-4"
+            variants={itemVariants}
           >
-            Back
-          </motion.button>
-          <motion.button
-            type="submit"
-            disabled={!isFormValid}
-            whileHover={isFormValid ? { scale: 1.02 } : {}}
-            whileTap={isFormValid ? { scale: 0.98 } : {}}
-            className={`px-6 py-2.5 rounded-lg transition-all cursor-pointer ${
-              isFormValid
-                ? 'bg-[#F28B82] hover:bg-[#E67C73] text-white shadow-sm hover:shadow'
-                : 'bg-[#F9C5D1]/50 cursor-not-allowed text-white/70'
-            }`}
-          >
-            Continue
-          </motion.button>
-        </motion.div>
-      </form>
+            <OnboardingButton type="button" variant="secondary" onClick={() => router.back()}>
+              Back
+            </OnboardingButton>
+            <OnboardingButton
+              type="submit"
+              variant="primary"
+              disabled={!isFormValid || isSubmitting}
+              isLoading={isSubmitting}
+            >
+              Continue
+            </OnboardingButton>
+          </motion.div>
+        </form>
+      </motion.div>
     </motion.div>
   );
 };

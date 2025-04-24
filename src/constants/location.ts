@@ -118,4 +118,5 @@ export const STATE_NAME_TO_ABBREV: Record<string, string> = {
   'West Virginia': 'WV',
   Wisconsin: 'WI',
   Wyoming: 'WY',
+  'District of Columbia': 'DC',
 };

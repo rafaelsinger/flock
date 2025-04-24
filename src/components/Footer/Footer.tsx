@@ -29,7 +29,7 @@ export const Footer = ({ simplified = false, transparent = false }: FooterProps)
                 alt="Flock Logo"
                 width={32}
                 height={32}
-                className="h-5 w-5 transition-transform hover:scale-110 duration-300"
+                className="h-5 w-5 transition-transform hover:scale-110 duration-300 cursor-pointer"
               />
               <span className="text-sm font-medium text-[#F28B82]">Flock</span>
             </div>
@@ -49,7 +49,7 @@ export const Footer = ({ simplified = false, transparent = false }: FooterProps)
           {/* Logo Section */}
           <div className="flex items-center gap-2.5">
             <div
-              className="relative h-6 w-6 sm:h-7 sm:w-7 transition-transform duration-300 hover:scale-110"
+              className="relative h-6 w-6 sm:h-7 sm:w-7 transition-transform duration-300 hover:scale-110 cursor-pointer"
               onMouseEnter={() => setIsHovering('logo')}
               onMouseLeave={() => setIsHovering('')}
             >

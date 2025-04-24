@@ -18,8 +18,8 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   title: 'Flock',
   description:
-    'Connecting graduating students by showing where their classmates are landing postgrad.',
-  keywords: ['boston college', 'graduates', 'networking', 'alumni', 'bc eagles'],
+    'Connecting graduating students and interns by showing where their classmates are landing postgrad.',
+  keywords: ['boston college', 'graduates', 'interns', 'networking', 'alumni', 'bc eagles'],
   icons: {
     icon: '🦩',
   },
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
     locale: 'en_US',
     url: 'https://getflock.app',
     title: 'Flock',
-    description: 'See where BC grads are landing after graduation',
+    description: 'See where BC grads and interns are landing after graduation',
     siteName: 'Flock',
     images: [
       {
@@ -42,7 +42,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Flock',
-    description: 'See where BC grads are landing after graduation',
+    description: 'See where BC grads and interns are landing after graduation',
     images: ['/logo.svg'],
   },
 };

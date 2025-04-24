@@ -90,7 +90,7 @@ export const UserGrid: React.FC<UserGridProps> = ({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {users.map((user, index) => (
                 <motion.div
                   key={user.id}
@@ -98,10 +98,14 @@ export const UserGrid: React.FC<UserGridProps> = ({
                   animate={{
                     opacity: 1,
                     y: 0,
-                    transition: { delay: index * 0.05 },
+                    transition: {
+                      delay: index * 0.05,
+                      type: 'spring',
+                      stiffness: 100,
+                      damping: 15,
+                    },
                   }}
-                  whileHover={{ y: -4 }}
-                  transition={{ duration: 0.2 }}
+                  className="h-full transform"
                 >
                   <UserCard user={user} prefetch={prefetchUserData} />
                 </motion.div>
@@ -121,7 +125,7 @@ export const UserGrid: React.FC<UserGridProps> = ({
           <button
             onClick={() => onPageChange(Math.max(1, page - 1))}
             disabled={page === 1}
-            className="px-3 py-1.5 rounded-md border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:border-[#F28B82] hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-[#F28B82] focus:ring-opacity-30"
+            className="px-3 py-1.5 rounded-md border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:border-[#F28B82] hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-[#F28B82] focus:ring-opacity-30 cursor-pointer"
             aria-label="Previous page"
           >
             ←
@@ -150,7 +154,7 @@ export const UserGrid: React.FC<UserGridProps> = ({
           <button
             onClick={() => onPageChange(Math.min(totalPages, page + 1))}
             disabled={page === totalPages}
-            className="px-3 py-1.5 rounded-md border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:border-[#F28B82] hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-[#F28B82] focus:ring-opacity-30"
+            className="px-3 py-1.5 rounded-md border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:border-[#F28B82] hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-[#F28B82] focus:ring-opacity-30 cursor-pointer"
             aria-label="Next page"
           >
             →

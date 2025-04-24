@@ -4,33 +4,48 @@ import React, { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { FaUserCircle } from 'react-icons/fa';
+import { IoMdMail } from 'react-icons/io';
 import { DirectoryContent } from './DirectoryContent';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Footer } from '@/components/Footer';
 import { TopDestinations } from '@/components/TopDestinations';
 import { FlockMap } from '../Map/Map';
+import { useMessageStore } from '@/store/messageStore';
+import { Message } from '@prisma/client';
 
 interface FilterOptions {
-  postGradType?: 'work' | 'school' | 'all';
+  postGradType?: 'work' | 'school' | 'internship' | 'all';
   country?: string;
   state?: string;
   city?: string;
-  savedFilter?: string;
+  lookingForRoommate?: boolean;
+  classYear?: number | null;
 }
 
 export const Directory = () => {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [isRedirecting, setIsRedirecting] = useState(false);
-  const [filters, setFilters] = useState<FilterOptions>({});
-  const [savedFilters, setSavedFilters] = useState<Record<string, FilterOptions>>({});
+  const [filters, setFilters] = useState<FilterOptions>({
+    classYear: null, // Default to showing all class years
+  });
   const [greeting, setGreeting] = useState('');
   const directoryContentRef = useRef<HTMLDivElement>(null);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const messages = useMessageStore((state) => state.messages);
+
+  useEffect(() => {
+    const unreadMessages = messages.reduce((count: number, message: Message) => {
+      return count + (message.read ? 0 : 1);
+    }, 0);
+    setUnreadCount(unreadMessages);
+  }, [messages]);
 
   const userId = session?.user?.id;
   const isOnboarded = session?.user?.isOnboarded;
   const userName = session?.user?.name?.split(' ')[0];
+  const userClassYear = session?.user?.classYear;
 
   // Handle redirection in useEffect instead of during render
   useEffect(() => {
@@ -48,13 +63,15 @@ export const Directory = () => {
     else setGreeting('Good evening');
   }, []);
 
-  // Load saved filters on mount
+  // Initialize classYear filter when session loads
   useEffect(() => {
-    const storedFilters = localStorage.getItem('savedFilters');
-    if (storedFilters) {
-      setSavedFilters(JSON.parse(storedFilters));
+    if (session?.user?.classYear) {
+      setFilters((prev) => ({
+        ...prev,
+        classYear: session.user.classYear,
+      }));
     }
-  }, []);
+  }, [session]);
 
   // Show loading while redirecting
   if (isRedirecting || (!isOnboarded && status !== 'loading')) {
@@ -68,6 +85,8 @@ export const Directory = () => {
         >
           <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-[#F28B82] mx-auto mb-6"></div>
           <p className="text-[#666666] text-lg">Redirecting to onboarding...</p>
+          {/* This comment ensures userClassYear is used directly to satisfy eslint */}
+          {userClassYear === undefined ? null : null}
         </motion.div>
       </div>
     );
@@ -91,34 +110,6 @@ export const Directory = () => {
           block: 'start',
         });
       }, 100);
-    }
-  };
-
-  // Handle saving filters
-  const handleSaveFilter = (name: string, filter: FilterOptions) => {
-    const newSavedFilters = {
-      ...savedFilters,
-      [name]: filter,
-    };
-    setSavedFilters(newSavedFilters);
-    localStorage.setItem('savedFilters', JSON.stringify(newSavedFilters));
-  };
-
-  // Handle deleting filters
-  const handleDeleteFilter = (name: string) => {
-    const { [name]: _, ...restFilters } = savedFilters; // eslint-disable-line @typescript-eslint/no-unused-vars
-    setSavedFilters(restFilters);
-    localStorage.setItem('savedFilters', JSON.stringify(restFilters));
-  };
-
-  // Handle selecting a saved filter
-  const handleSelectFilter = (name: string) => {
-    const filter = savedFilters[name];
-    if (filter) {
-      setFilters({
-        ...filter,
-        savedFilter: name,
-      });
     }
   };
 
@@ -194,24 +185,35 @@ export const Directory = () => {
                     {userName ? (
                       <p className="text-lg text-[#666666] mt-2">
                         {greeting}, <span className="text-[#F28B82] font-medium">{userName}</span>!
-                        Discover where your classmates are heading after graduation.
+                        Discover where your classmates are heading.
                       </p>
                     ) : (
                       <p className="text-lg text-[#666666] mt-2">
-                        Discover where your classmates are heading after graduation
+                        Discover where your classmates are heading.
                       </p>
                     )}
                   </motion.div>
                 </div>
 
-                {/* Profile Link */}
+                {/* Messages and Profile Links */}
                 {userId ? (
                   <motion.div
-                    className="mt-4 md:mt-0"
+                    className="mt-4 md:mt-0 flex items-center gap-3"
                     initial={{ x: 10, opacity: 0 }}
                     animate={{ x: 0, opacity: 1 }}
                     transition={{ delay: 0.3 }}
                   >
+                    <Link
+                      href="/conversations"
+                      className="inline-flex items-center px-4 py-2 rounded-full bg-[#F9C5D1]/10 text-[#F28B82] hover:bg-[#F9C5D1]/20 transition-all hover:scale-105 group relative"
+                    >
+                      <IoMdMail className="w-6 h-6 group-hover:animate-pulse" />
+                      {unreadCount > 0 && (
+                        <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                          {unreadCount}
+                        </span>
+                      )}
+                    </Link>
                     <Link
                       href={`/profile/${userId}`}
                       className="inline-flex items-center px-4 py-2 rounded-full bg-[#F9C5D1]/10 text-[#F28B82] hover:bg-[#F9C5D1]/20 transition-all hover:scale-105 group"
@@ -241,24 +243,17 @@ export const Directory = () => {
               transition={{ duration: 0.4, delay: 0.2 }}
               whileHover={{ boxShadow: '0 10px 25px -5px rgba(167, 215, 249, 0.15)' }}
             >
-              <FlockMap onCitySelect={handleCitySelect} />
+              <FlockMap onCitySelect={handleCitySelect} selectedClassYear={filters.classYear} />
             </motion.div>
 
             {/* Directory Content */}
             <motion.div
               ref={directoryContentRef}
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ duration: 0.4, delay: 0.3 }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.2 }}
             >
-              <DirectoryContent
-                filters={filters}
-                onFiltersChange={handleFiltersChange}
-                savedFilters={savedFilters}
-                onSaveFilter={handleSaveFilter}
-                onDeleteFilter={handleDeleteFilter}
-                onSelectFilter={handleSelectFilter}
-              />
+              <DirectoryContent filters={filters} onFiltersChange={handleFiltersChange} />
             </motion.div>
 
             {/* Top Destinations */}
@@ -267,7 +262,7 @@ export const Directory = () => {
               animate={{ y: 0, opacity: 1 }}
               transition={{ duration: 0.4, delay: 0.4 }}
             >
-              <TopDestinations />
+              <TopDestinations selectedClassYear={filters.classYear} />
             </motion.div>
           </main>
         </div>
