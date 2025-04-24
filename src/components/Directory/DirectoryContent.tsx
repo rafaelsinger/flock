@@ -239,6 +239,8 @@ export const DirectoryContent: React.FC<DirectoryContentProps> = ({ filters, onF
   const isMyCityActive =
     filters.city === userCity && filters.state === userState && filters.country === 'USA';
 
+  const regionType = filters.state === 'DC' ? 'District' : 'State'; // handling edge case
+
   // Determine content to render based on fullscreen state
   const renderContent = () => {
     return (
@@ -499,7 +501,7 @@ export const DirectoryContent: React.FC<DirectoryContentProps> = ({ filters, onF
                       exit={{ scale: 0.8, opacity: 0 }}
                       whileHover={{ scale: 1.05 }}
                     >
-                      State: {filters.state}
+                      {regionType}: {filters.state}
                       <button
                         onClick={() =>
                           onFiltersChange({ ...filters, state: undefined, city: undefined })
