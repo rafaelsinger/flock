@@ -11,7 +11,7 @@ import { FaEdit, FaSignOutAlt, FaBuilding, FaUniversity, FaHome, FaTrash } from 
 import { MdWork } from 'react-icons/md';
 import { HiOutlineAcademicCap } from 'react-icons/hi';
 import { NotFoundState } from '@/components/NotFoundState/NotFoundState';
-import { capitalize } from '@/lib/utils';
+import { capitalize, getAvailableYears } from '@/lib/utils';
 import { useUserData } from '@/hooks/useUserData';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -686,6 +686,10 @@ const EditForm = ({
       newErrors.location = 'Location is required';
     }
 
+    if (!userData.classYear) {
+      newErrors.classYear = 'Class year is required';
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -872,7 +876,9 @@ const EditForm = ({
           >
             <option value="work">Working</option>
             <option value="school">Studying</option>
-            <option value="internship">Internship</option>
+            {userData.classYear !== CURRENT_CLASS_YEAR && (
+              <option value="internship">Internship</option>
+            )}
             <option value="seeking">Just looking</option>
           </select>
         </motion.div>
@@ -1084,6 +1090,40 @@ const EditForm = ({
             />
           </div>
           {errors.location && <p className="mt-1 text-sm text-red-500">{errors.location}</p>}
+        </motion.div>
+      </motion.div>
+
+      <motion.div variants={itemVariants}>
+        <label htmlFor="classYear" className={labelClasses}>
+          <HiOutlineAcademicCap className="mr-2 text-[#8A8A8A]" />
+          Class Year
+        </label>
+        <motion.div
+          variants={inputVariants}
+          animate={activeField === 'classYear' ? 'focus' : 'blur'}
+        >
+          <select
+            id="classYear"
+            value={userData.classYear || ''}
+            onChange={(e) => {
+              setUserData({ ...userData, classYear: parseInt(e.target.value) });
+              if (errors.classYear) {
+                setErrors({ ...errors, classYear: '' });
+              }
+            }}
+            onFocus={() => setActiveField('classYear')}
+            onBlur={() => setActiveField(null)}
+            className={`${inputClasses.replace('cursor-text', 'cursor-pointer')} ${
+              errors.classYear ? 'border-red-400 bg-red-50' : ''
+            }`}
+          >
+            {getAvailableYears().map((year) => (
+              <option key={year} value={year}>
+                {year}
+              </option>
+            ))}
+          </select>
+          {errors.classYear && <p className="mt-1 text-sm text-red-500">{errors.classYear}</p>}
         </motion.div>
       </motion.div>
 
