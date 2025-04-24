@@ -13,6 +13,7 @@ export async function GET(request: NextRequest) {
 
     const searchParams = request.nextUrl.searchParams;
     const state = searchParams.get('state');
+    const classYear = searchParams.get('classYear');
 
     if (state) {
       // If a state parameter is provided, get city-level data within that state
@@ -25,6 +26,7 @@ export async function GET(request: NextRequest) {
               postGradType: {
                 not: PostGradType.seeking,
               },
+              classYear: classYear ? parseInt(classYear) : undefined,
             },
           },
         },
@@ -40,6 +42,7 @@ export async function GET(request: NextRequest) {
                   postGradType: {
                     not: PostGradType.seeking,
                   },
+                  classYear: classYear ? parseInt(classYear) : undefined,
                 },
               },
             },
@@ -75,6 +78,7 @@ export async function GET(request: NextRequest) {
               postGradType: {
                 not: PostGradType.seeking,
               },
+              classYear: classYear ? parseInt(classYear) : undefined,
             },
           },
         },
@@ -88,6 +92,7 @@ export async function GET(request: NextRequest) {
                   postGradType: {
                     not: PostGradType.seeking,
                   },
+                  classYear: classYear ? parseInt(classYear) : undefined,
                 },
               },
             },
