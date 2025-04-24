@@ -31,7 +31,7 @@ export const TopDestinations: React.FC<TopDestinationsProps> = ({ showAllClassYe
       setLimit(6);
       setIsExpanded(false);
     } else {
-      setLimit(30);
+      setLimit(60);
       setIsExpanded(true);
     }
   };
