@@ -1,13 +1,15 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { UserGrid } from '@/components/UserGrid';
-import { MdClear, MdSearch, MdRefresh } from 'react-icons/md';
+import { MdClear, MdSearch, MdRefresh, MdFilterList } from 'react-icons/md';
 import {
   FaGraduationCap,
   FaBriefcase,
   FaHome,
   FaMapMarkerAlt,
   FaUserGraduate,
+  FaChevronDown,
+  FaChevronUp,
 } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useDebounce } from '@/hooks/useDebounce';
@@ -40,6 +42,19 @@ const itemVariants = {
   visible: { y: 0, opacity: 1 },
 };
 
+// Mobile filter drawer animation variants
+const mobileFilterVariants = {
+  hidden: { height: 0, opacity: 0, overflow: 'hidden' },
+  visible: {
+    height: 'auto',
+    opacity: 1,
+    transition: {
+      height: { type: 'spring', stiffness: 300, damping: 30 },
+      opacity: { duration: 0.2 },
+    },
+  },
+};
+
 interface DirectoryContentProps {
   filters: FilterOptions;
   onFiltersChange: (filters: FilterOptions) => void;
@@ -54,6 +69,14 @@ export const DirectoryContent: React.FC<DirectoryContentProps> = ({ filters, onF
   >('all');
   const [isMapFullscreen, setIsMapFullscreen] = useState(false);
   const [showRoommateOnly, setShowRoommateOnly] = useState(false);
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const [windowWidth, setWindowWidth] = useState(0);
+  const isMobile = windowWidth < 768; // md breakpoint
+
+  // Initialize window width after component mounts to avoid hydration mismatch
+  useEffect(() => {
+    setWindowWidth(window.innerWidth);
+  }, []);
 
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
   const isSeeking = session?.user.postGradType === PostGradType.seeking;
@@ -126,6 +149,20 @@ export const DirectoryContent: React.FC<DirectoryContentProps> = ({ filters, onF
     window.addEventListener('keydown', handleEscKey);
     return () => window.removeEventListener('keydown', handleEscKey);
   }, [isMapFullscreen]);
+
+  // Track window size for responsive behavior
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+      // Close mobile filters if screen becomes larger than mobile breakpoint
+      if (window.innerWidth >= 768 && mobileFiltersOpen) {
+        setMobileFiltersOpen(false);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [mobileFiltersOpen]);
 
   // Use React Query to fetch users
   const { data, isLoading, error, refetch } = useQuery({
@@ -230,6 +267,10 @@ export const DirectoryContent: React.FC<DirectoryContentProps> = ({ filters, onF
     });
   };
 
+  const toggleMobileFilters = () => {
+    setMobileFiltersOpen((prev) => !prev);
+  };
+
   // Get user's general location (city & state) if available
   const userCity = !isSeeking ? session?.user?.location.city : undefined;
   const userState = !isSeeking ? session?.user?.location.state : undefined;
@@ -255,346 +296,577 @@ export const DirectoryContent: React.FC<DirectoryContentProps> = ({ filters, onF
           className="bg-white rounded-xl p-5 shadow-sm border border-gray-100"
           variants={itemVariants}
         >
-          <div className="flex flex-col md:flex-row gap-4">
-            {/* Search Bar */}
+          {/* Search Bar and Mobile Filter Toggle */}
+          <div className="flex gap-2 items-center mb-3 md:mb-2">
             <div className="flex-1 relative">
-              <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+              <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
                 <MdSearch className="h-5 w-5 text-gray-400" />
               </div>
               <input
                 type="text"
-                placeholder="Search by name, company, school, or location..."
+                placeholder="Search by name, company, school..."
                 value={searchQuery}
                 onChange={(e) => handleSearch(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 rounded-lg border border-gray-200 focus:border-[#F9C5D1] focus:ring-2 focus:ring-[#F9C5D1]/20 outline-none transition-all text-gray-700"
+                className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-200 focus:border-[#F9C5D1] focus:ring-2 focus:ring-[#F9C5D1]/20 outline-none transition-all text-gray-700 text-sm"
               />
               {searchQuery && (
                 <button
-                  className="absolute inset-y-0 right-4 flex items-center cursor-pointer"
+                  className="absolute inset-y-0 right-3 flex items-center cursor-pointer"
                   onClick={() => setSearchQuery('')}
                 >
-                  <MdClear className="h-5 w-5 text-gray-400 hover:text-[#F28B82]" />
+                  <MdClear className="h-4 w-4 text-gray-400 hover:text-[#F28B82]" />
                 </button>
               )}
             </div>
 
-            {/* Quick filter buttons */}
-            <div className="flex flex-wrap gap-3 items-center">
-              {/* Status filters grouped in a container */}
-              <div className="flex items-center bg-gray-50 px-2 py-1 rounded-lg space-x-1">
-                <motion.button
-                  onClick={() => handleTypeFilterChange('all')}
-                  className={`px-3 py-1.5 rounded-md ${
-                    activeTypeFilter === 'all'
-                      ? 'bg-[#F9C5D1]/10 text-[#F28B82] font-medium'
-                      : 'text-gray-600 hover:bg-gray-100'
-                  } transition-all text-sm cursor-pointer`}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  All
-                </motion.button>
-
-                <motion.button
-                  onClick={() => handleTypeFilterChange('work')}
-                  className={`px-3 py-1.5 rounded-md ${
-                    activeTypeFilter === 'work'
-                      ? 'bg-[#F9C5D1]/10 text-[#F28B82] font-medium'
-                      : 'text-gray-600 hover:bg-gray-100'
-                  } transition-all text-sm flex items-center gap-1.5 cursor-pointer`}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <FaBriefcase className="text-xs" />
-                  Working
-                </motion.button>
-
-                <motion.button
-                  onClick={() => handleTypeFilterChange('school')}
-                  className={`px-3 py-1.5 rounded-md ${
-                    activeTypeFilter === 'school'
-                      ? 'bg-[#A7D7F9]/10 text-[#A7D7F9] font-medium'
-                      : 'text-gray-600 hover:bg-gray-100'
-                  } transition-all text-sm flex items-center gap-1.5 cursor-pointer`}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <FaGraduationCap className="text-xs" />
-                  Studying
-                </motion.button>
-
-                <motion.button
-                  onClick={() => handleTypeFilterChange('internship')}
-                  className={`px-3 py-1.5 rounded-md ${
-                    activeTypeFilter === 'internship'
-                      ? 'bg-[#A7D7F9]/10 text-[#A7D7F9] font-medium'
-                      : 'text-gray-600 hover:bg-gray-100'
-                  } transition-all text-sm flex items-center gap-1.5 cursor-pointer`}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <FaBriefcase className="text-xs" />
-                  Internship
-                </motion.button>
-              </div>
-
-              {/* Secondary filters with less visual weight */}
-              <div className="flex items-center space-x-2">
-                <motion.button
-                  onClick={handleRoommateFilterChange}
-                  className={`px-3 py-1.5 rounded-md ${
-                    showRoommateOnly
-                      ? 'bg-[#8FC9A9]/10 text-[#8FC9A9] font-medium'
-                      : 'text-gray-600 hover:bg-gray-100'
-                  } transition-all text-sm flex items-center gap-1.5 cursor-pointer`}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <FaHome className="text-xs" />
-                  Roommates
-                </motion.button>
-
-                {hasUserLocation && (
-                  <motion.button
-                    onClick={handleMyCityFilterChange}
-                    className={`px-3 py-1.5 rounded-md ${
-                      isMyCityActive
-                        ? 'bg-[#A7D7F9]/10 text-[#A7D7F9] font-medium'
-                        : 'text-gray-600 hover:bg-gray-100'
-                    } transition-all text-sm flex items-center gap-1.5 cursor-pointer`}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    <FaMapMarkerAlt className="text-xs" />
-                    My City
-                  </motion.button>
+            {/* Mobile Filter Toggle Button */}
+            <motion.button
+              onClick={toggleMobileFilters}
+              className="md:hidden flex items-center justify-center px-3 py-2.5 rounded-lg bg-gray-50 hover:bg-gray-100 text-gray-700 transition-all"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              aria-label="Toggle filters"
+            >
+              <MdFilterList className="h-5 w-5" />
+              <span className="ml-1 text-sm font-medium">
+                Filters
+                {mobileFiltersOpen ? (
+                  <FaChevronUp className="inline-block ml-1 text-xs" />
+                ) : (
+                  <FaChevronDown className="inline-block ml-1 text-xs" />
                 )}
-
-                {/* Class Year Toggle Button */}
-                {userClassYear && (
-                  <motion.button
-                    onClick={handleClassYearFilterChange}
-                    className={`px-3 py-1.5 rounded-md ${
-                      !filters.showAllClassYears
-                        ? 'bg-[#F9C5D1]/10 text-[#F28B82] font-medium'
-                        : 'text-gray-600 hover:bg-gray-100'
-                    } transition-all text-sm flex items-center gap-1.5 cursor-pointer`}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    <FaUserGraduate className="text-xs" />
-                    Class of {userClassYear}
-                  </motion.button>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Active filters section - always visible with border */}
-          <div className="mt-4 pt-4 border-t border-gray-100">
-            <div className="flex flex-wrap items-center gap-2 min-h-[28px]">
+              </span>
               {hasFiltersActive && (
-                <>
-                  <span className="text-sm text-gray-500">Active filters:</span>
-
-                  {activeTypeFilter !== 'all' && (
-                    <motion.span
-                      className="px-2 py-1 bg-gray-100 rounded-md text-xs text-gray-700 flex items-center"
-                      initial={{ scale: 0.8, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      exit={{ scale: 0.8, opacity: 0 }}
-                      whileHover={{ scale: 1.05 }}
-                    >
-                      {activeTypeFilter === 'work'
-                        ? 'Working'
-                        : activeTypeFilter === 'school'
-                          ? 'Studying'
-                          : 'Internship'}
-                      <button
-                        onClick={() => {
-                          setActiveTypeFilter('all');
-                          onFiltersChange({ ...filters, postGradType: undefined });
-                        }}
-                        className="ml-1 text-gray-500 hover:text-[#F28B82] cursor-pointer"
-                      >
-                        <MdClear size={14} />
-                      </button>
-                    </motion.span>
-                  )}
-
-                  {searchQuery && (
-                    <motion.span
-                      className="px-2 py-1 bg-gray-100 rounded-md text-xs text-gray-700 flex items-center"
-                      initial={{ scale: 0.8, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      exit={{ scale: 0.8, opacity: 0 }}
-                      whileHover={{ scale: 1.05 }}
-                    >
-                      Search:{' '}
-                      {searchQuery.length > 15 ? `${searchQuery.substring(0, 15)}...` : searchQuery}
-                      <button
-                        onClick={() => setSearchQuery('')}
-                        className="ml-1 text-gray-500 hover:text-[#F28B82] cursor-pointer"
-                      >
-                        <MdClear size={14} />
-                      </button>
-                    </motion.span>
-                  )}
-
-                  {/* My City filter pill */}
-                  {isMyCityActive && (
-                    <motion.span
-                      className="px-2 py-1 bg-gray-100 rounded-md text-xs text-gray-700 flex items-center"
-                      initial={{ scale: 0.8, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      exit={{ scale: 0.8, opacity: 0 }}
-                      whileHover={{ scale: 1.05 }}
-                    >
-                      My City: {userCity}, {userState}
-                      <button
-                        onClick={() =>
-                          onFiltersChange({
-                            ...filters,
-                            country: undefined,
-                            state: undefined,
-                            city: undefined,
-                          })
-                        }
-                        className="ml-1 text-gray-500 hover:text-[#F28B82] cursor-pointer"
-                      >
-                        <MdClear size={14} />
-                      </button>
-                    </motion.span>
-                  )}
-
-                  {/* Only show country/state/city filters if My City filter is not active */}
-                  {filters.country && !isMyCityActive && (
-                    <motion.span
-                      className="px-2 py-1 bg-gray-100 rounded-md text-xs text-gray-700 flex items-center"
-                      initial={{ scale: 0.8, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      exit={{ scale: 0.8, opacity: 0 }}
-                      whileHover={{ scale: 1.05 }}
-                    >
-                      Country: {filters.country}
-                      <button
-                        onClick={() =>
-                          onFiltersChange({
-                            ...filters,
-                            country: undefined,
-                            state: undefined,
-                            city: undefined,
-                          })
-                        }
-                        className="ml-1 text-gray-500 hover:text-[#F28B82] cursor-pointer"
-                      >
-                        <MdClear size={14} />
-                      </button>
-                    </motion.span>
-                  )}
-
-                  {filters.state && !isMyCityActive && (
-                    <motion.span
-                      className="px-2 py-1 bg-gray-100 rounded-md text-xs text-gray-700 flex items-center"
-                      initial={{ scale: 0.8, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      exit={{ scale: 0.8, opacity: 0 }}
-                      whileHover={{ scale: 1.05 }}
-                    >
-                      {regionType}: {filters.state}
-                      <button
-                        onClick={() =>
-                          onFiltersChange({ ...filters, state: undefined, city: undefined })
-                        }
-                        className="ml-1 text-gray-500 hover:text-[#F28B82] cursor-pointer"
-                      >
-                        <MdClear size={14} />
-                      </button>
-                    </motion.span>
-                  )}
-
-                  {filters.city && !isMyCityActive && (
-                    <motion.span
-                      className="px-2 py-1 bg-gray-100 rounded-md text-xs text-gray-700 flex items-center"
-                      initial={{ scale: 0.8, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      exit={{ scale: 0.8, opacity: 0 }}
-                      whileHover={{ scale: 1.05 }}
-                    >
-                      City: {filters.city}
-                      <button
-                        onClick={() => onFiltersChange({ ...filters, city: undefined })}
-                        className="ml-1 text-gray-500 hover:text-[#F28B82] cursor-pointer"
-                      >
-                        <MdClear size={14} />
-                      </button>
-                    </motion.span>
-                  )}
-
-                  {/* Roommate filter pill */}
-                  {(showRoommateOnly || filters.lookingForRoommate) && (
-                    <motion.span
-                      className="px-2 py-1 bg-gray-100 rounded-md text-xs text-gray-700 flex items-center"
-                      initial={{ scale: 0.8, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      exit={{ scale: 0.8, opacity: 0 }}
-                      whileHover={{ scale: 1.05 }}
-                    >
-                      Looking for Roommates
-                      <button
-                        onClick={() => {
-                          setShowRoommateOnly(false);
-                          onFiltersChange({ ...filters, lookingForRoommate: undefined });
-                        }}
-                        className="ml-1 text-gray-500 hover:text-[#F28B82] cursor-pointer"
-                      >
-                        <MdClear size={14} />
-                      </button>
-                    </motion.span>
-                  )}
-
-                  <button
-                    onClick={handleClearFilters}
-                    className="ml-auto text-xs px-3 py-1 text-[#F28B82] hover:text-[#E67C73] transition-colors flex items-center gap-1 cursor-pointer"
-                  >
-                    <MdClear size={14} />
-                    Clear all
-                  </button>
-                </>
+                <span className="ml-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-[#F28B82] text-xs text-white">
+                  {/* Count active filters */}
+                  {(activeTypeFilter !== 'all' ? 1 : 0) +
+                    (!!searchQuery ? 1 : 0) +
+                    (isMyCityActive ? 1 : 0) +
+                    (!isMyCityActive && !!filters.country ? 1 : 0) +
+                    (!isMyCityActive && !!filters.state ? 1 : 0) +
+                    (!isMyCityActive && !!filters.city ? 1 : 0) +
+                    (showRoommateOnly || filters.lookingForRoommate ? 1 : 0)}
+                </span>
               )}
-
-              {/* Class Year Indicator - always visible */}
-              {userClassYear && (
-                <motion.span
-                  className={`px-2 py-1 ${hasFiltersActive ? '' : 'ml-auto'} bg-gray-100 rounded-md text-xs text-gray-700 flex items-center`}
-                  initial={{ scale: 0.8, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  exit={{ scale: 0.8, opacity: 0 }}
-                  whileHover={{ scale: 1.05 }}
-                >
-                  {!filters.showAllClassYears
-                    ? `Showing only class of ${userClassYear}`
-                    : `Showing all class years`}
-                </motion.span>
-              )}
-            </div>
+            </motion.button>
           </div>
+
+          {/* Desktop Filter UI - Always visible on md+ screens, animated drawer on mobile */}
+          <div className="md:block">
+            {/* For desktop: always visible - optimized for horizontal layout */}
+            <div className="hidden md:block">
+              <div className="flex items-start gap-4">
+                {/* Desktop Filter Groups - Horizontal layout with reduced vertical space */}
+                <div className="flex-1 flex gap-3">
+                  {/* Status filter group */}
+                  <div className="flex flex-col">
+                    <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1.5 px-0.5">
+                      Status
+                    </h4>
+                    <div className="flex items-center bg-gray-50 p-1 rounded-lg">
+                      <motion.button
+                        onClick={() => handleTypeFilterChange('all')}
+                        className={`px-3 py-1.5 rounded-md ${
+                          activeTypeFilter === 'all'
+                            ? 'bg-[#F9C5D1]/10 text-[#F28B82] font-medium'
+                            : 'text-gray-600 hover:bg-gray-100'
+                        } transition-all text-sm flex items-center justify-center h-[34px]`}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                      >
+                        All
+                      </motion.button>
+
+                      <motion.button
+                        onClick={() => handleTypeFilterChange('work')}
+                        className={`px-3 py-1.5 rounded-md ${
+                          activeTypeFilter === 'work'
+                            ? 'bg-[#F9C5D1]/10 text-[#F28B82] font-medium'
+                            : 'text-gray-600 hover:bg-gray-100'
+                        } transition-all text-sm flex items-center justify-center gap-1.5 h-[34px]`}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                      >
+                        <FaBriefcase className="text-xs" />
+                        Working
+                      </motion.button>
+
+                      <motion.button
+                        onClick={() => handleTypeFilterChange('school')}
+                        className={`px-3 py-1.5 rounded-md ${
+                          activeTypeFilter === 'school'
+                            ? 'bg-[#F9C5D1]/10 text-[#F28B82] font-medium'
+                            : 'text-gray-600 hover:bg-gray-100'
+                        } transition-all text-sm flex items-center justify-center gap-1.5 h-[34px]`}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                      >
+                        <FaGraduationCap className="text-xs" />
+                        Studying
+                      </motion.button>
+
+                      <motion.button
+                        onClick={() => handleTypeFilterChange('internship')}
+                        className={`px-3 py-1.5 rounded-md ${
+                          activeTypeFilter === 'internship'
+                            ? 'bg-[#F9C5D1]/10 text-[#F28B82] font-medium'
+                            : 'text-gray-600 hover:bg-gray-100'
+                        } transition-all text-sm flex items-center justify-center gap-1.5 h-[34px]`}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                      >
+                        <FaBriefcase className="text-xs" />
+                        Intern
+                      </motion.button>
+                    </div>
+                  </div>
+
+                  {/* Secondary filters */}
+                  <div className="flex flex-col">
+                    <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1.5 px-0.5">
+                      More Filters
+                    </h4>
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <motion.button
+                        onClick={handleRoommateFilterChange}
+                        className={`px-3 py-1.5 rounded-md ${
+                          showRoommateOnly
+                            ? 'bg-[#F9C5D1]/10 text-[#F28B82] font-medium'
+                            : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+                        } transition-all text-sm flex items-center justify-center gap-1.5 h-[34px]`}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                      >
+                        <FaHome className="text-xs" />
+                        Roommates
+                      </motion.button>
+
+                      {hasUserLocation && (
+                        <motion.button
+                          onClick={handleMyCityFilterChange}
+                          className={`px-3 py-1.5 rounded-md ${
+                            isMyCityActive
+                              ? 'bg-[#F9C5D1]/10 text-[#F28B82] font-medium'
+                              : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+                          } transition-all text-sm flex items-center justify-center gap-1.5 h-[34px]`}
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                        >
+                          <FaMapMarkerAlt className="text-xs" />
+                          My City
+                        </motion.button>
+                      )}
+
+                      {/* Class Year Toggle Button */}
+                      {userClassYear && (
+                        <motion.button
+                          onClick={handleClassYearFilterChange}
+                          className={`px-3 py-1.5 rounded-md ${
+                            !filters.showAllClassYears
+                              ? 'bg-[#F9C5D1]/10 text-[#F28B82] font-medium'
+                              : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+                          } transition-all text-sm flex items-center justify-center gap-1.5 h-[34px]`}
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                        >
+                          <FaUserGraduate className="text-xs" />
+                          Class of {userClassYear}
+                        </motion.button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* For mobile: animated drawer */}
+            <AnimatePresence>
+              {(mobileFiltersOpen || !isMobile) && (
+                <motion.div
+                  className="md:hidden"
+                  variants={mobileFilterVariants}
+                  initial="hidden"
+                  animate="visible"
+                  exit="hidden"
+                >
+                  <div className="flex flex-col gap-4 py-2">
+                    {/* Close button for mobile */}
+                    <div className="flex justify-between items-center mb-1">
+                      <h3 className="text-sm font-medium text-gray-700">Filters</h3>
+                      <motion.button
+                        onClick={toggleMobileFilters}
+                        className="p-1 rounded-full hover:bg-gray-100 text-gray-500"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        <MdClear size={20} />
+                      </motion.button>
+                    </div>
+
+                    {/* Filter Groups - Redesigned for better mobile experience */}
+                    <div className="flex flex-col gap-3 w-full">
+                      {/* Status filter group with label */}
+                      <div className="space-y-2">
+                        <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wider px-1">
+                          Status
+                        </h4>
+                        <div className="flex flex-wrap items-center bg-gray-50 p-1 rounded-lg">
+                          <motion.button
+                            onClick={() => handleTypeFilterChange('all')}
+                            className={`flex-1 px-3 py-1.5 rounded-md ${
+                              activeTypeFilter === 'all'
+                                ? 'bg-[#F9C5D1]/10 text-[#F28B82] font-medium'
+                                : 'text-gray-600 hover:bg-gray-100'
+                            } transition-all text-sm cursor-pointer`}
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                          >
+                            All
+                          </motion.button>
+
+                          <motion.button
+                            onClick={() => handleTypeFilterChange('work')}
+                            className={`flex-1 px-3 py-1.5 rounded-md ${
+                              activeTypeFilter === 'work'
+                                ? 'bg-[#F9C5D1]/10 text-[#F28B82] font-medium'
+                                : 'text-gray-600 hover:bg-gray-100'
+                            } transition-all text-sm flex items-center justify-center gap-1.5 cursor-pointer`}
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                          >
+                            <FaBriefcase className="text-xs" />
+                            Working
+                          </motion.button>
+
+                          <motion.button
+                            onClick={() => handleTypeFilterChange('school')}
+                            className={`flex-1 px-3 py-1.5 rounded-md ${
+                              activeTypeFilter === 'school'
+                                ? 'bg-[#F9C5D1]/10 text-[#F28B82] font-medium'
+                                : 'text-gray-600 hover:bg-gray-100'
+                            } transition-all text-sm flex items-center justify-center gap-1.5 cursor-pointer`}
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                          >
+                            <FaGraduationCap className="text-xs" />
+                            Studying
+                          </motion.button>
+
+                          <motion.button
+                            onClick={() => handleTypeFilterChange('internship')}
+                            className={`flex-1 px-3 py-1.5 rounded-md ${
+                              activeTypeFilter === 'internship'
+                                ? 'bg-[#F9C5D1]/10 text-[#F28B82] font-medium'
+                                : 'text-gray-600 hover:bg-gray-100'
+                            } transition-all text-sm flex items-center justify-center gap-1.5 cursor-pointer`}
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                          >
+                            <FaBriefcase className="text-xs" />
+                            Intern
+                          </motion.button>
+                        </div>
+                      </div>
+
+                      {/* Secondary filters with label */}
+                      <div className="space-y-2">
+                        <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wider px-1">
+                          More Filters
+                        </h4>
+                        <div className="grid grid-cols-2 md:flex flex-wrap gap-2">
+                          <motion.button
+                            onClick={handleRoommateFilterChange}
+                            className={`px-3 py-1.5 rounded-md ${
+                              showRoommateOnly
+                                ? 'bg-[#F9C5D1]/10 text-[#F28B82] font-medium'
+                                : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+                            } transition-all text-sm flex items-center justify-center gap-1.5 cursor-pointer`}
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                          >
+                            <FaHome className="text-xs" />
+                            Roommates
+                          </motion.button>
+
+                          {hasUserLocation && (
+                            <motion.button
+                              onClick={handleMyCityFilterChange}
+                              className={`px-3 py-1.5 rounded-md ${
+                                isMyCityActive
+                                  ? 'bg-[#F9C5D1]/10 text-[#F28B82] font-medium'
+                                  : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+                              } transition-all text-sm flex items-center justify-center gap-1.5 cursor-pointer`}
+                              whileHover={{ scale: 1.02 }}
+                              whileTap={{ scale: 0.98 }}
+                            >
+                              <FaMapMarkerAlt className="text-xs" />
+                              My City
+                            </motion.button>
+                          )}
+
+                          {/* Class Year Toggle Button */}
+                          {userClassYear && (
+                            <motion.button
+                              onClick={handleClassYearFilterChange}
+                              className={`px-3 py-1.5 rounded-md ${
+                                !filters.showAllClassYears
+                                  ? 'bg-[#F9C5D1]/10 text-[#F28B82] font-medium'
+                                  : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+                              } transition-all text-sm flex items-center justify-center gap-1.5 cursor-pointer`}
+                              whileHover={{ scale: 1.02 }}
+                              whileTap={{ scale: 0.98 }}
+                            >
+                              <FaUserGraduate className="text-xs" />
+                              Class of {userClassYear}
+                            </motion.button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* Active filters section - enhanced for mobile with animations */}
+          <AnimatePresence>
+            {(hasFiltersActive || (userClassYear && !hasFiltersActive)) && (
+              <motion.div
+                className={`mt-3 pt-3 md:mt-2 md:pt-2 border-t border-gray-100 ${
+                  isMobile && !mobileFiltersOpen ? 'hidden md:block' : 'block'
+                }`}
+                variants={mobileFilterVariants}
+                initial={isMobile ? 'hidden' : 'visible'}
+                animate="visible"
+                exit="hidden"
+              >
+                <div className="flex flex-wrap items-center gap-2 min-h-[28px]">
+                  {hasFiltersActive && (
+                    <>
+                      {/* Label - Mobile only */}
+                      <span className="text-xs font-medium text-gray-500 uppercase tracking-wider w-full mb-2 md:hidden">
+                        Active filters
+                      </span>
+
+                      {/* Desktop layout - label inline with filters */}
+                      <span className="hidden md:inline-block text-sm font-medium text-gray-500 mr-1">
+                        Active:
+                      </span>
+
+                      <div className="flex flex-wrap gap-2 w-full md:w-auto md:flex-1">
+                        {activeTypeFilter !== 'all' && (
+                          <motion.span
+                            className="px-2 py-0.5 md:px-2.5 md:py-1 bg-gray-100 rounded-md text-xs md:text-sm text-gray-700 flex items-center"
+                            initial={{ scale: 0.8, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.8, opacity: 0 }}
+                            whileHover={{ scale: 1.05 }}
+                          >
+                            {activeTypeFilter === 'work'
+                              ? 'Working'
+                              : activeTypeFilter === 'school'
+                                ? 'Studying'
+                                : 'Internship'}
+                            <button
+                              onClick={() => {
+                                setActiveTypeFilter('all');
+                                onFiltersChange({ ...filters, postGradType: undefined });
+                              }}
+                              className="ml-1 text-gray-500 hover:text-[#F28B82] cursor-pointer"
+                            >
+                              <MdClear size={12} className="md:h-4 md:w-4" />
+                            </button>
+                          </motion.span>
+                        )}
+
+                        {searchQuery && (
+                          <motion.span
+                            className="px-2 py-0.5 md:px-2.5 md:py-1 bg-gray-100 rounded-md text-xs md:text-sm text-gray-700 flex items-center"
+                            initial={{ scale: 0.8, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.8, opacity: 0 }}
+                            whileHover={{ scale: 1.05 }}
+                          >
+                            Search:{' '}
+                            {searchQuery.length > 15
+                              ? `${searchQuery.substring(0, 15)}...`
+                              : searchQuery}
+                            <button
+                              onClick={() => setSearchQuery('')}
+                              className="ml-1 text-gray-500 hover:text-[#F28B82] cursor-pointer"
+                            >
+                              <MdClear size={12} className="md:h-4 md:w-4" />
+                            </button>
+                          </motion.span>
+                        )}
+
+                        {/* My City filter pill */}
+                        {isMyCityActive && (
+                          <motion.span
+                            className="px-2 py-0.5 md:px-2.5 md:py-1 bg-gray-100 rounded-md text-xs md:text-sm text-gray-700 flex items-center"
+                            initial={{ scale: 0.8, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.8, opacity: 0 }}
+                            whileHover={{ scale: 1.05 }}
+                          >
+                            My City: {userCity}, {userState}
+                            <button
+                              onClick={() =>
+                                onFiltersChange({
+                                  ...filters,
+                                  country: undefined,
+                                  state: undefined,
+                                  city: undefined,
+                                })
+                              }
+                              className="ml-1 text-gray-500 hover:text-[#F28B82] cursor-pointer"
+                            >
+                              <MdClear size={12} className="md:h-4 md:w-4" />
+                            </button>
+                          </motion.span>
+                        )}
+
+                        {/* Only show country/state/city filters if My City filter is not active */}
+                        {filters.country && !isMyCityActive && (
+                          <motion.span
+                            className="px-2 py-0.5 md:px-2.5 md:py-1 bg-gray-100 rounded-md text-xs md:text-sm text-gray-700 flex items-center"
+                            initial={{ scale: 0.8, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.8, opacity: 0 }}
+                            whileHover={{ scale: 1.05 }}
+                          >
+                            Country: {filters.country}
+                            <button
+                              onClick={() =>
+                                onFiltersChange({
+                                  ...filters,
+                                  country: undefined,
+                                  state: undefined,
+                                  city: undefined,
+                                })
+                              }
+                              className="ml-1 text-gray-500 hover:text-[#F28B82] cursor-pointer"
+                            >
+                              <MdClear size={12} className="md:h-4 md:w-4" />
+                            </button>
+                          </motion.span>
+                        )}
+
+                        {filters.state && !isMyCityActive && (
+                          <motion.span
+                            className="px-2 py-1 bg-gray-100 rounded-md text-xs text-gray-700 flex items-center"
+                            initial={{ scale: 0.8, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.8, opacity: 0 }}
+                            whileHover={{ scale: 1.05 }}
+                          >
+                            {regionType}: {filters.state}
+                            <button
+                              onClick={() =>
+                                onFiltersChange({ ...filters, state: undefined, city: undefined })
+                              }
+                              className="ml-1 text-gray-500 hover:text-[#F28B82] cursor-pointer"
+                            >
+                              <MdClear size={14} />
+                            </button>
+                          </motion.span>
+                        )}
+
+                        {filters.city && !isMyCityActive && (
+                          <motion.span
+                            className="px-2 py-1 bg-gray-100 rounded-md text-xs text-gray-700 flex items-center"
+                            initial={{ scale: 0.8, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.8, opacity: 0 }}
+                            whileHover={{ scale: 1.05 }}
+                          >
+                            City: {filters.city}
+                            <button
+                              onClick={() => onFiltersChange({ ...filters, city: undefined })}
+                              className="ml-1 text-gray-500 hover:text-[#F28B82] cursor-pointer"
+                            >
+                              <MdClear size={14} />
+                            </button>
+                          </motion.span>
+                        )}
+
+                        {/* Roommate filter pill */}
+                        {(showRoommateOnly || filters.lookingForRoommate) && (
+                          <motion.span
+                            className="px-2 py-0.5 md:px-2.5 md:py-1 bg-gray-100 rounded-md text-xs md:text-sm text-gray-700 flex items-center"
+                            initial={{ scale: 0.8, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.8, opacity: 0 }}
+                            whileHover={{ scale: 1.05 }}
+                          >
+                            Looking for Roommates
+                            <button
+                              onClick={() => {
+                                setShowRoommateOnly(false);
+                                onFiltersChange({ ...filters, lookingForRoommate: undefined });
+                              }}
+                              className="ml-1 text-gray-500 hover:text-[#F28B82] cursor-pointer"
+                            >
+                              <MdClear size={12} className="md:h-4 md:w-4" />
+                            </button>
+                          </motion.span>
+                        )}
+                      </div>
+
+                      <button
+                        onClick={handleClearFilters}
+                        className="mt-2 w-full md:w-auto md:mt-0 md:ml-2 text-xs md:text-sm px-3 py-1 md:px-3 md:py-1 text-[#F28B82] bg-[#F9C5D1]/5 rounded-md hover:bg-[#F9C5D1]/10 transition-colors flex items-center justify-center md:justify-start gap-1 cursor-pointer"
+                      >
+                        <MdClear size={12} className="md:h-4 md:w-4" />
+                        <span className="md:hidden">Clear all filters</span>
+                        <span className="hidden md:inline">Clear</span>
+                      </button>
+                    </>
+                  )}
+
+                  {/* Class Year Indicator - always visible if class year exists */}
+                  {userClassYear && !hasFiltersActive && (
+                    <motion.span
+                      className="px-2 py-0.5 md:px-2.5 md:py-1 bg-gray-100 rounded-md text-xs md:text-sm text-gray-700 flex items-center"
+                      initial={{ scale: 0.8, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      exit={{ scale: 0.8, opacity: 0 }}
+                      whileHover={{ scale: 1.05 }}
+                    >
+                      <span className="md:hidden">
+                        {!filters.showAllClassYears
+                          ? `Showing only class of ${userClassYear}`
+                          : `Showing all class years`}
+                      </span>
+                      <span className="hidden md:inline">
+                        {!filters.showAllClassYears ? `Class of ${userClassYear}` : `All classes`}
+                      </span>
+                    </motion.span>
+                  )}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </motion.div>
 
-        {/* Stats Bar */}
-        <motion.div className="flex justify-between items-center px-2" variants={itemVariants}>
-          <div className="text-sm font-medium text-[#666666]">
-            <span className="text-[#F28B82]">{totalUsers}</span> students found
-            {hasFiltersActive && ' with current filters'}
+        {/* Stats Bar - Improved for mobile */}
+        <motion.div
+          className="flex justify-between items-center bg-white rounded-lg shadow-sm border border-gray-100 px-4 py-2.5"
+          variants={itemVariants}
+        >
+          <div className="text-sm font-medium text-gray-700">
+            <span className="text-[#F28B82] font-semibold">{totalUsers}</span> students
+            {hasFiltersActive && <span className="hidden sm:inline"> with current filters</span>}
           </div>
 
           <motion.button
             onClick={() => refetch()}
-            className="text-sm flex items-center gap-1 text-[#666666] hover:text-[#F28B82] transition-colors px-3 py-2 rounded-lg hover:bg-white cursor-pointer"
+            className="text-sm flex items-center gap-1.5 text-gray-700 hover:text-[#F28B82] transition-colors px-2 py-1 rounded-lg hover:bg-gray-50 cursor-pointer"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            <MdRefresh />
+            <MdRefresh className="h-4 w-4" />
             <span className="hidden sm:inline">Refresh</span>
           </motion.button>
         </motion.div>
