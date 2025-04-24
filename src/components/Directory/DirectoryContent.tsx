@@ -15,6 +15,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useSession } from 'next-auth/react';
 import { PostGradType } from '@prisma/client';
+import { FilterButton, FilterGroup } from './FilterOptions';
 
 interface FilterOptions {
   postGradType?: 'work' | 'school' | 'internship' | 'all';
@@ -319,6 +320,60 @@ export const DirectoryContent: React.FC<DirectoryContentProps> = ({ filters, onF
               )}
             </div>
 
+            {/* Desktop Filter Groups - Visible on md+ screens */}
+            <div className="hidden md:flex gap-3">
+              <FilterGroup title="Status">
+                <FilterButton
+                  isActive={activeTypeFilter === 'all'}
+                  onClick={() => handleTypeFilterChange('all')}
+                  label="All"
+                />
+                <FilterButton
+                  isActive={activeTypeFilter === 'work'}
+                  onClick={() => handleTypeFilterChange('work')}
+                  label="Working"
+                  icon={<FaBriefcase className="text-xs" />}
+                />
+                <FilterButton
+                  isActive={activeTypeFilter === 'school'}
+                  onClick={() => handleTypeFilterChange('school')}
+                  label="Studying"
+                  icon={<FaGraduationCap className="text-xs" />}
+                />
+                <FilterButton
+                  isActive={activeTypeFilter === 'internship'}
+                  onClick={() => handleTypeFilterChange('internship')}
+                  label="Intern"
+                  icon={<FaBriefcase className="text-xs" />}
+                />
+              </FilterGroup>
+
+              <FilterGroup title="More Filters">
+                <FilterButton
+                  isActive={showRoommateOnly}
+                  onClick={handleRoommateFilterChange}
+                  label="Roommates"
+                  icon={<FaHome className="text-xs" />}
+                />
+                {hasUserLocation && (
+                  <FilterButton
+                    isActive={isMyCityActive}
+                    onClick={handleMyCityFilterChange}
+                    label="My City"
+                    icon={<FaMapMarkerAlt className="text-xs" />}
+                  />
+                )}
+                {userClassYear && (
+                  <FilterButton
+                    isActive={!filters.showAllClassYears}
+                    onClick={handleClassYearFilterChange}
+                    label={`Class of ${userClassYear}`}
+                    icon={<FaUserGraduate className="text-xs" />}
+                  />
+                )}
+              </FilterGroup>
+            </div>
+
             {/* Mobile Filter Toggle Button */}
             <motion.button
               onClick={toggleMobileFilters}
@@ -351,283 +406,98 @@ export const DirectoryContent: React.FC<DirectoryContentProps> = ({ filters, onF
             </motion.button>
           </div>
 
-          {/* Desktop Filter UI - Always visible on md+ screens, animated drawer on mobile */}
-          <div className="md:block">
-            {/* For desktop: always visible - optimized for horizontal layout */}
-            <div className="hidden md:block">
-              <div className="flex items-start gap-4">
-                {/* Desktop Filter Groups - Horizontal layout with reduced vertical space */}
-                <div className="flex-1 flex gap-3">
-                  {/* Status filter group */}
-                  <div className="flex flex-col">
-                    <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1.5 px-0.5">
-                      Status
-                    </h4>
-                    <div className="flex items-center bg-gray-50 p-1 rounded-lg">
-                      <motion.button
-                        onClick={() => handleTypeFilterChange('all')}
-                        className={`px-3 py-1.5 rounded-md ${
-                          activeTypeFilter === 'all'
-                            ? 'bg-[#F9C5D1]/10 text-[#F28B82] font-medium'
-                            : 'text-gray-600 hover:bg-gray-100'
-                        } transition-all text-sm flex items-center justify-center h-[34px]`}
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                      >
-                        All
-                      </motion.button>
-
-                      <motion.button
-                        onClick={() => handleTypeFilterChange('work')}
-                        className={`px-3 py-1.5 rounded-md ${
-                          activeTypeFilter === 'work'
-                            ? 'bg-[#F9C5D1]/10 text-[#F28B82] font-medium'
-                            : 'text-gray-600 hover:bg-gray-100'
-                        } transition-all text-sm flex items-center justify-center gap-1.5 h-[34px]`}
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                      >
-                        <FaBriefcase className="text-xs" />
-                        Working
-                      </motion.button>
-
-                      <motion.button
-                        onClick={() => handleTypeFilterChange('school')}
-                        className={`px-3 py-1.5 rounded-md ${
-                          activeTypeFilter === 'school'
-                            ? 'bg-[#F9C5D1]/10 text-[#F28B82] font-medium'
-                            : 'text-gray-600 hover:bg-gray-100'
-                        } transition-all text-sm flex items-center justify-center gap-1.5 h-[34px]`}
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                      >
-                        <FaGraduationCap className="text-xs" />
-                        Studying
-                      </motion.button>
-
-                      <motion.button
-                        onClick={() => handleTypeFilterChange('internship')}
-                        className={`px-3 py-1.5 rounded-md ${
-                          activeTypeFilter === 'internship'
-                            ? 'bg-[#F9C5D1]/10 text-[#F28B82] font-medium'
-                            : 'text-gray-600 hover:bg-gray-100'
-                        } transition-all text-sm flex items-center justify-center gap-1.5 h-[34px]`}
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                      >
-                        <FaBriefcase className="text-xs" />
-                        Intern
-                      </motion.button>
-                    </div>
+          {/* Mobile Filter Drawer */}
+          <AnimatePresence>
+            {mobileFiltersOpen && (
+              <motion.div
+                className="md:hidden"
+                variants={mobileFilterVariants}
+                initial="hidden"
+                animate="visible"
+                exit="hidden"
+              >
+                <div className="flex flex-col gap-4 py-2">
+                  {/* Close button for mobile */}
+                  <div className="flex justify-between items-center mb-1">
+                    <h3 className="text-sm font-medium text-gray-700">Filters</h3>
+                    <motion.button
+                      onClick={toggleMobileFilters}
+                      className="p-1 rounded-full hover:bg-gray-100 text-gray-500"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <MdClear size={20} />
+                    </motion.button>
                   </div>
 
-                  {/* Secondary filters */}
-                  <div className="flex flex-col">
-                    <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1.5 px-0.5">
-                      More Filters
-                    </h4>
-                    <div className="flex flex-wrap items-center gap-1.5">
-                      <motion.button
-                        onClick={handleRoommateFilterChange}
-                        className={`px-3 py-1.5 rounded-md ${
-                          showRoommateOnly
-                            ? 'bg-[#F9C5D1]/10 text-[#F28B82] font-medium'
-                            : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
-                        } transition-all text-sm flex items-center justify-center gap-1.5 h-[34px]`}
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                      >
-                        <FaHome className="text-xs" />
-                        Roommates
-                      </motion.button>
+                  {/* Filter Groups - Redesigned for better mobile experience */}
+                  <div className="flex flex-col gap-3 w-full">
+                    {/* Status filter group with label */}
+                    <FilterGroup title="Status" isMobile={true}>
+                      <FilterButton
+                        isActive={activeTypeFilter === 'all'}
+                        onClick={() => handleTypeFilterChange('all')}
+                        label="All"
+                        isMobile={true}
+                      />
+                      <FilterButton
+                        isActive={activeTypeFilter === 'work'}
+                        onClick={() => handleTypeFilterChange('work')}
+                        label="Working"
+                        icon={<FaBriefcase className="text-xs" />}
+                        isMobile={true}
+                      />
+                      <FilterButton
+                        isActive={activeTypeFilter === 'school'}
+                        onClick={() => handleTypeFilterChange('school')}
+                        label="Studying"
+                        icon={<FaGraduationCap className="text-xs" />}
+                        isMobile={true}
+                      />
+                      <FilterButton
+                        isActive={activeTypeFilter === 'internship'}
+                        onClick={() => handleTypeFilterChange('internship')}
+                        label="Intern"
+                        icon={<FaBriefcase className="text-xs" />}
+                        isMobile={true}
+                      />
+                    </FilterGroup>
 
-                      {hasUserLocation && (
-                        <motion.button
-                          onClick={handleMyCityFilterChange}
-                          className={`px-3 py-1.5 rounded-md ${
-                            isMyCityActive
-                              ? 'bg-[#F9C5D1]/10 text-[#F28B82] font-medium'
-                              : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
-                          } transition-all text-sm flex items-center justify-center gap-1.5 h-[34px]`}
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
-                        >
-                          <FaMapMarkerAlt className="text-xs" />
-                          My City
-                        </motion.button>
-                      )}
-
-                      {/* Class Year Toggle Button */}
-                      {userClassYear && (
-                        <motion.button
-                          onClick={handleClassYearFilterChange}
-                          className={`px-3 py-1.5 rounded-md ${
-                            !filters.showAllClassYears
-                              ? 'bg-[#F9C5D1]/10 text-[#F28B82] font-medium'
-                              : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
-                          } transition-all text-sm flex items-center justify-center gap-1.5 h-[34px]`}
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
-                        >
-                          <FaUserGraduate className="text-xs" />
-                          Class of {userClassYear}
-                        </motion.button>
-                      )}
-                    </div>
+                    {/* Secondary filters with label */}
+                    <FilterGroup title="More Filters" isMobile={true}>
+                      <div className="grid grid-cols-2 md:flex flex-wrap gap-2 w-full">
+                        <FilterButton
+                          isActive={showRoommateOnly}
+                          onClick={handleRoommateFilterChange}
+                          label="Roommates"
+                          icon={<FaHome className="text-xs" />}
+                          isMobile={true}
+                        />
+                        {hasUserLocation && (
+                          <FilterButton
+                            isActive={isMyCityActive}
+                            onClick={handleMyCityFilterChange}
+                            label="My City"
+                            icon={<FaMapMarkerAlt className="text-xs" />}
+                            isMobile={true}
+                          />
+                        )}
+                        {userClassYear && (
+                          <FilterButton
+                            isActive={!filters.showAllClassYears}
+                            onClick={handleClassYearFilterChange}
+                            label={`Class of ${userClassYear}`}
+                            icon={<FaUserGraduate className="text-xs" />}
+                            isMobile={true}
+                          />
+                        )}
+                      </div>
+                    </FilterGroup>
                   </div>
                 </div>
-              </div>
-            </div>
-
-            {/* For mobile: animated drawer */}
-            <AnimatePresence>
-              {(mobileFiltersOpen || !isMobile) && (
-                <motion.div
-                  className="md:hidden"
-                  variants={mobileFilterVariants}
-                  initial="hidden"
-                  animate="visible"
-                  exit="hidden"
-                >
-                  <div className="flex flex-col gap-4 py-2">
-                    {/* Close button for mobile */}
-                    <div className="flex justify-between items-center mb-1">
-                      <h3 className="text-sm font-medium text-gray-700">Filters</h3>
-                      <motion.button
-                        onClick={toggleMobileFilters}
-                        className="p-1 rounded-full hover:bg-gray-100 text-gray-500"
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                      >
-                        <MdClear size={20} />
-                      </motion.button>
-                    </div>
-
-                    {/* Filter Groups - Redesigned for better mobile experience */}
-                    <div className="flex flex-col gap-3 w-full">
-                      {/* Status filter group with label */}
-                      <div className="space-y-2">
-                        <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wider px-1">
-                          Status
-                        </h4>
-                        <div className="flex flex-wrap items-center bg-gray-50 p-1 rounded-lg">
-                          <motion.button
-                            onClick={() => handleTypeFilterChange('all')}
-                            className={`flex-1 px-3 py-1.5 rounded-md ${
-                              activeTypeFilter === 'all'
-                                ? 'bg-[#F9C5D1]/10 text-[#F28B82] font-medium'
-                                : 'text-gray-600 hover:bg-gray-100'
-                            } transition-all text-sm cursor-pointer`}
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                          >
-                            All
-                          </motion.button>
-
-                          <motion.button
-                            onClick={() => handleTypeFilterChange('work')}
-                            className={`flex-1 px-3 py-1.5 rounded-md ${
-                              activeTypeFilter === 'work'
-                                ? 'bg-[#F9C5D1]/10 text-[#F28B82] font-medium'
-                                : 'text-gray-600 hover:bg-gray-100'
-                            } transition-all text-sm flex items-center justify-center gap-1.5 cursor-pointer`}
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                          >
-                            <FaBriefcase className="text-xs" />
-                            Working
-                          </motion.button>
-
-                          <motion.button
-                            onClick={() => handleTypeFilterChange('school')}
-                            className={`flex-1 px-3 py-1.5 rounded-md ${
-                              activeTypeFilter === 'school'
-                                ? 'bg-[#F9C5D1]/10 text-[#F28B82] font-medium'
-                                : 'text-gray-600 hover:bg-gray-100'
-                            } transition-all text-sm flex items-center justify-center gap-1.5 cursor-pointer`}
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                          >
-                            <FaGraduationCap className="text-xs" />
-                            Studying
-                          </motion.button>
-
-                          <motion.button
-                            onClick={() => handleTypeFilterChange('internship')}
-                            className={`flex-1 px-3 py-1.5 rounded-md ${
-                              activeTypeFilter === 'internship'
-                                ? 'bg-[#F9C5D1]/10 text-[#F28B82] font-medium'
-                                : 'text-gray-600 hover:bg-gray-100'
-                            } transition-all text-sm flex items-center justify-center gap-1.5 cursor-pointer`}
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                          >
-                            <FaBriefcase className="text-xs" />
-                            Intern
-                          </motion.button>
-                        </div>
-                      </div>
-
-                      {/* Secondary filters with label */}
-                      <div className="space-y-2">
-                        <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wider px-1">
-                          More Filters
-                        </h4>
-                        <div className="grid grid-cols-2 md:flex flex-wrap gap-2">
-                          <motion.button
-                            onClick={handleRoommateFilterChange}
-                            className={`px-3 py-1.5 rounded-md ${
-                              showRoommateOnly
-                                ? 'bg-[#F9C5D1]/10 text-[#F28B82] font-medium'
-                                : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
-                            } transition-all text-sm flex items-center justify-center gap-1.5 cursor-pointer`}
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                          >
-                            <FaHome className="text-xs" />
-                            Roommates
-                          </motion.button>
-
-                          {hasUserLocation && (
-                            <motion.button
-                              onClick={handleMyCityFilterChange}
-                              className={`px-3 py-1.5 rounded-md ${
-                                isMyCityActive
-                                  ? 'bg-[#F9C5D1]/10 text-[#F28B82] font-medium'
-                                  : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
-                              } transition-all text-sm flex items-center justify-center gap-1.5 cursor-pointer`}
-                              whileHover={{ scale: 1.02 }}
-                              whileTap={{ scale: 0.98 }}
-                            >
-                              <FaMapMarkerAlt className="text-xs" />
-                              My City
-                            </motion.button>
-                          )}
-
-                          {/* Class Year Toggle Button */}
-                          {userClassYear && (
-                            <motion.button
-                              onClick={handleClassYearFilterChange}
-                              className={`px-3 py-1.5 rounded-md ${
-                                !filters.showAllClassYears
-                                  ? 'bg-[#F9C5D1]/10 text-[#F28B82] font-medium'
-                                  : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
-                              } transition-all text-sm flex items-center justify-center gap-1.5 cursor-pointer`}
-                              whileHover={{ scale: 1.02 }}
-                              whileTap={{ scale: 0.98 }}
-                            >
-                              <FaUserGraduate className="text-xs" />
-                              Class of {userClassYear}
-                            </motion.button>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Active filters section - enhanced for mobile with animations */}
           <AnimatePresence>
@@ -859,16 +729,6 @@ export const DirectoryContent: React.FC<DirectoryContentProps> = ({ filters, onF
             <span className="text-[#F28B82] font-semibold">{totalUsers}</span> students
             {hasFiltersActive && <span className="hidden sm:inline"> with current filters</span>}
           </div>
-
-          <motion.button
-            onClick={() => refetch()}
-            className="text-sm flex items-center gap-1.5 text-gray-700 hover:text-[#F28B82] transition-colors px-2 py-1 rounded-lg hover:bg-gray-50 cursor-pointer"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <MdRefresh className="h-4 w-4" />
-            <span className="hidden sm:inline">Refresh</span>
-          </motion.button>
         </motion.div>
 
         {/* Directory Content (Grid) */}
