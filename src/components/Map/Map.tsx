@@ -10,6 +10,7 @@ import type { PropertyValueSpecification } from 'maplibre-gl';
 import { Legend } from './Legend';
 import * as d3 from 'd3';
 import { getCustomBuckets } from '@/lib/utils';
+import { EXCLUDED_STATES } from './constants';
 
 // Types
 interface LocationData {
@@ -147,8 +148,13 @@ export const FlockMap: React.FC<FlockMapProps> = ({ onCitySelect, selectedClassY
       .then((data) => setGeoJson(data));
   }, []);
 
-  const maxValue =
-    Object.values(locationData || {}).reduce((max, value) => Math.max(max, value), 0) || 1;
+  const maxValue = React.useMemo(() => {
+    return (
+      Object.entries(locationData || {})
+        .filter(([state]) => !EXCLUDED_STATES.includes(state as (typeof EXCLUDED_STATES)[number]))
+        .reduce((max, [, value]) => Math.max(max, value), 0) || 1
+    );
+  }, [locationData]);
 
   const thresholds = getCustomBuckets(maxValue);
 
@@ -173,7 +179,13 @@ export const FlockMap: React.FC<FlockMapProps> = ({ onCitySelect, selectedClassY
     }
 
     const pairs = Object.entries(locationData)
-      .map(([state, value]) => [state, colorScale(value)])
+      .map(([state, value]) => {
+        // Always put excluded states in the highest bucket
+        if (EXCLUDED_STATES.includes(state as (typeof EXCLUDED_STATES)[number])) {
+          return [state, colorRange[colorRange.length - 1]];
+        }
+        return [state, colorScale(value)];
+      })
       .flat();
 
     return [
@@ -182,7 +194,7 @@ export const FlockMap: React.FC<FlockMapProps> = ({ onCitySelect, selectedClassY
       ...pairs,
       '#cccccc', // fallback for "no data"
     ] as unknown as PropertyValueSpecification<string>;
-  }, [locationData, selectedState, colorScale]);
+  }, [locationData, selectedState, colorScale, colorRange]);
 
   const renderLegendSkeleton = () => (
     <div className="space-y-2.5">
