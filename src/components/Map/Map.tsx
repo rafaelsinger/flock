@@ -157,7 +157,7 @@ export const FlockMap: React.FC<FlockMapProps> = ({ onCitySelect, selectedClassY
     2: ['#fb6a4a', '#de2d26'],
     3: ['#fc9272', '#fb6a4a', '#de2d26'],
     4: ['#fc9272', '#fb6a4a', '#de2d26', '#a50f15'],
-    5: ['#fee0d2', '#fc9272', '#fb6a4a', '#de2d26', '#a50f15'],
+    5: ['#fc9272', '#fb6a4a', '#de2d26', '#a50f15', '#701013'],
   };
 
   const colorRange = colorSchemes[thresholds.length] || colorSchemes[5];
