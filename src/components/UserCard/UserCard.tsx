@@ -1,10 +1,11 @@
 import React from 'react';
-import { MapPin, Building, Mail, Briefcase, GraduationCap, Home, ExternalLink } from 'lucide-react';
+import { MapPin, Building, Briefcase, GraduationCap, Home, ExternalLink } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import { UserWithLocation, getDisplayCompany, getDisplayRole } from '@/types/user';
 import { motion } from 'framer-motion';
 import { CURRENT_CLASS_YEAR } from '@/constants/general';
+import { useSession } from 'next-auth/react';
 
 interface UserCardProps {
   user: UserWithLocation;
@@ -14,6 +15,10 @@ interface UserCardProps {
 export const UserCard: React.FC<UserCardProps> = ({ user, prefetch = false }) => {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const { data: session } = useSession();
+
+  // Check if this is the user's own profile card
+  const isOwnProfile = session?.user?.id === user.id;
 
   const location = user.location
     ? `${user.location.city}${user.location.state ? `, ${user.location.state}` : ''}`
@@ -39,6 +44,10 @@ export const UserCard: React.FC<UserCardProps> = ({ user, prefetch = false }) =>
 
   const handleClick = () => {
     router.push(`/profile/${user.id}`);
+  };
+
+  const handleMessageclick = () => {
+    router.push(`/conversations/${user.id}`);
   };
 
   // Prefetch the user data when hovering over the card
@@ -181,43 +190,94 @@ export const UserCard: React.FC<UserCardProps> = ({ user, prefetch = false }) =>
                 <Building className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" style={{ color }} />
                 <span className="truncate">{company}</span>
               </div>
-              <motion.button
-                onClick={handleClick}
-                className="ml-2 flex-shrink-0 px-2 py-1 rounded-md flex items-center text-white text-xs cursor-pointer shadow-sm"
-                style={{
-                  background: `linear-gradient(135deg, ${color}, ${color}CC)`,
-                  boxShadow: `0 2px 4px -1px ${color}40`,
-                }}
-                whileHover={{ scale: 1.05, boxShadow: `0 3px 6px -1px ${color}50` }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <span className="hidden sm:inline mr-1">View</span>
-                <ExternalLink className="h-3 w-3" />
-              </motion.button>
+              <div className="flex gap-2">
+                {!isOwnProfile && (
+                  <motion.button
+                    onClick={handleMessageclick}
+                    className="px-2 py-1 rounded-md flex items-center justify-center text-white text-xs cursor-pointer shadow-sm"
+                    style={{
+                      background: `linear-gradient(135deg, ${color}, ${color}CC)`,
+                      boxShadow: `0 2px 4px -1px ${color}40`,
+                    }}
+                    whileHover={{ scale: 1.05, boxShadow: `0 3px 6px -1px ${color}50` }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
+                      />
+                    </svg>
+                  </motion.button>
+                )}
+                <motion.button
+                  onClick={handleClick}
+                  className="px-2 py-1 rounded-md flex items-center text-white text-xs cursor-pointer shadow-sm"
+                  style={{
+                    background: `linear-gradient(135deg, ${color}, ${color}CC)`,
+                    boxShadow: `0 2px 4px -1px ${color}40`,
+                  }}
+                  whileHover={{ scale: 1.05, boxShadow: `0 3px 6px -1px ${color}50` }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <span className="hidden sm:inline mr-1">View</span>
+                  <ExternalLink className="h-3 w-3" />
+                </motion.button>
+              </div>
             </div>
           ) : (
             <div className="flex items-center justify-between">
               <div className="flex-1" />
-              <motion.button
-                onClick={handleClick}
-                className="ml-2 flex-shrink-0 px-2 py-1 rounded-md flex items-center text-white text-xs cursor-pointer shadow-sm"
-                style={{
-                  background: `linear-gradient(135deg, ${color}, ${color}CC)`,
-                  boxShadow: `0 2px 4px -1px ${color}40`,
-                }}
-                whileHover={{ scale: 1.05, boxShadow: `0 3px 6px -1px ${color}50` }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <span className="hidden sm:inline mr-1">View</span>
-                <ExternalLink className="h-3 w-3" />
-              </motion.button>
-            </div>
-          )}
-
-          {user.email && (
-            <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
-              <Mail className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" style={{ color }} />
-              <span className="truncate">{user.email}</span>
+              <div className="flex gap-2">
+                {!isOwnProfile && (
+                  <motion.button
+                    onClick={handleMessageclick}
+                    className="px-2 py-1 rounded-md flex items-center justify-center text-white text-xs cursor-pointer shadow-sm"
+                    style={{
+                      background: `linear-gradient(135deg, ${color}, ${color}CC)`,
+                      boxShadow: `0 2px 4px -1px ${color}40`,
+                    }}
+                    whileHover={{ scale: 1.05, boxShadow: `0 3px 6px -1px ${color}50` }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
+                      />
+                    </svg>
+                  </motion.button>
+                )}
+                <motion.button
+                  onClick={handleClick}
+                  className="px-2 py-1 rounded-md flex items-center text-white text-xs cursor-pointer shadow-sm"
+                  style={{
+                    background: `linear-gradient(135deg, ${color}, ${color}CC)`,
+                    boxShadow: `0 2px 4px -1px ${color}40`,
+                  }}
+                  whileHover={{ scale: 1.05, boxShadow: `0 3px 6px -1px ${color}50` }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <span className="hidden sm:inline mr-1">View</span>
+                  <ExternalLink className="h-3 w-3" />
+                </motion.button>
+              </div>
             </div>
           )}
         </div>

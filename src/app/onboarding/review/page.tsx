@@ -50,8 +50,6 @@ const ReviewPage: FC = () => {
           : undefined,
       };
 
-      console.log('Sending onboarding data to API:', apiData);
-
       const response = await fetch(`/api/users/${sessionStorage.user.id}`, {
         method: 'PUT',
         headers: {
