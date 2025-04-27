@@ -1,2 +1,2 @@
 -- AlterEnum
-ALTER TYPE "PostGradType" ADD VALUE 'internship';
+-- ALTER TYPE "PostGradType" ADD VALUE 'internship';

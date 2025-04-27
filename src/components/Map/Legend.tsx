@@ -11,7 +11,14 @@ export const Legend: React.FC<LegendProps> = ({ colorScale }) => {
   const bins = range.map((color, i) => {
     const from = i === 0 ? 0 : thresholds[i - 1];
     const to = thresholds[i];
-    const label = to === undefined ? `${from}+` : from === to - 1 ? `${from}` : `${from}–${to - 1}`;
+    let label;
+    if (i === range.length - 1) {
+      label = `${from}+`;
+    } else if (from === to - 1) {
+      label = `${from}`;
+    } else {
+      label = `${from}–${to - 1}`;
+    }
     return { color, label };
   });
 
