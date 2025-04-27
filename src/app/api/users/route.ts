@@ -43,15 +43,55 @@ export const GET = async (request: NextRequest) => {
     // Start building where clause with basic visibility requirements
     const where: Prisma.UserWhereInput = {
       AND: [
-        // Search condition
+        // Search condition - modified to respect visibility preferences
         search
           ? {
               OR: [
                 { name: { contains: search, mode: 'insensitive' as const } },
                 { location: { city: { contains: search, mode: 'insensitive' as const } } },
                 { location: { state: { contains: search, mode: 'insensitive' as const } } },
-                { company: { contains: search, mode: 'insensitive' as const } },
-                { school: { contains: search, mode: 'insensitive' as const } },
+                // For company search, only include users who have made their company visible
+                {
+                  AND: [
+                    { company: { contains: search, mode: 'insensitive' as const } },
+                    {
+                      OR: [
+                        // Include if visibilityOptions is null/undefined (default to visible)
+                        { visibilityOptions: { equals: null } },
+                        // Include if visibilityOptions is empty object
+                        { visibilityOptions: { equals: {} } },
+                        // Include if company visibility is explicitly true
+                        {
+                          visibilityOptions: {
+                            path: ['company'],
+                            equals: true,
+                          },
+                        },
+                      ],
+                    },
+                  ],
+                },
+                // For school search - also respect visibility settings
+                {
+                  AND: [
+                    { school: { contains: search, mode: 'insensitive' as const } },
+                    {
+                      OR: [
+                        // Include if visibilityOptions is null/undefined (default to visible)
+                        { visibilityOptions: { equals: null } },
+                        // Include if visibilityOptions is empty object
+                        { visibilityOptions: { equals: {} } },
+                        // Include if school visibility is explicitly true
+                        {
+                          visibilityOptions: {
+                            path: ['school'],
+                            equals: true,
+                          },
+                        },
+                      ],
+                    },
+                  ],
+                },
               ],
             }
           : {},
