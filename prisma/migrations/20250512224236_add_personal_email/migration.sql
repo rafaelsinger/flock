@@ -4,8 +4,6 @@
   - A unique constraint covering the columns `[personal_email]` on the table `users` will be added. If there are existing duplicate values, this will fail.
 
 */
--- AlterEnum
-ALTER TYPE "PostGradType" ADD VALUE 'internship';
 
 -- AlterTable
 ALTER TABLE "users" ADD COLUMN     "personal_email" TEXT;
