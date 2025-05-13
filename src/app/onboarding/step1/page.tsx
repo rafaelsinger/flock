@@ -322,7 +322,7 @@ const Step1: FC = () => {
         </div>
 
         <div className="flex flex-col md:flex-row justify-between mt-6 space-y-4 md:space-y-0 md:space-x-4">
-          <OnboardingButton variant="secondary" onClick={() => router.back()}>
+          <OnboardingButton variant="secondary" onClick={() => router.push('/onboarding/step0')}>
             Back
           </OnboardingButton>
           <OnboardingButton

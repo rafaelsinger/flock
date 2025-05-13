@@ -1,10 +1,10 @@
 'use client';
 import Image from 'next/image';
-import { signIn } from 'next-auth/react';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/Button';
 import { ArrowRight } from 'lucide-react';
 import Link from 'next/link';
+import { handleSignIn } from '@/lib/utils';
 
 interface HeaderProps {
   /**
@@ -19,12 +19,6 @@ interface HeaderProps {
 
 export const Header = ({ transparent = false, showStatusBanner = false }: HeaderProps) => {
   const [isScrolled, setIsScrolled] = useState(false);
-
-  // Handle sign in
-  const handleSignIn = () => {
-    signIn('google', { callbackUrl: '/' });
-  };
-
   // Handle scroll behavior
   useEffect(() => {
     const handleScroll = () => {

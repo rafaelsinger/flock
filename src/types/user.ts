@@ -17,6 +17,7 @@ export type CreateUser = {
   industry?: string | null;
   location?: CreateLocation | null;
   lookingForRoommate?: boolean | null;
+  personalEmail?: string | null;
   visibilityOptions: {
     title?: boolean;
     company?: boolean;

@@ -12,6 +12,7 @@ const Step0: FC = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
   const [selectedYear, setSelectedYear] = useState<string>('');
+  const [personalEmail, setPersonalEmail] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Generate class year options dynamically - current year plus 3 future years
@@ -27,6 +28,7 @@ const Step0: FC = () => {
 
       const data: IncompleteUserOnboarding = {
         classYear: selectedYearNum,
+        ...(parseInt(selectedYear) === CURRENT_CLASS_YEAR && { personalEmail }),
       };
       return Promise.resolve(data);
     },
@@ -137,6 +139,35 @@ const Step0: FC = () => {
               ))}
             </div>
           </motion.div>
+
+          {/* Personal Email input */}
+          {parseInt(selectedYear) === CURRENT_CLASS_YEAR && (
+            <motion.div
+              variants={itemVariants}
+              initial="hidden"
+              animate="visible"
+              className="max-w-md mx-auto"
+            >
+              <label
+                htmlFor="personalEmail"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Personal Email Address
+              </label>
+              <input
+                type="email"
+                id="personalEmail"
+                value={personalEmail}
+                onChange={(e) => setPersonalEmail(e.target.value)}
+                placeholder="Enter your personal email"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg text-[#333333] focus:ring-[#F28B82] focus:border-[#F28B82] outline-none transition"
+              />
+              <p className="mt-1 text-xs text-gray-500">
+                Enter your personal email so you don&#39;t lose access after your BC email is
+                deactivated.
+              </p>
+            </motion.div>
+          )}
 
           {/* Continue button */}
           <motion.div variants={itemVariants} className="flex justify-center pt-6">

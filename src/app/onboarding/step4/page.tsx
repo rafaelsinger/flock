@@ -268,12 +268,12 @@ const Step4: FC = () => {
                 >
                   {getTitleMajorChecked() ? (
                     <>
-                      <BsEye className="text-lg" />
+                      <BsEye className="text-lg cursor-pointer" />
                       <span>Visible</span>
                     </>
                   ) : (
                     <>
-                      <BsEyeSlash className="text-lg" />
+                      <BsEyeSlash className="text-lg cursor-pointer" />
                       <span>Hidden</span>
                     </>
                   )}

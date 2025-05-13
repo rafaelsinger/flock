@@ -1,6 +1,5 @@
 'use client';
 import Image from 'next/image';
-import { signIn } from 'next-auth/react';
 import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/Button';
 import { ArrowRight, ChevronDown, Users } from 'lucide-react';
@@ -8,6 +7,7 @@ import { DemoSection } from './Demo/DemoSection';
 import { CTASection } from './CTA/CTASection';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
+import { handleSignIn } from '@/lib/utils';
 
 export const LandingPage = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -15,12 +15,6 @@ export const LandingPage = () => {
   const [rotation, setRotation] = useState({ x: 0, y: 0 });
   const heroRef = useRef<HTMLDivElement>(null);
   const demoRef = useRef<HTMLDivElement>(null);
-
-  // Handle sign in
-  const handleSignIn = () => {
-    signIn('google', { callbackUrl: '/' });
-  };
-
   // Handle mouse move for parallax effect
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!heroRef.current) return;

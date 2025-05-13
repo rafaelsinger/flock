@@ -8,9 +8,25 @@ import { prisma } from './lib/prisma';
 import authConfig from './auth.config';
 import { redirect } from 'next/navigation';
 import { NextResponse } from 'next/server';
+import { type Adapter, type AdapterUser } from '@auth/core/adapters';
+
+const customAdapter: Adapter = (p: PrismaClient) => {
+  return {
+    ...PrismaAdapter(p),
+    createUser: async (data: AdapterUser) => {
+      const user = await prisma.user.findFirst({
+        where: {
+          OR: [{ email: data.email }, { personalEmail: data.email }],
+        },
+      });
+      if (user) return user;
+      return p.user.create({ data });
+    },
+  };
+};
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
-  adapter: PrismaAdapter(prisma),
+  adapter: customAdapter(prisma),
   session: { strategy: 'jwt' },
   callbacks: {
     authorized: async ({ request, auth }) => {
@@ -23,13 +39,15 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
       return !!auth;
     },
-    signIn({ account, profile }) {
-      if (
-        account.provider === 'google' &&
-        profile.email_verified &&
-        profile.email.endsWith('@bc.edu')
-      ) {
-        return true;
+    async signIn({ account, profile }) {
+      if (account.provider === 'google') {
+        const user = await prisma.user.findFirst({
+          where: {
+            OR: [{ email: profile.email }, { personalEmail: profile.email }],
+          },
+        });
+        // if the user exists already (could be with personal email) or it's a BC email
+        if (user || profile.email.endsWith('@bc.edu')) return true;
       }
       return false;
     },

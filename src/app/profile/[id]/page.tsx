@@ -552,7 +552,10 @@ const ViewMode = ({ userData, isOwnProfile, onEdit }: ViewModeProps) => {
                 />
               </svg>
               <div>
-                <p className="text-lg text-[#333333]">{userData.email}</p>
+                <p className="text-lg text-[#333333]">
+                  {userData.email}
+                  {userData.personalEmail ? `, ${userData.personalEmail}` : ''}
+                </p>
               </div>
             </motion.div>
           )}
@@ -839,6 +842,46 @@ const EditForm = ({
           {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email}</p>}
         </motion.div>
       </motion.div>
+
+      {userData.classYear === CURRENT_CLASS_YEAR && (
+        <motion.div variants={itemVariants}>
+          <label htmlFor="personalEmail" className={labelClasses}>
+            <svg
+              className="mr-2 text-[#F28B82]"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M20 4H4C2.9 4 2.01 4.9 2.01 6L2 18C2 19.1 2.9 20 4 20H20C21.1 20 22 19.1 22 18V6C22 4.9 21.1 4 20 4ZM20 8L12 13L4 8V6L12 11L20 6V8Z"
+                fill="currentColor"
+              />
+            </svg>
+            Personal Email
+          </label>
+          <motion.div variants={inputVariants} animate={activeField === 'email' ? 'focus' : 'blur'}>
+            <input
+              id="personalEmail"
+              type="email"
+              value={userData.personalEmail || ''}
+              onChange={(e) => {
+                setUserData({ ...userData, personalEmail: e.target.value });
+                if (errors.personalEmail) {
+                  setErrors({ ...errors, personalEmail: '' });
+                }
+              }}
+              onFocus={() => setActiveField('personalEmail')}
+              onBlur={() => setActiveField(null)}
+              className={`${inputClasses} ${errors.personalEmail ? 'border-red-400 bg-red-50' : ''}`}
+            />
+            {errors.personalEmail && (
+              <p className="mt-1 text-sm text-red-500">{errors.personalEmail}</p>
+            )}
+          </motion.div>
+        </motion.div>
+      )}
 
       <motion.div variants={itemVariants}>
         <label htmlFor="type" className={labelClasses}>

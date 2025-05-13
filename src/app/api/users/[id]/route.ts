@@ -110,6 +110,7 @@ export const PUT = async (request: NextRequest, context: { params: Promise<{ id:
         lookingForRoommate: userData.lookingForRoommate,
         visibilityOptions: userData.visibilityOptions,
         classYear: userData.classYear,
+        personalEmail: userData.personalEmail,
       },
       include: {
         location: true,

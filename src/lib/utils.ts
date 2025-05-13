@@ -1,4 +1,5 @@
 import { CURRENT_CLASS_YEAR } from '@/constants/general';
+import { signIn } from 'next-auth/react';
 
 export const capitalize = (text: string): string => {
   if (!text) return text;
@@ -84,3 +85,7 @@ export function getAvailableYears(): number[] {
   const currentYear = CURRENT_CLASS_YEAR;
   return Array.from({ length: 4 }, (_, i) => currentYear + i);
 }
+
+export const handleSignIn = () => {
+  signIn('google', { redirectTo: '/' });
+};
