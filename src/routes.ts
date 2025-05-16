@@ -7,7 +7,7 @@ export const publicRoutes = ['/', '/privacy', '/tos', '/contact'];
  * Routes that are used for authentication
  * These routes will redirect logged in users to /dashboard
  */
-export const authRoutes = ['/signin', '/register', '/error', '/profile'];
+export const authRoutes = ['/signin', '/register', '/error'];
 
 /**
  * API routes that don't require authentication

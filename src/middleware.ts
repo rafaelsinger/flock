@@ -40,7 +40,12 @@ export default auth((req) => {
 
   if (isAuthRoute) {
     if (isLoggedIn) {
-      return Response.redirect(new URL(DEFAULT_LOGIN_REDIRECT, nextUrl));
+      // Only redirect to onboarding if user is not onboarded
+      if (req.auth?.user?.isOnboarded === false) {
+        return Response.redirect(new URL(DEFAULT_LOGIN_REDIRECT, nextUrl));
+      }
+      // Redirect onboarded users to home instead of onboarding
+      return Response.redirect(new URL('/', nextUrl));
     }
     return NextResponse.next();
   }
